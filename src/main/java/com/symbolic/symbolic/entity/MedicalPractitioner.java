@@ -1,9 +1,11 @@
 package com.symbolic.symbolic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -18,10 +20,10 @@ public class MedicalPractitioner {
     @GeneratedValue
     private Long id;
 
-    @Column(name = "longitude")
-    private Double longitude;
     @Column(name = "latitude")
     private Double latitude;
+    @Column(name = "longitude")
+    private Double longitude;
     @Column(name = "specialization")
     private String specialization;
     @Column(name = "consultationCost")
@@ -42,19 +44,29 @@ public class MedicalPractitioner {
             joinColumns = @JoinColumn(name = "practitioner_id"),
             inverseJoinColumns = @JoinColumn(name = "patient_id")
     )
-    private Set<Patient> patients;
+    private Set<Patient> patients = new HashSet<Patient>();
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private Facility facility;
 
     /**
      * A constructor for the MedicalPractitioner data model.
-     * @param longitude a double value for the longitude of the practitioner
      * @param latitude a double value for the latitude of the practitioner
+     * @param longitude a double value for the longitude of the practitioner
      * @param specialization a string value representing the practitioner's specialization
      * @param consultationCost an integer value representing the cost of a consultation with the practitioner
      * @param yearsExperience an integer value representing the number of years experience the practitioner has
      */
-    public MedicalPractitioner(Double longitude, Double latitude, String specialization, Integer consultationCost, Integer yearsExperience) {
-        this.longitude = longitude;
+    public MedicalPractitioner(Double latitude, Double longitude, String specialization, Integer consultationCost, Integer yearsExperience) {
         this.latitude = latitude;
+        this.longitude = longitude;
         this.specialization = specialization;
         this.consultationCost = consultationCost;
         this.yearsExperience = yearsExperience;
@@ -115,6 +127,14 @@ public class MedicalPractitioner {
             this.patients.remove(patient);
             patient.getPractitioners().remove(this);
         }
+    }
+
+    public Facility getFacility() {
+        return facility;
+    }
+
+    public void setFacility(Facility facility) {
+        this.facility = facility;
     }
 
     @Override

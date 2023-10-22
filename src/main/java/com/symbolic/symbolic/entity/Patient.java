@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -34,7 +35,18 @@ public class Patient {
             mappedBy = "patients"
     )
     @JsonIgnore
-    private Set<MedicalPractitioner> practitioners;
+    private Set<MedicalPractitioner> practitioners = new HashSet<>();
+
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "patients"
+    )
+    @JsonIgnore
+    private Set<Facility> facilities = new HashSet<>();
 
     /**
      * A constructor for the Patient data model.
@@ -84,16 +96,24 @@ public class Patient {
         this.practitioners = practitioners;
     }
 
+    public Set<Facility> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(Set<Facility> facilities) {
+        this.facilities = facilities;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Patient patient = (Patient) o;
-        return Objects.equals(id, patient.id) && Objects.equals(vaccinations, patient.vaccinations) && Objects.equals(allergies, patient.allergies) && Objects.equals(accommodations, patient.accommodations);
+        return Objects.equals(id, patient.id) && Objects.equals(vaccinations, patient.vaccinations) && Objects.equals(allergies, patient.allergies) && Objects.equals(accommodations, patient.accommodations) && Objects.equals(practitioners, patient.practitioners);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, vaccinations, allergies, accommodations);
+        return Objects.hash(id, vaccinations, allergies, accommodations, practitioners);
     }
 }

@@ -50,7 +50,7 @@ public class MedicalPractitionerController {
     @PostMapping("/practitioner")
     public ResponseEntity<?> createPractitioner(@RequestBody MedicalPractitioner practitioner) {
         MedicalPractitioner newPractitioner = new MedicalPractitioner(
-                practitioner.getLongitude(), practitioner.getLatitude(), practitioner.getSpecialization(),
+                practitioner.getLatitude(), practitioner.getLongitude(), practitioner.getSpecialization(),
                 practitioner.getConsultationCost(), practitioner.getYearsExperience()
         );
         practitionerRepository.save(newPractitioner);
@@ -63,8 +63,8 @@ public class MedicalPractitionerController {
 
         if (practitionerData.isPresent()) {
             MedicalPractitioner oldPractitioner = practitionerData.get();
-            oldPractitioner.setLongitude(practitioner.getLongitude());
             oldPractitioner.setLatitude(practitioner.getLatitude());
+            oldPractitioner.setLongitude(practitioner.getLongitude());
             oldPractitioner.setSpecialization(practitioner.getSpecialization());
             oldPractitioner.setConsultationCost(practitioner.getConsultationCost());
             oldPractitioner.setYearsExperience(practitioner.getYearsExperience());
