@@ -18,10 +18,10 @@ public class Facility {
     @GeneratedValue
     private Long id;
 
-    @Column(name = "longitude")
-    private Double longitude;
     @Column(name = "latitude")
     private Double latitude;
+    @Column(name = "longitude")
+    private Double longitude;
     @Column(name = "specialization")
     private String specialization;
 
@@ -59,9 +59,9 @@ public class Facility {
      * @param latitude a double value for the latitude of the facility
      * @param specialization a string value representing the specialization at the facility
      */
-    public Facility(Double longitude, Double latitude, String specialization) {
-        this.longitude = longitude;
+    public Facility(Double latitude, Double longitude, String specialization) {
         this.latitude = latitude;
+        this.longitude = longitude;
         this.specialization = specialization;
     }
 

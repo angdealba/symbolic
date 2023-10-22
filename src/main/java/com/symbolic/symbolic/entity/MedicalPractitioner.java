@@ -20,10 +20,10 @@ public class MedicalPractitioner {
     @GeneratedValue
     private Long id;
 
-    @Column(name = "longitude")
-    private Double longitude;
     @Column(name = "latitude")
     private Double latitude;
+    @Column(name = "longitude")
+    private Double longitude;
     @Column(name = "specialization")
     private String specialization;
     @Column(name = "consultationCost")
@@ -58,15 +58,15 @@ public class MedicalPractitioner {
 
     /**
      * A constructor for the MedicalPractitioner data model.
-     * @param longitude a double value for the longitude of the practitioner
      * @param latitude a double value for the latitude of the practitioner
+     * @param longitude a double value for the longitude of the practitioner
      * @param specialization a string value representing the practitioner's specialization
      * @param consultationCost an integer value representing the cost of a consultation with the practitioner
      * @param yearsExperience an integer value representing the number of years experience the practitioner has
      */
-    public MedicalPractitioner(Double longitude, Double latitude, String specialization, Integer consultationCost, Integer yearsExperience) {
-        this.longitude = longitude;
+    public MedicalPractitioner(Double latitude, Double longitude, String specialization, Integer consultationCost, Integer yearsExperience) {
         this.latitude = latitude;
+        this.longitude = longitude;
         this.specialization = specialization;
         this.consultationCost = consultationCost;
         this.yearsExperience = yearsExperience;
