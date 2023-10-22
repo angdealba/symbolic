@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A data model for a medical patient, representing their vaccine history, allergy diagnoses, and accommodations.
