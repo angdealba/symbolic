@@ -1,5 +1,6 @@
 package com.symbolic.symbolic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +24,17 @@ public class Patient {
     private String allergies;
     @Column(name = "accommodations")
     private String accommodations;
+
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "patients"
+    )
+    @JsonIgnore
+    private Set<MedicalPractitioner> practitioners;
 
     /**
      * A constructor for the Patient data model.
@@ -62,6 +74,14 @@ public class Patient {
 
     public void setAccommodations(String accommodations) {
         this.accommodations = accommodations;
+    }
+
+    public Set<MedicalPractitioner> getPractitioners() {
+        return practitioners;
+    }
+
+    public void setPractitioners(Set<MedicalPractitioner> practitioners) {
+        this.practitioners = practitioners;
     }
 
     @Override
