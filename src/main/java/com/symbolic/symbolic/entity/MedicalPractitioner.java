@@ -30,9 +30,15 @@ public class MedicalPractitioner {
     @Column(name = "yearsExperience")
     private Integer yearsExperience;
 
-    @ManyToMany
+    @ManyToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
     @JoinTable(
-            name = "patients_practitioners",
+            name = "practitioner_patients",
             joinColumns = @JoinColumn(name = "practitioner_id"),
             inverseJoinColumns = @JoinColumn(name = "patient_id")
     )
@@ -96,6 +102,19 @@ public class MedicalPractitioner {
 
     public void setYearsExperience(Integer yearsExperience) {
         this.yearsExperience = yearsExperience;
+    }
+
+    public void addPatient(Patient patient) {
+        this.patients.add(patient);
+        patient.getPractitioners().add(this);
+    }
+
+    public void removePatientById(Long patientId) {
+        Patient patient = this.patients.stream().filter(p -> Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
+        if (patient != null) {
+            this.patients.remove(patient);
+            patient.getPractitioners().remove(this);
+        }
     }
 
     @Override
