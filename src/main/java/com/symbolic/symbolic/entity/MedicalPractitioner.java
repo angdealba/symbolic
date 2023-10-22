@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A data model for a medical practitioner, representing their location, specialization, consultation cost, and years experience.
@@ -28,6 +29,14 @@ public class MedicalPractitioner {
 
     @Column(name = "yearsExperience")
     private Integer yearsExperience;
+
+    @ManyToMany
+    @JoinTable(
+            name = "patients_practitioners",
+            joinColumns = @JoinColumn(name = "practitioner_id"),
+            inverseJoinColumns = @JoinColumn(name = "patient_id")
+    )
+    private Set<Patient> patients;
 
     /**
      * A constructor for the MedicalPractitioner data model.
