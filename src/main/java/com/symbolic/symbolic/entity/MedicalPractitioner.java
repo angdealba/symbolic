@@ -2,7 +2,7 @@ package com.symbolic.symbolic.entity;
 
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
-import org.springframework.data.geo.Point;
+import org.locationtech.jts.geom.Point;
 
 import java.util.Objects;
 
@@ -17,40 +17,52 @@ public class MedicalPractitioner {
     @GeneratedValue
     private Long id;
 
-    @Column(name = "location")
-    private Point location;
+    @Column(name = "longitude")
+    private Double longitude;
+    @Column(name = "latitude")
+    private Double latitude;
     @Column(name = "specialization")
     private String specialization;
-    @Column(name = "consultation_cost")
-    private Integer consultation_cost;
+    @Column(name = "consultationCost")
+    private Integer consultationCost;
 
-    @Column(name = "years_experience")
-    private Integer years_experience;
+    @Column(name = "yearsExperience")
+    private Integer yearsExperience;
 
     /**
      * A constructor for the MedicalPractitioner data model.
-     * @param location a Point object representing the latitude/longitude coordinates of the practitioner
+     * @param longitude a double value for the longitude of the practitioner
+     * @param latitude a double value for the latitude of the practitioner
      * @param specialization a string value representing the practitioner's specialization
-     * @param consultation_cost an integer value representing the cost of a consultation with the practitioner
-     * @param years_experience an integer value representing the number of years experience the practitioner has
+     * @param consultationCost an integer value representing the cost of a consultation with the practitioner
+     * @param yearsExperience an integer value representing the number of years experience the practitioner has
      */
-    public MedicalPractitioner(Point location, String specialization, Integer consultation_cost, Integer years_experience) {
-        this.location = location;
+    public MedicalPractitioner(Double longitude, Double latitude, String specialization, Integer consultationCost, Integer yearsExperience) {
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.specialization = specialization;
-        this.consultation_cost = consultation_cost;
-        this.years_experience = years_experience;
+        this.consultationCost = consultationCost;
+        this.yearsExperience = yearsExperience;
     }
 
     public Long getId() {
         return id;
     }
 
-    public Point getLocation() {
-        return location;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setLocation(Point location) {
-        this.location = location;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
     public String getSpecialization() {
@@ -61,20 +73,20 @@ public class MedicalPractitioner {
         this.specialization = specialization;
     }
 
-    public Integer getConsultation_cost() {
-        return consultation_cost;
+    public Integer getConsultationCost() {
+        return consultationCost;
     }
 
-    public void setConsultation_cost(Integer consultation_cost) {
-        this.consultation_cost = consultation_cost;
+    public void setConsultationCost(Integer consultationCost) {
+        this.consultationCost = consultationCost;
     }
 
-    public Integer getYears_experience() {
-        return years_experience;
+    public Integer getYearsExperience() {
+        return yearsExperience;
     }
 
-    public void setYears_experience(Integer years_experience) {
-        this.years_experience = years_experience;
+    public void setYearsExperience(Integer yearsExperience) {
+        this.yearsExperience = yearsExperience;
     }
 
     @Override
@@ -82,11 +94,11 @@ public class MedicalPractitioner {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MedicalPractitioner that = (MedicalPractitioner) o;
-        return Objects.equals(id, that.id) && Objects.equals(location, that.location) && Objects.equals(specialization, that.specialization) && Objects.equals(consultation_cost, that.consultation_cost) && Objects.equals(years_experience, that.years_experience);
+        return Objects.equals(id, that.id) && Objects.equals(longitude, that.longitude) && Objects.equals(latitude, that.latitude) && Objects.equals(specialization, that.specialization) && Objects.equals(consultationCost, that.consultationCost) && Objects.equals(yearsExperience, that.yearsExperience);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, location, specialization, consultation_cost, years_experience);
+        return Objects.hash(id, longitude, latitude, specialization, consultationCost, yearsExperience);
     }
 }
