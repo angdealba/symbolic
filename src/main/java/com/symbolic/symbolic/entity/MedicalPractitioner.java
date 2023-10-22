@@ -1,5 +1,6 @@
 package com.symbolic.symbolic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
@@ -44,6 +45,16 @@ public class MedicalPractitioner {
             inverseJoinColumns = @JoinColumn(name = "patient_id")
     )
     private Set<Patient> patients = new HashSet<Patient>();
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private Facility facility;
 
     /**
      * A constructor for the MedicalPractitioner data model.
@@ -118,16 +129,24 @@ public class MedicalPractitioner {
         }
     }
 
+    public Facility getFacility() {
+        return facility;
+    }
+
+    public void setFacility(Facility facility) {
+        this.facility = facility;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MedicalPractitioner that = (MedicalPractitioner) o;
-        return Objects.equals(id, that.id) && Objects.equals(longitude, that.longitude) && Objects.equals(latitude, that.latitude) && Objects.equals(specialization, that.specialization) && Objects.equals(consultationCost, that.consultationCost) && Objects.equals(yearsExperience, that.yearsExperience) && Objects.equals(patients, that.patients);
+        return Objects.equals(id, that.id) && Objects.equals(longitude, that.longitude) && Objects.equals(latitude, that.latitude) && Objects.equals(specialization, that.specialization) && Objects.equals(consultationCost, that.consultationCost) && Objects.equals(yearsExperience, that.yearsExperience);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, longitude, latitude, specialization, consultationCost, yearsExperience, patients);
+        return Objects.hash(id, longitude, latitude, specialization, consultationCost, yearsExperience);
     }
 }

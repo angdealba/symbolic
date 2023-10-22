@@ -35,7 +35,18 @@ public class Patient {
             mappedBy = "patients"
     )
     @JsonIgnore
-    private Set<MedicalPractitioner> practitioners = new HashSet<MedicalPractitioner>();
+    private Set<MedicalPractitioner> practitioners = new HashSet<>();
+
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "patients"
+    )
+    @JsonIgnore
+    private Set<Facility> facilities = new HashSet<>();
 
     /**
      * A constructor for the Patient data model.
@@ -83,6 +94,14 @@ public class Patient {
 
     public void setPractitioners(Set<MedicalPractitioner> practitioners) {
         this.practitioners = practitioners;
+    }
+
+    public Set<Facility> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(Set<Facility> facilities) {
+        this.facilities = facilities;
     }
 
     @Override

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface MedicalPractitionerRepository extends JpaRepository<MedicalPractitioner, Long> {
     List<MedicalPractitioner> findMedicalPractitionerByPatientsId(Long patientId);
+    List<MedicalPractitioner> findMedicalPractitionerByFacilityId(Long facilityId);
 }

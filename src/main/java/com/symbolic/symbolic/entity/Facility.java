@@ -3,6 +3,10 @@ package com.symbolic.symbolic.entity;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 /**
  * A data model for a medical facility, representing their location and specialization.
  */
@@ -20,6 +24,34 @@ public class Facility {
     private Double latitude;
     @Column(name = "specialization")
     private String specialization;
+
+    @ManyToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "facility_patients",
+            joinColumns = @JoinColumn(name = "facility_id"),
+            inverseJoinColumns = @JoinColumn(name = "patient_id")
+    )
+    private Set<Patient> patients = new HashSet<>();
+
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "facility_practitioners",
+            joinColumns = @JoinColumn(name = "facility_id"),
+            inverseJoinColumns = @JoinColumn(name = "practitioner_id")
+    )
+    private Set<MedicalPractitioner> practitioners = new HashSet<>();
 
     /**
      * A constructor for the Facility data model.
@@ -59,5 +91,31 @@ public class Facility {
 
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
+    }
+
+    public void addPatient(Patient patient) {
+        this.patients.add(patient);
+        patient.getFacilities().add(this);
+    }
+
+    public void removePatientById(Long patientId) {
+        Patient patient = this.patients.stream().filter(p -> Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
+        if (patient != null) {
+            this.patients.remove(patient);
+            patient.getFacilities().remove(this);
+        }
+    }
+
+    public void addPractitioner(MedicalPractitioner practitioner) {
+        this.practitioners.add(practitioner);
+        practitioner.setFacility(this);
+    }
+
+    public void removePractitionerById(Long practitionerId) {
+        MedicalPractitioner practitioner = this.practitioners.stream().filter(p -> Objects.equals(p.getId(), practitionerId)).findFirst().orElse(null);
+        if (practitioner != null) {
+            this.practitioners.remove(practitioner);
+            practitioner.setFacility(null);
+        }
     }
 }
