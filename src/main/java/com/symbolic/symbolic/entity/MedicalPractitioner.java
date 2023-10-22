@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ public class MedicalPractitioner {
             joinColumns = @JoinColumn(name = "practitioner_id"),
             inverseJoinColumns = @JoinColumn(name = "patient_id")
     )
-    private Set<Patient> patients;
+    private Set<Patient> patients = new HashSet<Patient>();
 
     /**
      * A constructor for the MedicalPractitioner data model.
@@ -122,11 +123,11 @@ public class MedicalPractitioner {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MedicalPractitioner that = (MedicalPractitioner) o;
-        return Objects.equals(id, that.id) && Objects.equals(longitude, that.longitude) && Objects.equals(latitude, that.latitude) && Objects.equals(specialization, that.specialization) && Objects.equals(consultationCost, that.consultationCost) && Objects.equals(yearsExperience, that.yearsExperience);
+        return Objects.equals(id, that.id) && Objects.equals(longitude, that.longitude) && Objects.equals(latitude, that.latitude) && Objects.equals(specialization, that.specialization) && Objects.equals(consultationCost, that.consultationCost) && Objects.equals(yearsExperience, that.yearsExperience) && Objects.equals(patients, that.patients);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, longitude, latitude, specialization, consultationCost, yearsExperience);
+        return Objects.hash(id, longitude, latitude, specialization, consultationCost, yearsExperience, patients);
     }
 }
