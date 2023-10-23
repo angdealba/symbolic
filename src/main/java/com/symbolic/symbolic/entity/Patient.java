@@ -2,6 +2,7 @@ package com.symbolic.symbolic.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jdk.jshell.Diag;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
@@ -85,6 +86,20 @@ public class Patient {
             inverseJoinColumns = @JoinColumn(name = "prescription_id")
     )
     private Set<Prescription> prescriptions = new HashSet<>();
+
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "patient_diagnoses",
+            joinColumns = @JoinColumn(name = "patient_id"),
+            inverseJoinColumns = @JoinColumn(name = "diagnosis_id")
+    )
+    private Set<Diagnosis> diagnoses = new HashSet<>();
 
     /**
      * A constructor for the Patient data model.
@@ -173,6 +188,19 @@ public class Patient {
         if (prescription != null) {
             this.prescriptions.remove(prescription);
             prescription.setPatient(null);
+        }
+    }
+
+    public void addDiagnosis(Diagnosis diagnosis) {
+        this.diagnoses.add(diagnosis);
+        diagnosis.setPatient(this);
+    }
+
+    public void removeDiagnosisById(Long diagnosisId) {
+        Diagnosis diagnosis = this.diagnoses.stream().filter(p -> Objects.equals(p.getId(), diagnosisId)).findFirst().orElse(null);
+        if (diagnosis != null) {
+            this.diagnoses.remove(diagnosis);
+            diagnosis.setPatient(null);
         }
     }
 

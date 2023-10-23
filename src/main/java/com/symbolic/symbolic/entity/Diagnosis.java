@@ -1,6 +1,7 @@
 package com.symbolic.symbolic.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
@@ -28,6 +29,26 @@ public class Diagnosis {
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date date;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private Patient patient;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private MedicalPractitioner practitioner;
 
     /**
      * A constructor for the Diagnosis data model.
@@ -67,6 +88,22 @@ public class Diagnosis {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public MedicalPractitioner getPractitioner() {
+        return practitioner;
+    }
+
+    public void setPractitioner(MedicalPractitioner practitioner) {
+        this.practitioner = practitioner;
     }
 
     @Override
