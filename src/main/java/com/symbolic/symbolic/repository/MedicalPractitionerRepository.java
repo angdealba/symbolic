@@ -12,4 +12,5 @@ public interface MedicalPractitionerRepository extends JpaRepository<MedicalPrac
     List<MedicalPractitioner> findMedicalPractitionerByFacilityId(Long facilityId);
     MedicalPractitioner findMedicalPractitionerByAppointmentsId(Long appointmentId);
     MedicalPractitioner findMedicalPractitionerByPrescriptionsId(Long prescriptionId);
+    MedicalPractitioner findMedicalPractitionerByDiagnosesId(Long diagnosisId);
 }

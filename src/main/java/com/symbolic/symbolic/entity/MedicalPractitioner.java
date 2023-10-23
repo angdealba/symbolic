@@ -84,6 +84,20 @@ public class MedicalPractitioner {
     )
     private Set<Prescription> prescriptions = new HashSet<>();
 
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "practitioner_diagnoses",
+            joinColumns = @JoinColumn(name = "practitioner_id"),
+            inverseJoinColumns = @JoinColumn(name = "diagnoses_id")
+    )
+    private Set<Diagnosis> diagnoses = new HashSet<>();
+
     /**
      * A constructor for the MedicalPractitioner data model.
      * @param latitude a double value for the latitude of the practitioner
@@ -188,6 +202,19 @@ public class MedicalPractitioner {
         if (prescription != null) {
             this.prescriptions.remove(prescription);
             prescription.setPractitioner(null);
+        }
+    }
+
+    public void addDiagnosis(Diagnosis diagnosis) {
+        this.diagnoses.add(diagnosis);
+        diagnosis.setPractitioner(this);
+    }
+
+    public void removeDiagnosisById(Long diagnosisId) {
+        Diagnosis diagnosis = this.diagnoses.stream().filter(p -> Objects.equals(p.getId(), diagnosisId)).findFirst().orElse(null);
+        if (diagnosis != null) {
+            this.diagnoses.remove(diagnosis);
+            diagnosis.setPractitioner(null);
         }
     }
 
