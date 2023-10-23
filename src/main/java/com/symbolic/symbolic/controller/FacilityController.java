@@ -1,14 +1,17 @@
 package com.symbolic.symbolic.controller;
 
+import com.symbolic.symbolic.entity.Appointment;
 import com.symbolic.symbolic.entity.Facility;
 import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
+import com.symbolic.symbolic.repository.AppointmentRepository;
 import com.symbolic.symbolic.repository.FacilityRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -24,6 +27,8 @@ public class FacilityController {
     MedicalPractitionerRepository practitionerRepository;
     @Autowired
     PatientRepository patientRepository;
+    @Autowired
+    AppointmentRepository appointmentRepository;
 
     @GetMapping("/facilities")
     public ResponseEntity<?> getAllFacilities() {
@@ -236,6 +241,87 @@ public class FacilityController {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
                 String errorMessage = "No medical practitioner found with id " + practitionerId;
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            String errorMessage = "No facility found with id " + facilityId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/facility/appointments")
+    public ResponseEntity<?> getAllAppointmentsByFacilityId(@RequestParam("facilityId") Long facilityId) {
+        if (!facilityRepository.existsById(facilityId)) {
+            String errorMessage = "No facility found with id " + facilityId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+
+        List<Appointment> appointments = appointmentRepository.findAppointmentsByFacilityId(facilityId);
+        return new ResponseEntity<>(appointments, HttpStatus.OK);
+    }
+
+    @GetMapping("/appointment/facility")
+    public ResponseEntity<?> getFacilityByAppointmentId(@RequestParam("appointmentId") Long appointmentId) {
+        if (!appointmentRepository.existsById(appointmentId)) {
+            String errorMessage = "No appointment found with id " + appointmentId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+
+        Facility facility = facilityRepository.findFacilityByAppointmentsId(appointmentId);
+        return new ResponseEntity<>(facility, HttpStatus.OK);
+    }
+
+    @PostMapping("/facility/appointment")
+    public ResponseEntity<?> addAppointmentToFacility(@RequestParam("facilityId") Long facilityId,
+                                                     @RequestParam("appointmentId") Long appointmentId) {
+        Optional<Facility> facilityData = facilityRepository.findById(facilityId);
+
+        if (facilityData.isPresent()) {
+            Facility facility = facilityData.get();
+
+            Optional<Appointment> appointmentData = appointmentRepository.findById(appointmentId);
+
+            if (appointmentData.isPresent()) {
+                Appointment appointment = appointmentData.get();
+
+                Facility oldFacility = facilityRepository.findFacilityByAppointmentsId(appointmentId);
+
+                if (oldFacility != null) {
+                    oldFacility.removeAppointmentById(appointmentId);
+                    facilityRepository.save(oldFacility);
+
+                    facility.addAppointment(appointment);
+                    facilityRepository.save(facility);
+                    return new ResponseEntity<>(appointment, HttpStatus.OK);
+                } else {
+                    facility.addAppointment(appointment);
+                    facilityRepository.save(facility);
+                    return new ResponseEntity<>(appointment, HttpStatus.OK);
+                }
+            } else {
+                String errorMessage = "No appointment found with id " + appointmentId;
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            String errorMessage = "No facility found with id " + facilityId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/facility/appointment")
+    public ResponseEntity<?> removeAppointmentFromFacility(@RequestParam("facilityId") Long facilityId,
+                                                               @RequestParam("appointmentId") Long appointmentId) {
+        Optional<Facility> facilityData = facilityRepository.findById(facilityId);
+
+        if (facilityData.isPresent()) {
+            Facility facility = facilityData.get();
+
+            if (appointmentRepository.existsById(appointmentId)) {
+                facility.removeAppointmentById(appointmentId);
+                facilityRepository.save(facility);
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                String errorMessage = "No appointment found with id " + appointmentId;
                 return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
         } else {

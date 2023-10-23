@@ -1,5 +1,6 @@
 package com.symbolic.symbolic.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ public class Appointment {
 
     @Column(name = "dateTime")
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm")
     private Date dateTime;
 
     @Column(name = "cost")

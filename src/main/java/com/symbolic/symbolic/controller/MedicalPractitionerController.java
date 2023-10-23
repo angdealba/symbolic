@@ -1,7 +1,10 @@
 package com.symbolic.symbolic.controller;
 
+import com.symbolic.symbolic.entity.Appointment;
+import com.symbolic.symbolic.entity.InsurancePolicy;
 import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
+import com.symbolic.symbolic.repository.AppointmentRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +21,10 @@ import java.util.Optional;
 public class MedicalPractitionerController {
     @Autowired
     MedicalPractitionerRepository practitionerRepository;
-
     @Autowired
     PatientRepository patientRepository;
+    @Autowired
+    AppointmentRepository appointmentRepository;
 
     @GetMapping("/practitioners")
     public ResponseEntity<?> getAllPractitioners() {
@@ -189,6 +193,87 @@ public class MedicalPractitionerController {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
                 String errorMessage = "No patient found with id " + patientId;
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            String errorMessage = "No practitioner found with id " + practitionerId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/practitioner/appointments")
+    public ResponseEntity<?> getAllAppointmentsByPractitionerId(@RequestParam("practitionerId") Long practitionerId) {
+        if (!practitionerRepository.existsById(practitionerId)) {
+            String errorMessage = "No practitioner found with id " + practitionerId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+
+        List<Appointment> appointments = appointmentRepository.findAppointmentsByPractitionerId(practitionerId);
+        return new ResponseEntity<>(appointments, HttpStatus.OK);
+    }
+
+    @GetMapping("/appointment/practitioner")
+    public ResponseEntity<?> getPractitionerByAppointmentId(@RequestParam("appointmentId") Long appointmentId) {
+        if (!appointmentRepository.existsById(appointmentId)) {
+            String errorMessage = "No appointment found with id " + appointmentId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+
+        MedicalPractitioner practitioner = practitionerRepository.findMedicalPractitionerByAppointmentsId(appointmentId);
+        return new ResponseEntity<>(practitioner, HttpStatus.OK);
+    }
+
+    @PostMapping("/practitioner/appointment")
+    public ResponseEntity<?> addAppointmentToPractitioner(@RequestParam("practitionerId") Long practitionerId,
+                                                @RequestParam("appointmentId") Long appointmentId) {
+        Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(practitionerId);
+
+        if (practitionerData.isPresent()) {
+            MedicalPractitioner practitioner = practitionerData.get();
+
+            Optional<Appointment> appointmentData = appointmentRepository.findById(appointmentId);
+
+            if (appointmentData.isPresent()) {
+                Appointment appointment = appointmentData.get();
+
+                MedicalPractitioner oldPractitioner = practitionerRepository.findMedicalPractitionerByAppointmentsId(appointmentId);
+
+                if (oldPractitioner != null) {
+                    oldPractitioner.removeAppointmentById(appointmentId);
+                    practitionerRepository.save(oldPractitioner);
+
+                    practitioner.addAppointment(appointment);
+                    practitionerRepository.save(practitioner);
+                    return new ResponseEntity<>(appointment, HttpStatus.OK);
+                } else {
+                    practitioner.addAppointment(appointment);
+                    practitionerRepository.save(practitioner);
+                    return new ResponseEntity<>(appointment, HttpStatus.OK);
+                }
+            } else {
+                String errorMessage = "No appointment found with id " + appointmentId;
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            String errorMessage = "No practitioner found with id " + practitionerId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/practitioner/appointment")
+    public ResponseEntity<?> removeAppointmentFromPractitioner(@RequestParam("practitionerId") Long practitionerId,
+                                                     @RequestParam("appointmentId") Long appointmentId) {
+        Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(practitionerId);
+
+        if (practitionerData.isPresent()) {
+            MedicalPractitioner practitioner = practitionerData.get();
+
+            if (appointmentRepository.existsById(appointmentId)) {
+                practitioner.removeAppointmentById(appointmentId);
+                practitionerRepository.save(practitioner);
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                String errorMessage = "No appointment found with id " + appointmentId;
                 return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
         } else {
