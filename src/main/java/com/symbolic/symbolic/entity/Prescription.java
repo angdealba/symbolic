@@ -1,5 +1,6 @@
 package com.symbolic.symbolic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
@@ -27,6 +28,26 @@ public class Prescription {
 
     @Column(name = "instructions")
     private String instructions;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private Patient patient;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private MedicalPractitioner practitioner;
 
     /**
      * A constructor for the Prescription data model.
@@ -76,6 +97,22 @@ public class Prescription {
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public MedicalPractitioner getPractitioner() {
+        return practitioner;
+    }
+
+    public void setPractitioner(MedicalPractitioner practitioner) {
+        this.practitioner = practitioner;
     }
 
     @Override
