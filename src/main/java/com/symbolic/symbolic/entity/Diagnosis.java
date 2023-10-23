@@ -19,13 +19,13 @@ public class Diagnosis {
     @GeneratedValue
     private Long id;
 
-    @Column(name = "condition")
+    @Column(name = "cond")
     private String condition;
 
     @Column(name = "treatmentInfo")
     private String treatmentInfo;
 
-    @Column(name = "dateTime")
+    @Column(name = "date")
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date date;
