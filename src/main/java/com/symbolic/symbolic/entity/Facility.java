@@ -53,6 +53,20 @@ public class Facility {
     )
     private Set<MedicalPractitioner> practitioners = new HashSet<>();
 
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "facility_appointments",
+            joinColumns = @JoinColumn(name = "facility_id"),
+            inverseJoinColumns = @JoinColumn(name = "appointment_id")
+    )
+    private Set<Appointment> appointments = new HashSet<>();
+
     /**
      * A constructor for the Facility data model.
      * @param longitude a double value for the longitude of the facility
@@ -116,6 +130,19 @@ public class Facility {
         if (practitioner != null) {
             this.practitioners.remove(practitioner);
             practitioner.setFacility(null);
+        }
+    }
+
+    public void addAppointment(Appointment appointment) {
+        this.appointments.add(appointment);
+        appointment.setFacility(this);
+    }
+
+    public void removeAppointmentById(Long appointmentId) {
+        Appointment appointment = this.appointments.stream().filter(p -> Objects.equals(p.getId(), appointmentId)).findFirst().orElse(null);
+        if (appointment != null) {
+            this.appointments.remove(appointment);
+            appointment.setFacility(null);
         }
     }
 }
