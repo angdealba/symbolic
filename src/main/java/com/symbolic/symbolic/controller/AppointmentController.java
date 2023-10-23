@@ -70,7 +70,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/appointment")
-    public ResponseEntity<?> deleteFacility(@RequestParam("id") Long id) {
+    public ResponseEntity<?> deleteAppointment(@RequestParam("id") Long id) {
         if (appointmentRepository.existsById(id)) {
             appointmentRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -81,7 +81,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/appointments")
-    public ResponseEntity<?> deleteAllFacilities() {
+    public ResponseEntity<?> deleteAllAppointments() {
         appointmentRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
