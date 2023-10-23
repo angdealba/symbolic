@@ -48,6 +48,16 @@ public class Patient {
     @JsonIgnore
     private Set<Facility> facilities = new HashSet<>();
 
+    @ManyToOne(
+            fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JsonIgnore
+    private InsurancePolicy insurancePolicy;
+
     /**
      * A constructor for the Patient data model.
      * @param vaccinations a string value representing the vaccinations the patient has received
@@ -102,6 +112,14 @@ public class Patient {
 
     public void setFacilities(Set<Facility> facilities) {
         this.facilities = facilities;
+    }
+
+    public InsurancePolicy getInsurancePolicy() {
+        return insurancePolicy;
+    }
+
+    public void setInsurancePolicy(InsurancePolicy insurancePolicy) {
+        this.insurancePolicy = insurancePolicy;
     }
 
     @Override
