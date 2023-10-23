@@ -127,7 +127,7 @@ public class FacilityController {
         return new ResponseEntity<>(facilities, HttpStatus.OK);
     }
 
-    @GetMapping("/practitioner/facilities")
+    @GetMapping("/practitioner/facility")
     public ResponseEntity<?> getFacilityByPractitionerId(@RequestParam("patientId") Long practitionerId) {
         if (!practitionerRepository.existsById(practitionerId)) {
             String errorMessage = "No medical practitioner found with id " + practitionerId;
@@ -231,9 +231,6 @@ public class FacilityController {
             Facility facility = facilityData.get();
 
             if (practitionerRepository.existsById(practitionerId)) {
-
-
-
                 facility.removePractitionerById(practitionerId);
                 facilityRepository.save(facility);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
