@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * A data model for an insurance policy, representing its premium cost.
+ */
 @Entity
 @Table(name = "insurance_policies")
 @NoArgsConstructor
