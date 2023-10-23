@@ -72,6 +72,20 @@ public class Patient {
     )
     private Set<Appointment> appointments = new HashSet<>();
 
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "patient_prescriptions",
+            joinColumns = @JoinColumn(name = "patient_id"),
+            inverseJoinColumns = @JoinColumn(name = "prescription_id")
+    )
+    private Set<Prescription> prescriptions = new HashSet<>();
+
     /**
      * A constructor for the Patient data model.
      * @param vaccinations a string value representing the vaccinations the patient has received
@@ -146,6 +160,19 @@ public class Patient {
         if (appointment != null) {
             this.appointments.remove(appointment);
             appointment.setPatient(null);
+        }
+    }
+
+    public void addPrescription(Prescription prescription) {
+        this.prescriptions.add(prescription);
+        prescription.setPatient(this);
+    }
+
+    public void removePrescriptionById(Long prescriptionId) {
+        Prescription prescription = this.prescriptions.stream().filter(p -> Objects.equals(p.getId(), prescriptionId)).findFirst().orElse(null);
+        if (prescription != null) {
+            this.prescriptions.remove(prescription);
+            prescription.setPatient(null);
         }
     }
 
