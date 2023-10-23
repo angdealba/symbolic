@@ -58,6 +58,20 @@ public class Patient {
     @JsonIgnore
     private InsurancePolicy insurancePolicy;
 
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "patient_appointments",
+            joinColumns = @JoinColumn(name = "patient_id"),
+            inverseJoinColumns = @JoinColumn(name = "appointment_id")
+    )
+    private Set<Appointment> appointments = new HashSet<>();
+
     /**
      * A constructor for the Patient data model.
      * @param vaccinations a string value representing the vaccinations the patient has received
@@ -120,6 +134,19 @@ public class Patient {
 
     public void setInsurancePolicy(InsurancePolicy insurancePolicy) {
         this.insurancePolicy = insurancePolicy;
+    }
+
+    public void addAppointment(Appointment appointment) {
+        this.appointments.add(appointment);
+        appointment.setPatient(this);
+    }
+
+    public void removeAppointmentById(Long appointmentId) {
+        Appointment appointment = this.appointments.stream().filter(p -> Objects.equals(p.getId(), appointmentId)).findFirst().orElse(null);
+        if (appointment != null) {
+            this.appointments.remove(appointment);
+            appointment.setPatient(null);
+        }
     }
 
     @Override

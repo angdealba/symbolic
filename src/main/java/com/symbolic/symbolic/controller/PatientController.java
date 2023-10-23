@@ -1,6 +1,9 @@
 package com.symbolic.symbolic.controller;
 
+import com.symbolic.symbolic.entity.Appointment;
+import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
+import com.symbolic.symbolic.repository.AppointmentRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,8 @@ import java.util.Optional;
 public class PatientController {
     @Autowired
     PatientRepository patientRepository;
+    @Autowired
+    AppointmentRepository appointmentRepository;
 
     @GetMapping("/patients")
     public ResponseEntity<?> getAllPatients() {
@@ -83,5 +88,86 @@ public class PatientController {
     public ResponseEntity<?> deleteAllPatients() {
         patientRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/patient/appointments")
+    public ResponseEntity<?> getAllAppointmentsByPatientId(@RequestParam("patientId") Long patientId) {
+        if (!patientRepository.existsById(patientId)) {
+            String errorMessage = "No patient found with id " + patientId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+
+        List<Appointment> appointments = appointmentRepository.findAppointmentsByPatientId(patientId);
+        return new ResponseEntity<>(appointments, HttpStatus.OK);
+    }
+
+    @GetMapping("/appointment/patient")
+    public ResponseEntity<?> getPatientByAppointmentId(@RequestParam("appointmentId") Long appointmentId) {
+        if (!appointmentRepository.existsById(appointmentId)) {
+            String errorMessage = "No appointment found with id " + appointmentId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+
+        Patient patient = patientRepository.findPatientByAppointmentsId(appointmentId);
+        return new ResponseEntity<>(patient, HttpStatus.OK);
+    }
+
+    @PostMapping("/patient/appointment")
+    public ResponseEntity<?> addAppointmentToPatient(@RequestParam("patientId") Long patientId,
+                                                          @RequestParam("appointmentId") Long appointmentId) {
+        Optional<Patient> patientData = patientRepository.findById(patientId);
+
+        if (patientData.isPresent()) {
+            Patient patient = patientData.get();
+
+            Optional<Appointment> appointmentData = appointmentRepository.findById(appointmentId);
+
+            if (appointmentData.isPresent()) {
+                Appointment appointment = appointmentData.get();
+
+                Patient oldPatient = patientRepository.findPatientByAppointmentsId(appointmentId);
+
+                if (oldPatient != null) {
+                    oldPatient.removeAppointmentById(appointmentId);
+                    patientRepository.save(oldPatient);
+
+                    patient.addAppointment(appointment);
+                    patientRepository.save(patient);
+                    return new ResponseEntity<>(appointment, HttpStatus.OK);
+                } else {
+                    patient.addAppointment(appointment);
+                    patientRepository.save(patient);
+                    return new ResponseEntity<>(appointment, HttpStatus.OK);
+                }
+            } else {
+                String errorMessage = "No appointment found with id " + appointmentId;
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            String errorMessage = "No patient found with id " + patientId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/patient/appointment")
+    public ResponseEntity<?> removeAppointmentFromPractitioner(@RequestParam("patientId") Long patientId,
+                                                               @RequestParam("appointmentId") Long appointmentId) {
+        Optional<Patient> patientData = patientRepository.findById(patientId);
+
+        if (patientData.isPresent()) {
+            Patient patient = patientData.get();
+
+            if (appointmentRepository.existsById(appointmentId)) {
+                patient.removeAppointmentById(appointmentId);
+                patientRepository.save(patient);
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                String errorMessage = "No appointment found with id " + appointmentId;
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            String errorMessage = "No patient found with id " + patientId;
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
     }
 }

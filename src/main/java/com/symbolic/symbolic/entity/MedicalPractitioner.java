@@ -56,6 +56,20 @@ public class MedicalPractitioner {
     @JsonIgnore
     private Facility facility;
 
+    @OneToMany(
+            fetch=FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
+    @JoinTable(
+            name = "practitioner_appointments",
+            joinColumns = @JoinColumn(name = "practitioner_id"),
+            inverseJoinColumns = @JoinColumn(name = "appointment_id")
+    )
+    private Set<Appointment> appointments = new HashSet<>();
+
     /**
      * A constructor for the MedicalPractitioner data model.
      * @param latitude a double value for the latitude of the practitioner
@@ -135,6 +149,19 @@ public class MedicalPractitioner {
 
     public void setFacility(Facility facility) {
         this.facility = facility;
+    }
+
+    public void addAppointment(Appointment appointment) {
+        this.appointments.add(appointment);
+        appointment.setPractitioner(this);
+    }
+
+    public void removeAppointmentById(Long appointmentId) {
+        Appointment appointment = this.appointments.stream().filter(p -> Objects.equals(p.getId(), appointmentId)).findFirst().orElse(null);
+        if (appointment != null) {
+            this.appointments.remove(appointment);
+            appointment.setPractitioner(null);
+        }
     }
 
     @Override
