@@ -3,8 +3,8 @@ package com.symbolic.symbolic.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
-import org.locationtech.jts.geom.Point;
 
+import java.awt.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -132,6 +132,17 @@ public class MedicalPractitioner {
 
     public void setLatitude(Double latitude) {
         this.latitude = latitude;
+    }
+
+    public Point getLocation() {
+        Point coordinates = new Point();
+        coordinates.setLocation(this.latitude, this.longitude);
+        return coordinates;
+    }
+
+    public void setLocation(Point coordinates) {
+        this.latitude = coordinates.getX();
+        this.longitude = coordinates.getY();
     }
 
     public String getSpecialization() {
