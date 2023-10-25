@@ -18,14 +18,54 @@ public class BackgroundCheckController {
     @Autowired
     DiagnosisRepository diagnosisRepository;
 
+    // Run a complete BG check on the requested id
+    @GetMapping("/bgcheck")
+    public ResponseEntity<?> checkBackground(@RequestParam("id") Long id) {
+
+        // Check vaccination records
+        
+
+        // Check allergy records
+
+
+        // Check diagnosis records
+
+
+        // Check insurance records
+
+
+    }
+
+    // Run a BG check for the specified fields
     @GetMapping("/bgcheck")
     public ResponseEntity<?> checkBackground(@RequestParam("id") Long id,
-                                             @RequestParam("vaccination") String vac,
-                                             @RequestParam("allergy") String allergy,
-                                             @RequestParam("diagnosis") String diagnosis,
+                                             @RequestParam("vaccination") String vac) {
+
+
+
+    }
+
+    @GetMapping("/bgcheck")
+    public ResponseEntity<?> checkBackground(@RequestParam("id") Long id,
+                                             @RequestParam("allergy") String allergy) {
+
+
+
+    }
+
+    @GetMapping("/bgcheck")
+    public ResponseEntity<?> checkBackground(@RequestParam("id") Long id,
+                                             @RequestParam("diagnosis") String diagnosis) {
+
+
+
+    }
+
+    @GetMapping("/bgcheck")
+    public ResponseEntity<?> checkBackground(@RequestParam("id") Long id,
                                              @RequestParam("insurance") String ins) {
 
-        
+
 
     }
 }
