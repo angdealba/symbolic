@@ -66,22 +66,188 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - A
 
 #### Practitioner Data Endpoints
-
+- /api/practitioner
+  - GET
+    - A
+  - POST
+    - A
+  - PUT
+    - A
+  - DELETE
+    - A
+- /api/practitioners
+  - GET
+    - A
+  - DELETE
+    - A
+- /api/practitioner/patients
+  - GET
+    - A
+- /api/patient/practitioners
+  - GET
+    - A
+- /api/practitioner/patient
+  - POST
+    - A
+  - DELETE
+    - A
+- /api/practitioner/appointments
+  - GET
+    - A
+- /api/appointment/practitioner
+  - GET
+    - A
+- /api/practitioner/appointment
+  - POST
+    - A
+  - DELETE
+    - A
+- /api/practitioner/prescriptions
+  - GET
+    - A
+- /api/prescription/practitioner
+  - GET
+    - A
+- /api/practitioner/prescription
+  - POST
+    - A
+  - DELETE
+    - A
+- /api/practitioner/diagnoses
+  - GET
+    - A
+- /api/diagnosis/practitioner
+  - GET
+    - A
+- /api/practitioner/diagnosis
+  - POST
+    - A
+  - DELETE
+    - A
 
 #### Facility Data Endpoints
-
+- /api/facility
+  - GET
+    - A
+  - POST
+    - A
+  - PUT
+    - A
+  - DELETE
+    - A
+- /api/facilities
+  - GET
+    - A
+  - DELETE
+    - A
+- /api/facility/patients
+  - GET
+    - A
+- /api/patient/facilities
+  - GET
+    - A
+- /api/facility/patient
+  - POST
+    - A
+  - DELETE
+    - A
+- /api/facility/practitioners
+  - GET
+    - A
+- /api/practitioner/facility
+  - GET
+    - A
+- /api/facility/practitioner
+  - POST
+    - A
+  - DELETE
+    - A
+- /api/facility/appointments
+  - GET
+    - A
+- /api/appointment/facility
+  - GET
+    - A
+- /api/facility/appointment
+  - POST
+    - A
+  - DELETE
+    - A
 
 #### Insurance Data Endpoints
-
+- /api/policy
+  - GET
+    - A
+  - POST
+    - A
+  - PUT
+    - A
+  - DELETE
+    - A
+- /api/policies
+  - GET
+    - A
+  - DELETE
+    - A
+- /api/policy/patients
+  - GET
+    - A
+- /api/patient/policies
+  - GET
+    - A
+- /api/policy/patient
+  - POST
+    - A
+  - DELETE
+    - A
 
 #### Appointment Data Endpoints
-
+- /api/appointment
+  - GET
+    - A
+  - POST
+    - A
+  - PUT
+    - A
+  - DELETE
+    - A
+- /api/appointments
+  - GET
+    - A
+  - DELETE
+    - A
 
 #### Prescription Data Endpoints
-
+- /api/prescription
+  - GET
+    - A
+  - POST
+    - A
+  - PUT
+    - A
+  - DELETE
+    - A
+- /api/prescriptions
+  - GET
+    - A
+  - DELETE
+    - A
 
 #### Diagnosis Data Endpoints
-
+- /api/diagnosis
+  - GET
+    - A
+  - POST
+    - A
+  - PUT
+    - A
+  - DELETE
+    - A
+- /api/diagnoses
+  - GET
+    - A
+  - DELETE
+    - A
 
 ## Testing
 
