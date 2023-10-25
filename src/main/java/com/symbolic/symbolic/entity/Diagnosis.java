@@ -111,11 +111,11 @@ public class Diagnosis {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Diagnosis diagnosis = (Diagnosis) o;
-        return Objects.equals(id, diagnosis.id) && Objects.equals(condition, diagnosis.condition) && Objects.equals(treatmentInfo, diagnosis.treatmentInfo) && Objects.equals(date, diagnosis.date);
+        return Objects.equals(id, diagnosis.id) && Objects.equals(condition, diagnosis.condition) && Objects.equals(treatmentInfo, diagnosis.treatmentInfo) && Objects.equals(date, diagnosis.date) && Objects.equals(patient, diagnosis.patient) && Objects.equals(practitioner, diagnosis.practitioner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, condition, treatmentInfo, date);
+        return Objects.hash(id, condition, treatmentInfo, date, patient, practitioner);
     }
 }

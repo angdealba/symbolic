@@ -112,6 +112,5 @@ public class PrescriptionTest {
         prescription8.setPatient(patient);
         prescription8.setPractitioner(newPractitioner);
         assertNotEquals(prescription, prescription8);
-
     }
 }
