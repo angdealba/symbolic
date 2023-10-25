@@ -13,4 +13,5 @@ public interface MedicalPractitionerRepository extends JpaRepository<MedicalPrac
     MedicalPractitioner findMedicalPractitionerByAppointmentsId(Long appointmentId);
     MedicalPractitioner findMedicalPractitionerByPrescriptionsId(Long prescriptionId);
     MedicalPractitioner findMedicalPractitionerByDiagnosesId(Long diagnosisId);
+    List<MedicalPractitioner> findByLatitudeBetweenAndLongitudeBetween(Double minLatitude, Double minLongitude, Double maxLatitude, Double maxLongitude);
 }
