@@ -2,6 +2,7 @@ package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.entity.*;
 import com.symbolic.symbolic.repository.*;
+import com.symbolic.symbolic.service.MedicalPractitionerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,9 @@ public class MedicalPractitionerController {
     PrescriptionRepository prescriptionRepository;
     @Autowired
     DiagnosisRepository diagnosisRepository;
+
+    @Autowired
+    private MedicalPractitionerService medicalPractitionerService;
 
     @GetMapping("/practitioners")
     public ResponseEntity<?> getAllPractitioners() {
@@ -97,6 +101,19 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/practitioners/search")
+    public ResponseEntity<?> search(
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
+            @RequestParam(required = false) String specialization,
+            @RequestParam(required = false) Integer consultationCost,
+            @RequestParam(required = false) Integer yearsOfExperience
+    ) {
+        return new ResponseEntity<>(
+                medicalPractitionerService
+                        .search(latitude, longitude, specialization, consultationCost, yearsOfExperience), HttpStatus.OK);
+    }
+
     @GetMapping("/practitioner/patients")
     public ResponseEntity<?> getAllPatientsByPractitionerId(@RequestParam("practitionerId") Long practitionerId) {
         if (!practitionerRepository.existsById(practitionerId)) {
@@ -118,39 +135,6 @@ public class MedicalPractitionerController {
         List<MedicalPractitioner> practitioners = practitionerRepository.findMedicalPractitionerByPatientsId(patientId);
         return new ResponseEntity<>(practitioners, HttpStatus.OK);
     }
-
-//    @PostMapping("/practitioner/patient")
-//    public ResponseEntity<?> addPatientToPractitioner(@RequestParam("id") Long practitionerId, @RequestBody Patient patient) {
-//        Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(practitionerId);
-//
-//        if (practitionerData.isPresent()) {
-//            MedicalPractitioner practitioner = practitionerData.get();
-//
-//            long patientId = patient.getId();
-//
-//            if (patientId != 0L) {
-//                Optional<Patient> patientData = patientRepository.findById(patientId);
-//
-//                if (patientData.isPresent()) {
-//                    Patient oldPatient = patientData.get();
-//
-//                    practitioner.addPatient(oldPatient);
-//                    practitionerRepository.save(practitioner);
-//                    return new ResponseEntity<>(oldPatient, HttpStatus.OK);
-//                } else {
-//                    String errorMessage = "No patient found with id " + patientId;
-//                    return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
-//                }
-//            }
-//
-//            practitioner.addPatient(patient);
-//            practitionerRepository.save(practitioner);
-//            return new ResponseEntity<>(patient, HttpStatus.OK);
-//        } else {
-//            String errorMessage = "No practitioner found with id " + practitionerId;
-//            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
-//        }
-//    }
 
     @PostMapping("/practitioner/patient")
     public ResponseEntity<?> addPatientToPractitioner(@RequestParam("practitionerId") Long practitionerId,
