@@ -70,8 +70,8 @@ public class Facility {
 
     /**
      * A constructor for the Facility data model.
-     * @param longitude a double value for the longitude of the facility
      * @param latitude a double value for the latitude of the facility
+     * @param longitude a double value for the longitude of the facility
      * @param specialization a string value representing the specialization at the facility
      */
     public Facility(Double latitude, Double longitude, String specialization) {
