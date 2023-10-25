@@ -68,16 +68,20 @@ public class InsurancePolicy {
         }
     }
 
+    public Set<Patient> getPatients() {
+        return patients;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         InsurancePolicy that = (InsurancePolicy) o;
-        return Objects.equals(id, that.id) && Objects.equals(premiumCost, that.premiumCost);
+        return Objects.equals(id, that.id) && Objects.equals(premiumCost, that.premiumCost) && Objects.equals(patients, that.patients);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, premiumCost);
+        return Objects.hash(id, premiumCost, patients);
     }
 }
