@@ -3,8 +3,8 @@ package com.symbolic.symbolic.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Pair;
 
-import java.awt.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -134,15 +134,13 @@ public class MedicalPractitioner {
         this.latitude = latitude;
     }
 
-    public Point getLocation() {
-        Point coordinates = new Point();
-        coordinates.setLocation(this.latitude, this.longitude);
-        return coordinates;
+    public Pair<Double, Double> getLocation() {
+        return Pair.of(this.latitude, this.longitude);
     }
 
-    public void setLocation(Point coordinates) {
-        this.latitude = coordinates.getX();
-        this.longitude = coordinates.getY();
+    public void setLocation(Pair<Double, Double> coordinates) {
+        this.setLatitude(coordinates.getFirst());
+        this.setLongitude(coordinates.getSecond());
     }
 
     public String getSpecialization() {
@@ -182,6 +180,10 @@ public class MedicalPractitioner {
         }
     }
 
+    public Set<Patient> getPatients() {
+        return patients;
+    }
+
     public Facility getFacility() {
         return facility;
     }
@@ -203,6 +205,10 @@ public class MedicalPractitioner {
         }
     }
 
+    public Set<Appointment> getAppointments() {
+        return appointments;
+    }
+
     public void addPrescription(Prescription prescription) {
         this.prescriptions.add(prescription);
         prescription.setPractitioner(this);
@@ -216,6 +222,10 @@ public class MedicalPractitioner {
         }
     }
 
+    public Set<Prescription> getPrescriptions() {
+        return prescriptions;
+    }
+
     public void addDiagnosis(Diagnosis diagnosis) {
         this.diagnoses.add(diagnosis);
         diagnosis.setPractitioner(this);
@@ -227,6 +237,10 @@ public class MedicalPractitioner {
             this.diagnoses.remove(diagnosis);
             diagnosis.setPractitioner(null);
         }
+    }
+
+    public Set<Diagnosis> getDiagnoses() {
+        return diagnoses;
     }
 
     @Override

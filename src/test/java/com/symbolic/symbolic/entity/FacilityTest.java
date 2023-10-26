@@ -21,6 +21,22 @@ public class FacilityTest {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
+    // Helper method for generating copies of the Facility data to a new object
+    void copyFacilityData(Facility newFacility) {
+        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
+            Patient tempPatient = it.next();
+            newFacility.addPatient(tempPatient);
+        }
+        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
+            MedicalPractitioner tempPractitioner = it.next();
+            newFacility.addPractitioner(tempPractitioner);
+        }
+        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
+            Appointment tempAppointment = it.next();
+            newFacility.addAppointment(tempAppointment);
+        }
+    }
+
     @BeforeEach
     void setup() throws ParseException {
         // Build the first Facility object including linked sets for patient, practitioner, and appointment
@@ -149,23 +165,11 @@ public class FacilityTest {
     void testBasicEquality() {
         // Base cases for testing simple equality
         assertEquals(facility, facility);
-        assertNotEquals(appointments, "Test string");
+        assertNotEquals(facility, "Test string");
 
         // Different objects with same values are equal
         Facility facility2 = new Facility(40.7, 74.0, "Surgery");
-
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility2.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility2.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility2.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility2);
         assertEquals(facility, facility2);
     }
 
@@ -173,50 +177,17 @@ public class FacilityTest {
     void testFieldEquality() {
         // Different latitude values are not equal
         Facility facility3 = new Facility(40.71, 74.0, "Surgery");
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility3.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility3.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility3.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility3);
         assertNotEquals(facility, facility3);
 
         // Different longitude values are not equal
         Facility facility4 = new Facility(40.70, 74.01, "Surgery");
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility4.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility4.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility4.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility4);
         assertNotEquals(facility, facility4);
 
         // Different specialization values are not equal
         Facility facility5 = new Facility(40.70, 74.0, "Optometry");
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility5.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility5.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility5.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility5);
         assertNotEquals(facility, facility5);
     }
 
@@ -224,18 +195,8 @@ public class FacilityTest {
     void testPatientEquality() {
         // Different patients are not equal
         Facility facility6 = new Facility(40.70, 74.0, "Surgery");
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility6.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility6.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility6.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility6);
+
         Patient patient3 = new Patient("Measles", "None", "Deaf");
         facility6.addPatient(patient3);
         assertNotEquals(facility, facility6);
@@ -245,18 +206,8 @@ public class FacilityTest {
     void testPractitionerEquality() {
         // Different practitioners are not equal
         Facility facility7 = new Facility(40.70, 74.0, "Surgery");
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility7.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility7.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility7.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility7);
+
         MedicalPractitioner practitioner3 = new MedicalPractitioner(40.72, 74.02, "Dentistry", 75, 15);
         facility7.addPractitioner(practitioner3);
         assertNotEquals(facility, facility7);
@@ -266,18 +217,8 @@ public class FacilityTest {
     void testAppointmentEquality() throws ParseException {
         // Different appointments are not equal
         Facility facility8 = new Facility(40.70, 74.0, "Surgery");
-        for (Iterator<Patient> it = patients.iterator(); it.hasNext(); ) {
-            Patient tempPatient = it.next();
-            facility8.addPatient(tempPatient);
-        }
-        for (Iterator<MedicalPractitioner> it = practitioners.iterator(); it.hasNext(); ) {
-            MedicalPractitioner tempPractitioner = it.next();
-            facility8.addPractitioner(tempPractitioner);
-        }
-        for (Iterator<Appointment> it = appointments.iterator(); it.hasNext(); ) {
-            Appointment tempAppointment = it.next();
-            facility8.addAppointment(tempAppointment);
-        }
+        copyFacilityData(facility8);
+
         Date date3 = formatter.parse("2023-10-22 07:15");
         Appointment appointment3 = new Appointment(date3, 50);
         facility8.addAppointment(appointment3);
