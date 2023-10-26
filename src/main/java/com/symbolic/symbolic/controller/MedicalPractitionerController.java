@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -25,6 +26,8 @@ public class MedicalPractitionerController {
     PrescriptionRepository prescriptionRepository;
     @Autowired
     DiagnosisRepository diagnosisRepository;
+    @Autowired
+    FacilityRepository facilityRepository;
 
     @Autowired
     private MedicalPractitionerService medicalPractitionerService;
@@ -86,7 +89,41 @@ public class MedicalPractitionerController {
 
     @DeleteMapping("/practitioner")
     public ResponseEntity<?> deletePractitioner(@RequestParam("id") Long id) {
-        if (practitionerRepository.existsById(id)) {
+        Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(id);
+
+        if (practitionerData.isPresent()) {
+            MedicalPractitioner practitioner = practitionerData.get();
+
+            Set<Patient> patients = practitioner.getPatients();
+            for (Patient patient : patients) {
+                patient.removeFacilityById(id);
+                patientRepository.save(patient);
+            }
+
+            Facility facility = practitioner.getFacility();
+            if (facility != null) {
+                facility.removePractitionerById(id);
+                facilityRepository.save(facility);
+            }
+
+            Set<Appointment> appointments = practitioner.getAppointments();
+            for (Appointment appointment : appointments) {
+                appointment.setPractitioner(null);
+                appointmentRepository.save(appointment);
+            }
+
+            Set<Prescription> prescriptions = practitioner.getPrescriptions();
+            for (Prescription prescription : prescriptions) {
+                prescription.setPractitioner(null);
+                prescriptionRepository.save(prescription);
+            }
+
+            Set<Diagnosis> diagnoses = practitioner.getDiagnoses();
+            for (Diagnosis diagnosis : diagnoses) {
+                diagnosis.setPractitioner(null);
+                diagnosisRepository.save(diagnosis);
+            }
+
             practitionerRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -97,6 +134,42 @@ public class MedicalPractitionerController {
 
     @DeleteMapping("/practitioners")
     public ResponseEntity<?> deleteAllPractitioners() {
+        List<MedicalPractitioner> practitioners = practitionerRepository.findAll();
+
+        for (MedicalPractitioner practitioner : practitioners) {
+            Long id = practitioner.getId();
+
+            Set<Patient> patients = practitioner.getPatients();
+            for (Patient patient : patients) {
+                patient.removeFacilityById(id);
+                patientRepository.save(patient);
+            }
+
+            Facility facility = practitioner.getFacility();
+            if (facility != null) {
+                facility.removePractitionerById(id);
+                facilityRepository.save(facility);
+            }
+
+            Set<Appointment> appointments = practitioner.getAppointments();
+            for (Appointment appointment : appointments) {
+                appointment.setPractitioner(null);
+                appointmentRepository.save(appointment);
+            }
+
+            Set<Prescription> prescriptions = practitioner.getPrescriptions();
+            for (Prescription prescription : prescriptions) {
+                prescription.setPractitioner(null);
+                prescriptionRepository.save(prescription);
+            }
+
+            Set<Diagnosis> diagnoses = practitioner.getDiagnoses();
+            for (Diagnosis diagnosis : diagnoses) {
+                diagnosis.setPractitioner(null);
+                diagnosisRepository.save(diagnosis);
+            }
+        }
+
         practitionerRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

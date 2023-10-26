@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -73,7 +74,17 @@ public class InsurancePolicyController {
 
     @DeleteMapping("/policy")
     public ResponseEntity<?> deletePolicy(@RequestParam("id") Long id) {
-        if (insurancePolicyRepository.existsById(id)) {
+        Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
+
+        if (policyData.isPresent()) {
+            InsurancePolicy policy = policyData.get();
+
+            Set<Patient> patients = policy.getPatients();
+            for (Patient patient : patients) {
+                patient.setInsurancePolicy(null);
+                patientRepository.save(patient);
+            }
+
             insurancePolicyRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -84,6 +95,16 @@ public class InsurancePolicyController {
 
     @DeleteMapping("/policies")
     public ResponseEntity<?> deleteAllPolicies() {
+        List<InsurancePolicy> policies = insurancePolicyRepository.findAll();
+
+        for (InsurancePolicy policy : policies) {
+            Set<Patient> patients = policy.getPatients();
+            for (Patient patient : patients) {
+                patient.setInsurancePolicy(null);
+                patientRepository.save(patient);
+            }
+        }
+
         insurancePolicyRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

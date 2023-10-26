@@ -176,7 +176,7 @@ public class MedicalPractitioner {
         Patient patient = this.patients.stream().filter(p -> Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
         if (patient != null) {
             this.patients.remove(patient);
-            patient.getPractitioners().remove(this);
+            //patient.getPractitioners().remove(this);
         }
     }
 

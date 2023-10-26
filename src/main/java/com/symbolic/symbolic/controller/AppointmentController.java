@@ -2,7 +2,12 @@ package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.entity.Appointment;
 import com.symbolic.symbolic.entity.Facility;
+import com.symbolic.symbolic.entity.MedicalPractitioner;
+import com.symbolic.symbolic.entity.Patient;
 import com.symbolic.symbolic.repository.AppointmentRepository;
+import com.symbolic.symbolic.repository.FacilityRepository;
+import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
+import com.symbolic.symbolic.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +22,13 @@ import java.util.Optional;
 public class AppointmentController {
     @Autowired
     AppointmentRepository appointmentRepository;
+    @Autowired
+    PatientRepository patientRepository;
+    @Autowired
+    MedicalPractitionerRepository practitionerRepository;
+    @Autowired
+    FacilityRepository facilityRepository;
+
     @GetMapping("/appointments")
     public ResponseEntity<?> getAllAppointments() {
         List<Appointment> appointments = new ArrayList<>();
@@ -71,7 +83,29 @@ public class AppointmentController {
 
     @DeleteMapping("/appointment")
     public ResponseEntity<?> deleteAppointment(@RequestParam("id") Long id) {
-        if (appointmentRepository.existsById(id)) {
+        Optional<Appointment> appointmentData = appointmentRepository.findById(id);
+
+        if (appointmentData.isPresent()) {
+            Appointment appointment = appointmentData.get();
+
+            Patient patient = appointment.getPatient();
+            if (patient != null) {
+                patient.removeAppointmentById(id);
+                patientRepository.save(patient);
+            }
+
+            MedicalPractitioner practitioner = appointment.getPractitioner();
+            if (practitioner != null) {
+                practitioner.removeAppointmentById(id);
+                practitionerRepository.save(practitioner);
+            }
+
+            Facility facility = appointment.getFacility();
+            if (facility != null) {
+                facility.removeAppointmentById(id);
+                facilityRepository.save(facility);
+            }
+
             appointmentRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -82,6 +116,30 @@ public class AppointmentController {
 
     @DeleteMapping("/appointments")
     public ResponseEntity<?> deleteAllAppointments() {
+        List<Appointment> appointments = appointmentRepository.findAll();
+
+        for (Appointment appointment : appointments) {
+            Long id = appointment.getId();
+
+            Patient patient = appointment.getPatient();
+            if (patient != null) {
+                patient.removeAppointmentById(id);
+                patientRepository.save(patient);
+            }
+
+            MedicalPractitioner practitioner = appointment.getPractitioner();
+            if (practitioner != null) {
+                practitioner.removeAppointmentById(id);
+                practitionerRepository.save(practitioner);
+            }
+
+            Facility facility = appointment.getFacility();
+            if (facility != null) {
+                facility.removeAppointmentById(id);
+                appointmentRepository.save(appointment);
+            }
+        }
+
         appointmentRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

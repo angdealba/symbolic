@@ -126,7 +126,7 @@ public class Facility {
         Patient patient = this.patients.stream().filter(p -> Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
         if (patient != null) {
             this.patients.remove(patient);
-            patient.getFacilities().remove(this);
+            //patient.getFacilities().remove(this);
         }
     }
 

@@ -1,10 +1,7 @@
 package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.entity.*;
-import com.symbolic.symbolic.repository.AppointmentRepository;
-import com.symbolic.symbolic.repository.DiagnosisRepository;
-import com.symbolic.symbolic.repository.PatientRepository;
-import com.symbolic.symbolic.repository.PrescriptionRepository;
+import com.symbolic.symbolic.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +12,7 @@ import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -22,11 +20,17 @@ public class PatientController {
     @Autowired
     PatientRepository patientRepository;
     @Autowired
+    MedicalPractitionerRepository practitionerRepository;
+    @Autowired
+    FacilityRepository facilityRepository;
+    @Autowired
     AppointmentRepository appointmentRepository;
     @Autowired
     PrescriptionRepository prescriptionRepository;
     @Autowired
     DiagnosisRepository diagnosisRepository;
+    @Autowired
+    InsurancePolicyRepository insurancePolicyRepository;
 
     @GetMapping("/patients")
     public ResponseEntity<?> getAllPatients() {
@@ -80,7 +84,47 @@ public class PatientController {
 
     @DeleteMapping("/patient")
     public ResponseEntity<?> deletePatient(@RequestParam("id") Long id) {
-        if (patientRepository.existsById(id)) {
+        Optional<Patient> patientData = patientRepository.findById(id);
+
+        if (patientData.isPresent()) {
+            Patient patient = patientData.get();
+
+            Set<MedicalPractitioner> practitioners = patient.getPractitioners();
+            for (MedicalPractitioner practitioner : practitioners) {
+                practitioner.removePatientById(id);
+                practitionerRepository.save(practitioner);
+            }
+
+            Set<Facility> facilities = patient.getFacilities();
+            for (Facility facility : facilities) {
+                facility.removePatientById(id);
+                facilityRepository.save(facility);
+            }
+
+            InsurancePolicy policy = patient.getInsurancePolicy();
+            if (policy != null) {
+                policy.removePatientById(id);
+                insurancePolicyRepository.save(policy);
+            }
+
+            Set<Appointment> appointments = patient.getAppointments();
+            for (Appointment appointment : appointments) {
+                appointment.setPractitioner(null);
+                appointmentRepository.save(appointment);
+            }
+
+            Set<Prescription> prescriptions = patient.getPrescriptions();
+            for (Prescription prescription : prescriptions) {
+                prescription.setPractitioner(null);
+                prescriptionRepository.save(prescription);
+            }
+
+            Set<Diagnosis> diagnoses = patient.getDiagnoses();
+            for (Diagnosis diagnosis : diagnoses) {
+                diagnosis.setPractitioner(null);
+                diagnosisRepository.save(diagnosis);
+            }
+
             patientRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -91,6 +135,48 @@ public class PatientController {
 
     @DeleteMapping("/patients")
     public ResponseEntity<?> deleteAllPatients() {
+        List<Patient> patients = patientRepository.findAll();
+
+        for (Patient patient : patients) {
+            Long id = patient.getId();
+
+            Set<MedicalPractitioner> practitioners = patient.getPractitioners();
+            for (MedicalPractitioner practitioner : practitioners) {
+                practitioner.removePatientById(id);
+                practitionerRepository.save(practitioner);
+            }
+
+            Set<Facility> facilities = patient.getFacilities();
+            for (Facility facility : facilities) {
+                facility.removePatientById(id);
+                facilityRepository.save(facility);
+            }
+
+            InsurancePolicy policy = patient.getInsurancePolicy();
+            if (policy != null) {
+                policy.removePatientById(id);
+                insurancePolicyRepository.save(policy);
+            }
+
+            Set<Appointment> appointments = patient.getAppointments();
+            for (Appointment appointment : appointments) {
+                appointment.setPractitioner(null);
+                appointmentRepository.save(appointment);
+            }
+
+            Set<Prescription> prescriptions = patient.getPrescriptions();
+            for (Prescription prescription : prescriptions) {
+                prescription.setPractitioner(null);
+                prescriptionRepository.save(prescription);
+            }
+
+            Set<Diagnosis> diagnoses = patient.getDiagnoses();
+            for (Diagnosis diagnosis : diagnoses) {
+                diagnosis.setPractitioner(null);
+                diagnosisRepository.save(diagnosis);
+            }
+        }
+
         patientRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

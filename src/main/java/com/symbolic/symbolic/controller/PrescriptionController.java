@@ -1,6 +1,11 @@
 package com.symbolic.symbolic.controller;
 
+import com.symbolic.symbolic.entity.Diagnosis;
+import com.symbolic.symbolic.entity.MedicalPractitioner;
+import com.symbolic.symbolic.entity.Patient;
 import com.symbolic.symbolic.entity.Prescription;
+import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
+import com.symbolic.symbolic.repository.PatientRepository;
 import com.symbolic.symbolic.repository.PrescriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +21,10 @@ import java.util.Optional;
 public class PrescriptionController {
     @Autowired
     PrescriptionRepository prescriptionRepository;
+    @Autowired
+    PatientRepository patientRepository;
+    @Autowired
+    MedicalPractitionerRepository practitionerRepository;
 
     @GetMapping("/prescriptions")
     public ResponseEntity<?> getAllPrescriptions() {
@@ -73,7 +82,23 @@ public class PrescriptionController {
 
     @DeleteMapping("/prescription")
     public ResponseEntity<?> deletePrescription(@RequestParam("id") Long id) {
-        if (prescriptionRepository.existsById(id)) {
+        Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
+
+        if (prescriptionData.isPresent()) {
+            Prescription prescription = prescriptionData.get();
+
+            Patient patient = prescription.getPatient();
+            if (patient != null) {
+                patient.removeDiagnosisById(id);
+                patientRepository.save(patient);
+            }
+
+            MedicalPractitioner practitioner = prescription.getPractitioner();
+            if (practitioner != null) {
+                practitioner.removeDiagnosisById(id);
+                practitionerRepository.save(practitioner);
+            }
+
             prescriptionRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -84,6 +109,24 @@ public class PrescriptionController {
 
     @DeleteMapping("/prescriptions")
     public ResponseEntity<?> deleteAllPrescriptions() {
+        List<Prescription> prescriptions = prescriptionRepository.findAll();
+
+        for (Prescription prescription : prescriptions) {
+            Long id = prescription.getId();
+
+            Patient patient = prescription.getPatient();
+            if (patient != null) {
+                patient.removePrescriptionById(id);
+                patientRepository.save(patient);
+            }
+
+            MedicalPractitioner practitioner = prescription.getPractitioner();
+            if (practitioner != null) {
+                practitioner.removePrescriptionById(id);
+                practitionerRepository.save(practitioner);
+            }
+        }
+
         prescriptionRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
