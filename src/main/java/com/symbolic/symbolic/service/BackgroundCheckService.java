@@ -24,6 +24,10 @@ public class BackgroundCheckService {
                                            String requestedAllergy, String requestedDiagnosis) {
         // This implementation ignores irrelevant entries in `requirements`
 
+        // If no patients, abort
+        if (patientRepository == null)
+            return null;
+
         Map<String, Boolean> result = new HashMap<>();
 
         // Ensure a valid patient ID

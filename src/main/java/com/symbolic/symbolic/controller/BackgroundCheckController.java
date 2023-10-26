@@ -18,9 +18,9 @@ public class BackgroundCheckController {
     // Run a BG check on the requested id
     @GetMapping("/bgcheck")
     public ResponseEntity<?> checkBackground(@RequestParam("id") Long id,
-                                             @RequestParam(required=false) String vac,
-                                             @RequestParam(required=false) String allergy,
-                                             @RequestParam(required=false) String diagnosis) {
+                                     @RequestParam(value="vaccine", required=false) String vac,
+                                     @RequestParam(value="allergy", required=false) String allergy,
+                                     @RequestParam(value="diagnosis", required=false) String diagnosis) {
 
         // Check for (mostly) empty input
         if (vac == null && allergy == null && diagnosis == null) {
@@ -30,6 +30,11 @@ public class BackgroundCheckController {
 
         BackgroundCheckService backgroundCheckService = new BackgroundCheckService();
         Map<String, Boolean> backgroundCheck = backgroundCheckService.getBGCheck(id, vac, allergy, diagnosis);
+
+        if (backgroundCheck == null) {
+            String errorMessage = "Empty patient table.";
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         return new ResponseEntity<>(backgroundCheck, HttpStatus.OK);
     }
