@@ -1,8 +1,11 @@
 package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.entity.Diagnosis;
-import com.symbolic.symbolic.entity.Prescription;
+import com.symbolic.symbolic.entity.MedicalPractitioner;
+import com.symbolic.symbolic.entity.Patient;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
+import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
+import com.symbolic.symbolic.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +14,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
 public class DiagnosisController {
     @Autowired
     DiagnosisRepository diagnosisRepository;
+    @Autowired
+    PatientRepository patientRepository;
+    @Autowired
+    MedicalPractitionerRepository practitionerRepository;
 
     @GetMapping("/diagnoses")
     public ResponseEntity<?> getAllDiagnoses() {
@@ -73,7 +81,23 @@ public class DiagnosisController {
 
     @DeleteMapping("/diagnosis")
     public ResponseEntity<?> deleteDiagnosis(@RequestParam("id") Long id) {
-        if (diagnosisRepository.existsById(id)) {
+        Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
+
+        if (diagnosisData.isPresent()) {
+            Diagnosis diagnosis = diagnosisData.get();
+
+            Patient patient = diagnosis.getPatient();
+            if (patient != null) {
+                patient.removeDiagnosisById(id);
+                patientRepository.save(patient);
+            }
+
+            MedicalPractitioner practitioner = diagnosis.getPractitioner();
+            if (practitioner != null) {
+                practitioner.removeDiagnosisById(id);
+                practitionerRepository.save(practitioner);
+            }
+
             diagnosisRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -84,6 +108,24 @@ public class DiagnosisController {
 
     @DeleteMapping("/diagnoses")
     public ResponseEntity<?> deleteAllDiagnoses() {
+        List<Diagnosis> diagnoses = diagnosisRepository.findAll();
+
+        for (Diagnosis diagnosis : diagnoses) {
+            Long id = diagnosis.getId();
+
+            Patient patient = diagnosis.getPatient();
+            if (patient != null) {
+                patient.removeDiagnosisById(id);
+                patientRepository.save(patient);
+            }
+
+            MedicalPractitioner practitioner = diagnosis.getPractitioner();
+            if (practitioner != null) {
+                practitioner.removeDiagnosisById(id);
+                practitionerRepository.save(practitioner);
+            }
+        }
+
         diagnosisRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

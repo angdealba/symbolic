@@ -6,6 +6,7 @@ import jdk.jshell.Diag;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -143,14 +144,14 @@ public class Patient {
 
     public void addPractitioner(MedicalPractitioner practitioner) {
         this.practitioners.add(practitioner);
-        practitioner.addPatient(this);
+        practitioner.getPatients().add(this);
     }
 
     public void removePractitionerById(Long practitionerId) {
         MedicalPractitioner practitioner = this.practitioners.stream().filter(p -> Objects.equals(p.getId(), practitionerId)).findFirst().orElse(null);
         if (practitioner != null) {
             this.practitioners.remove(practitioner);
-            practitioner.removePatientById(id);
+            //practitioner.getPatients().remove(this);
         }
     }
 
@@ -160,14 +161,14 @@ public class Patient {
 
     public void addFacility(Facility facility) {
         this.facilities.add(facility);
-        facility.addPatient(this);
+        facility.getPatients().add(this);
     }
 
     public void removeFacilityById(Long facilityId) {
         Facility facility = this.facilities.stream().filter(p -> Objects.equals(p.getId(), facilityId)).findFirst().orElse(null);
         if (facility != null) {
             this.facilities.remove(facility);
-            facility.removePatientById(id);
+            //facility.getPatients().remove(this);
         }
     }
 

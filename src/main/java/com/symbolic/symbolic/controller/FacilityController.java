@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -84,7 +85,29 @@ public class FacilityController {
 
     @DeleteMapping("/facility")
     public ResponseEntity<?> deleteFacility(@RequestParam("id") Long id) {
-        if (facilityRepository.existsById(id)) {
+        Optional<Facility> facilityData = facilityRepository.findById(id);
+
+        if (facilityData.isPresent()) {
+            Facility facility = facilityData.get();
+
+            Set<Patient> patients = facility.getPatients();
+            for (Patient patient : patients) {
+                patient.removeFacilityById(id);
+                patientRepository.save(patient);
+            }
+
+            Set<MedicalPractitioner> practitioners = facility.getPractitioners();
+            for (MedicalPractitioner practitioner : practitioners) {
+                practitioner.setFacility(null);
+                practitionerRepository.save(practitioner);
+            }
+
+            Set<Appointment> appointments = facility.getAppointments();
+            for (Appointment appointment : appointments) {
+                appointment.setFacility(null);
+                appointmentRepository.save(appointment);
+            }
+
             facilityRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -95,6 +118,30 @@ public class FacilityController {
 
     @DeleteMapping("/facilities")
     public ResponseEntity<?> deleteAllFacilities() {
+        List<Facility> facilities = facilityRepository.findAll();
+
+        for (Facility facility : facilities) {
+            Long id = facility.getId();
+
+            Set<Patient> patients = facility.getPatients();
+            for (Patient patient : patients) {
+                patient.removeFacilityById(id);
+                patientRepository.save(patient);
+            }
+
+            Set<MedicalPractitioner> practitioners = facility.getPractitioners();
+            for (MedicalPractitioner practitioner : practitioners) {
+                practitioner.setFacility(null);
+                practitionerRepository.save(practitioner);
+            }
+
+            Set<Appointment> appointments = facility.getAppointments();
+            for (Appointment appointment : appointments) {
+                appointment.setFacility(null);
+                appointmentRepository.save(appointment);
+            }
+        }
+
         facilityRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
