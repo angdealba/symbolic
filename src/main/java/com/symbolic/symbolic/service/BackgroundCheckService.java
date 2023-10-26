@@ -20,7 +20,8 @@ public class BackgroundCheckService {
     private PatientRepository patientRepository;
 
     // Run a complete BG check on the requested id
-    public Map<String, Boolean> getBGCheck(Long id, Map<String, String> requirements) {
+    public Map<String, Boolean> getBGCheck(Long id, String requestedVaccination,
+                                           String requestedAllergy, String requestedDiagnosis) {
         // This implementation ignores irrelevant entries in `requirements`
 
         Map<String, Boolean> result = new HashMap<>();
@@ -38,7 +39,7 @@ public class BackgroundCheckService {
         boolean validDiagnosis = false;
 
         // Get and check records
-        String requestedVaccination = requirements.get("vaccination");
+//        String requestedVaccination = requirements.get("vaccination");
         if (!requestedVaccination.isEmpty()) {
             String vaccinations = patient.getVaccinations();
 
@@ -46,7 +47,7 @@ public class BackgroundCheckService {
                 validVaccine = true;
         }
 
-        String requestedAllergy = requirements.get("allergy");
+//        String requestedAllergy = requirements.get("allergy");
         if (!requestedAllergy.isEmpty()) {
             String allergies = patient.getAllergies();
 
@@ -54,7 +55,7 @@ public class BackgroundCheckService {
                 validAllergy = true;
         }
 
-        String requestedDiagnosis = requirements.get("diagnosis");
+//        String requestedDiagnosis = requirements.get("diagnosis");
         if (!requestedDiagnosis.isEmpty()) {
             List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
 
@@ -66,8 +67,7 @@ public class BackgroundCheckService {
             }
         }
 
-        // Return List with all relevant data
-        // The controller will handle parsing relevant sections
+        // Return Map with all relevant data
         result.put("vaccination", validVaccine);
         result.put("allergy", validAllergy);
         result.put("diagnosis", validDiagnosis);
