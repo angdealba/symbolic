@@ -303,5 +303,6 @@ public class MedicalPractitionerTest {
         Date date3 = dia_formatter.parse("2023-10-23");
         Diagnosis diagnosis3 = new Diagnosis("Common Cold", "None", date3);
         practitioner11.addDiagnosis(diagnosis3);
+        assertNotEquals(practitioner, practitioner11);
     }
 }
