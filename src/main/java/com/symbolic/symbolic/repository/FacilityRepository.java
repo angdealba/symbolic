@@ -11,4 +11,6 @@ public interface FacilityRepository extends JpaRepository<Facility, Long> {
     List<Facility> findFacilitiesByPatientsId(Long patientId);
     Facility findFacilityByPractitionersId(Long practitionerId);
     Facility findFacilityByAppointmentsId(Long appointmentId);
+    List<Facility> findByLatitudeBetweenAndLongitudeBetween(Double minLatitude, Double maxLatitude, Double minLongitude,  Double maxLongitude);
+
 }
