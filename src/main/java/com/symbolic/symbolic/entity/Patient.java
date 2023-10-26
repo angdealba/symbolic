@@ -141,20 +141,38 @@ public class Patient {
         this.accommodations = accommodations;
     }
 
+    public void addPractitioner(MedicalPractitioner practitioner) {
+        this.practitioners.add(practitioner);
+        practitioner.addPatient(this);
+    }
+
+    public void removePractitionerById(Long practitionerId) {
+        MedicalPractitioner practitioner = this.practitioners.stream().filter(p -> Objects.equals(p.getId(), practitionerId)).findFirst().orElse(null);
+        if (practitioner != null) {
+            this.practitioners.remove(practitioner);
+            practitioner.removePatientById(id);
+        }
+    }
+
     public Set<MedicalPractitioner> getPractitioners() {
         return practitioners;
     }
 
-    public void setPractitioners(Set<MedicalPractitioner> practitioners) {
-        this.practitioners = practitioners;
+    public void addFacility(Facility facility) {
+        this.facilities.add(facility);
+        facility.addPatient(this);
+    }
+
+    public void removeFacilityById(Long facilityId) {
+        Facility facility = this.facilities.stream().filter(p -> Objects.equals(p.getId(), facilityId)).findFirst().orElse(null);
+        if (facility != null) {
+            this.facilities.remove(facility);
+            facility.removePatientById(id);
+        }
     }
 
     public Set<Facility> getFacilities() {
         return facilities;
-    }
-
-    public void setFacilities(Set<Facility> facilities) {
-        this.facilities = facilities;
     }
 
     public InsurancePolicy getInsurancePolicy() {
@@ -178,6 +196,10 @@ public class Patient {
         }
     }
 
+    public Set<Appointment> getAppointments() {
+        return appointments;
+    }
+
     public void addPrescription(Prescription prescription) {
         this.prescriptions.add(prescription);
         prescription.setPatient(this);
@@ -189,6 +211,10 @@ public class Patient {
             this.prescriptions.remove(prescription);
             prescription.setPatient(null);
         }
+    }
+
+    public Set<Prescription> getPrescriptions() {
+        return prescriptions;
     }
 
     public void addDiagnosis(Diagnosis diagnosis) {
@@ -204,6 +230,10 @@ public class Patient {
         }
     }
 
+    public Set<Diagnosis> getDiagnoses() {
+        return diagnoses;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -214,6 +244,6 @@ public class Patient {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, vaccinations, allergies, accommodations, practitioners);
+        return Objects.hash(id, vaccinations, allergies, accommodations);
     }
 }

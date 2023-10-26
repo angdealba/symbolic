@@ -2,8 +2,8 @@ package com.symbolic.symbolic.entity;
 
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Pair;
 
-import java.awt.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -100,15 +100,13 @@ public class Facility {
         this.latitude = latitude;
     }
 
-    public Point getLocation() {
-        Point coordinates = new Point();
-        coordinates.setLocation(this.latitude, this.longitude);
-        return coordinates;
+    public Pair<Double, Double> getLocation() {
+        return Pair.of(this.latitude, this.longitude);
     }
 
-    public void setLocation(Point coordinates) {
-        this.latitude = coordinates.getX();
-        this.longitude = coordinates.getY();
+    public void setLocation(Pair<Double, Double> coordinates) {
+        this.setLatitude(coordinates.getFirst());
+        this.setLongitude(coordinates.getSecond());
     }
 
     public String getSpecialization() {
@@ -132,6 +130,10 @@ public class Facility {
         }
     }
 
+    public Set<Patient> getPatients() {
+        return patients;
+    }
+
     public void addPractitioner(MedicalPractitioner practitioner) {
         this.practitioners.add(practitioner);
         practitioner.setFacility(this);
@@ -145,6 +147,10 @@ public class Facility {
         }
     }
 
+    public Set<MedicalPractitioner> getPractitioners() {
+        return practitioners;
+    }
+
     public void addAppointment(Appointment appointment) {
         this.appointments.add(appointment);
         appointment.setFacility(this);
@@ -156,5 +162,22 @@ public class Facility {
             this.appointments.remove(appointment);
             appointment.setFacility(null);
         }
+    }
+
+    public Set<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Facility facility = (Facility) o;
+        return Objects.equals(id, facility.id) && Objects.equals(latitude, facility.latitude) && Objects.equals(longitude, facility.longitude) && Objects.equals(specialization, facility.specialization) && Objects.equals(patients, facility.patients) && Objects.equals(practitioners, facility.practitioners) && Objects.equals(appointments, facility.appointments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, latitude, longitude, specialization);
     }
 }

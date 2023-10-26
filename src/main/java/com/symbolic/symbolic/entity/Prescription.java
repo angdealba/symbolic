@@ -120,7 +120,7 @@ public class Prescription {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Prescription that = (Prescription) o;
-        return Objects.equals(id, that.id) && Objects.equals(dosage, that.dosage) && Objects.equals(dailyUses, that.dailyUses) && Objects.equals(cost, that.cost) && Objects.equals(instructions, that.instructions);
+        return Objects.equals(id, that.id) && Objects.equals(dosage, that.dosage) && Objects.equals(dailyUses, that.dailyUses) && Objects.equals(cost, that.cost) && Objects.equals(instructions, that.instructions) && Objects.equals(patient, that.patient) && Objects.equals(practitioner, that.practitioner);
     }
 
     @Override
