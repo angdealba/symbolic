@@ -10,4 +10,5 @@ import java.util.List;
 public interface DiagnosisRepository extends JpaRepository<Diagnosis, Long> {
     List<Diagnosis> findDiagnosesByPatientId(Long patientId);
     List<Diagnosis> findDiagnosesByPractitionerId(Long practitionerId);
+    List<Diagnosis> findDiagnosesByConditionIgnoreCase(String condition);
 }
