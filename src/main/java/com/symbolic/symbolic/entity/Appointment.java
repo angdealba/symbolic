@@ -118,11 +118,11 @@ public class Appointment {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Appointment that = (Appointment) o;
-        return Objects.equals(id, that.id) && Objects.equals(dateTime, that.dateTime) && Objects.equals(cost, that.cost);
+        return Objects.equals(id, that.id) && Objects.equals(dateTime, that.dateTime) && Objects.equals(cost, that.cost) && Objects.equals(patient, that.patient) && Objects.equals(practitioner, that.practitioner) && Objects.equals(facility, that.facility);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dateTime, cost);
+        return Objects.hash(id, dateTime, cost, patient, practitioner, facility);
     }
 }
