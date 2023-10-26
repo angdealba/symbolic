@@ -23,7 +23,7 @@ public class BackgroundCheckController {
     public ResponseEntity<?> checkBackground(@RequestParam("id") Long id) {
 
         // Check vaccination records
-        
+
 
         // Check allergy records
 
