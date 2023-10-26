@@ -82,6 +82,6 @@ public class InsurancePolicy {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, premiumCost, patients);
+        return Objects.hash(id, premiumCost);
     }
 }

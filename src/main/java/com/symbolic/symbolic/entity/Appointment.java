@@ -123,6 +123,6 @@ public class Appointment {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dateTime, cost, patient, practitioner, facility);
+        return Objects.hash(id, dateTime, cost);
     }
 }

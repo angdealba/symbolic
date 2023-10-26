@@ -41,6 +41,7 @@ public class InsurancePolicyTest {
 
     @Test
     void testSetters() {
+        // Test each setter for the different fields
         policy.setPremiumCost(200);
         assertEquals(policy.getPremiumCost(), 200);
     }

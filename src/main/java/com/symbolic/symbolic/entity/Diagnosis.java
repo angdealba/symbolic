@@ -116,6 +116,6 @@ public class Diagnosis {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, condition, treatmentInfo, date, patient, practitioner);
+        return Objects.hash(id, condition, treatmentInfo, date);
     }
 }

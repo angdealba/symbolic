@@ -125,6 +125,6 @@ public class Prescription {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dosage, dailyUses, cost, instructions, patient, practitioner);
+        return Objects.hash(id, dosage, dailyUses, cost, instructions);
     }
 }

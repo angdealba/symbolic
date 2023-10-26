@@ -214,6 +214,6 @@ public class Patient {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, vaccinations, allergies, accommodations, practitioners);
+        return Objects.hash(id, vaccinations, allergies, accommodations);
     }
 }
