@@ -33,7 +33,7 @@ public class HistoricalDataController {
         }
         List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition, java.sql.Date.valueOf(LocalDate.now().minusWeeks(1)), java.sql.Date.valueOf(LocalDate.now()), location);
         if(result.isEmpty()){
-            return new ResponseEntity<>("Empty result table", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>("No results found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -48,7 +48,7 @@ public class HistoricalDataController {
         }
         List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition, java.sql.Date.valueOf(LocalDate.now().minusMonths(1)), java.sql.Date.valueOf(LocalDate.now()), location);
         if(result.isEmpty()){
-            return new ResponseEntity<>("Empty result table", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>("No results found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -63,7 +63,7 @@ public class HistoricalDataController {
         }
         List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition, java.sql.Date.valueOf(LocalDate.now().minusYears(1)), java.sql.Date.valueOf(LocalDate.now()), location);
         if(result.isEmpty()){
-            return new ResponseEntity<>("Empty result table", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>("No results found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -80,7 +80,7 @@ public class HistoricalDataController {
         }
         List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition, startDate, endDate, location);
         if(result.isEmpty()){
-            return new ResponseEntity<>("Empty result table", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>("No results found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -98,7 +98,7 @@ public class HistoricalDataController {
 
         Map<String, Integer> result = historicalDataService.getTopConditions(location, startDate, endDate, N);
         if(result.isEmpty()){
-            return new ResponseEntity<>("Empty result table", HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>("No results found", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
