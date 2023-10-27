@@ -5,7 +5,6 @@ import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
-import com.symbolic.symbolic.services.HistoricalDataService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
