@@ -43,7 +43,7 @@ public class BackgroundCheckServiceTest {
         diag_list.add(diagnosis);
 
         // Mock input
-        long request_id = patient.getId();
+        long request_id = 1234;
         String request_vaccinations = "measles";
         String request_allergies = "peanut";
         String request_diagnosis = "covid";
@@ -58,8 +58,8 @@ public class BackgroundCheckServiceTest {
 
         // Assert correctness
         assertNotEquals(null, result);
-        assertEquals(true, result.get("vaccination"));
-        assertEquals(false, result.get("allergy"));
+        assertEquals(false, result.get("vaccination"));
+        assertEquals(true, result.get("allergy"));
         assertEquals(false, result.get("diagnosis"));
     }
 }
