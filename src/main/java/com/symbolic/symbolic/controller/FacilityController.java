@@ -180,7 +180,7 @@ public class FacilityController {
     }
 
     @GetMapping("/practitioner/facility")
-    public ResponseEntity<?> getFacilityByPractitionerId(@RequestParam("patientId") Long practitionerId) {
+    public ResponseEntity<?> getFacilityByPractitionerId(@RequestParam("practitionerId") Long practitionerId) {
         if (!practitionerRepository.existsById(practitionerId)) {
             String errorMessage = "No medical practitioner found with id " + practitionerId;
             return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);

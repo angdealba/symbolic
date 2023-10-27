@@ -1,0 +1,2979 @@
+{
+	"info": {
+		"_postman_id": "44be4b47-2ec4-4b54-9486-366cf94ed038",
+		"name": "Join Requests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30667543"
+	},
+	"item": [
+		{
+			"name": "Policy Joins",
+			"item": [
+				{
+					"name": "Policy-Patient Join 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=2&patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Policy-Patient Join 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=2&patientId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Policy-Patient Join 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Policy-Patient Invalid Policy ID",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=5&patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "5"
+								},
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Policy-Patient Invalid Patient ID",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=4&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "4"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients for Policy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patients?policyId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patients"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "4",
+									"disabled": true
+								},
+								{
+									"key": "policyId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients for Policy Invalid",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patients?policyId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patients"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "4",
+									"disabled": true
+								},
+								{
+									"key": "policyId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Policy for Patient",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/policy?patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"policy"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Policy for Patient Invalid",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/policy?patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"policy"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Policy-Patient Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Policy-Patient Delete Join Invalid ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"premiumCost\": 76\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/policy/patient?policyId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"policy",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "policyId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Patient Joins",
+			"item": [
+				{
+					"name": "Patient-Appointment 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=2&appointmentId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "2"
+								},
+								{
+									"key": "appointmentId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Appointment 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=2&appointmentId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "2"
+								},
+								{
+									"key": "appointmentId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Appointment 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=1&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Appointment Invalid Patient",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=5&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "5"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Appointment Invalid Appointment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=1&appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointments for Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointments?patientId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointments for Patient Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointments?patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient for Appointment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/appointment/patient?appointmentId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"appointment",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "appointmentId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient for Appointment Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/appointment/patient?appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"appointment",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Appointment Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=1&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Appointment Delete Join Invalid",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 5,\n    \"dateTime\": \"2023-10-25 02:00\",\n    \"cost\": 65\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/patient/appointment?patientId=1&appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Facility Joins",
+			"item": [
+				{
+					"name": "Facility-Patient 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=2&patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Patient 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=2&patientId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Patient 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Patient Invalid Facility",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=5&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "5"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Patient Invalid Patient",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients for Facility",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patients?facilityId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patients"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients for Facility Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patients?facilityId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patients"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Facilities for Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/facilities?patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"facilities"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Facilities for Patient Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/facilities?patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"facilities"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Patient Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Patient 3 Delete Join Invalid",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/practitioner?facilityId=2&practitionerId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								},
+								{
+									"key": "practitionerId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=2&patientId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner Invalid Facility",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=5&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "5"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner Invalid Practitioner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioners for Facility",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/practitioners?facilityId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"practitioners"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioners for Facility Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/practitioners?facilityId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"practitioners"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Facility for Practitioner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/facility?practitionerId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"facility"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Facility for Practitioner Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/facility?practitionerId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"facility"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Practitioner Delete Join Invalid",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/patient?facilityId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Appointment 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/appointment?facilityId=2&appointmentId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								},
+								{
+									"key": "appointmentId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Appointment 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/appointment?facilityId=2&appointmentId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "2"
+								},
+								{
+									"key": "appointmentId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Appointment 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/appointment?facilityId=1&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Appointment 3 Invalid Facility",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/appointment?facilityId=5&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "5"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Facility-Appointment 3 Invalid Appointment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/facility/appointment?facilityId=1&appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"facility",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Practitioner Joins",
+			"item": [
+				{
+					"name": "Practitioner-Patient 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=2&patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Patient 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=2&patientId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "patientId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Patient 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Patient Invalid Practitioner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=5&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Patient Invalid Patient",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients for Practitioner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patients?practitionerId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patients"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patients for Practitioner Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patients?practitionerId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patients"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioners for Patient",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/practitioners?patientId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"practitioners"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioners for Patient Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/practitioners?patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"practitioners"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Patient Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=1&patientId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Patient Delete Join Copy",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/patient?practitionerId=1&patientId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"patient"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "patientId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=2&appointmentId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "appointmentId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=2&appointmentId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "appointmentId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=1&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment Invalid Practitioner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=5&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment Invalid Appointment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=1&appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointments for Practitioner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointments?practitionerId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointments for Practitioner Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointments?practitionerId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioner for Appointment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/appointment/practitioner?appointmentId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"appointment",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "appointmentId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioner for Appointment Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/appointment/practitioner?appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"appointment",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=1&appointmentId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Appointment Delete Join Invalid",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointment?practitionerId=1&appointmentId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointment"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "appointmentId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=2&prescriptionId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "prescriptionId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=2&prescriptionId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "prescriptionId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=1&prescriptionId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "prescriptionId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription Invalid Practitioner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=5&prescriptionId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								},
+								{
+									"key": "prescriptionId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription Invalid Prescription",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=1&prescription=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "prescription",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Prescriptions for Practitioner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescriptions?practitionerId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescriptions"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Prescriptions for Practitioner Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/appointments?practitionerId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioner for Prescription",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/prescription/practitioner?prescriptionId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"prescription",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "prescriptionId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioner for Prescription Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/prescription/practitioner?prescriptionId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"prescription",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "prescriptionId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=1&prescriptionId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "prescriptionId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Prescription Delete Join Invalid",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/prescription?practitionerId=1&prescriptionId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"prescription"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "prescriptionId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=2&diagnosisId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=2&diagnosisId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=1&diagnosisId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis Invalid Practitioner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=5&diagnosisId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis Invalid Diagnosis",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=1&diagnosisId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Diagnoses for Practitioner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnoses?practitionerId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnoses"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Diagnoses for Practitioner Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnoses?practitionerId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnoses"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioner for Diagnosis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/diagnosis/practitioner?diagnosisId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"diagnosis",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "diagnosisId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Practitioner for Diagnosis Invalid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/diagnosis/practitioner?diagnosisId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"diagnosis",
+								"practitioner"
+							],
+							"query": [
+								{
+									"key": "diagnosisId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis Delete Join",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=1&diagnosisId=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Practitioner-Diagnosis Delete Join Invalid",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/practitioner/diagnosis?practitionerId=1&diagnosisId=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"practitioner",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "practitionerId",
+									"value": "1"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
