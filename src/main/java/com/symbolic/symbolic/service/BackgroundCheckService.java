@@ -12,10 +12,10 @@ import java.util.*;
 
 @Service
 public class BackgroundCheckService {
+
     @Autowired
     private DiagnosisRepository diagnosisRepository;
-    @Autowired
-    private InsurancePolicyRepository insurancePolicyRepository;
+
     @Autowired
     private PatientRepository patientRepository;
 
