@@ -525,6 +525,40 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - Returns a 204 No Content on success
     - Fields: None
     - Sample body: N/A
+    - 
+#### Historical Data Retrieval Endpoints
+- /api/history
+  - GET 
+    - Description: Retrieves a list of Diagnoses that meet the specified search criteria.
+    - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria. 
+    - Fields: “condition” specifies the medical condition to search for, “start” specifies the start of the time range in which to search for, “end” specifies the end of the time range in which to search for and the optional parameter “location” specifies the geographic region in which to search for. 
+    - Sample Params: ?condition=COVID&start=2023-10-01&end=2023-10-26&location=40.8075, 73.9626
+
+- api/history/week 
+  - GET 
+    - Description: Retrieves a list of Diagnoses that meet the specified search criteria within the past week 
+    - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria. 
+    - Fields: “condition” specifies the medical condition to search for and the optional parameter “location” specifies the geographic region in which to search for. 
+    - Sample Params: ?condition=COVID&location=40.8075, 73.9626
+- api/history/month
+  - GET
+    - Description: Retrieves a list of Diagnoses that meet the specified search criteria within the past month
+    - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
+    - Fields: “condition” specifies the medical condition to search for and the optional parameter “location” specifies the geographic region in which to search for.
+    - Sample Params: ?condition=COVID&location=40.8075, 73.9626
+- api/history/year
+  - GET
+    - Description: Retrieves a list of Diagnoses that meet the specified search criteria within the past year
+    - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
+    - Fields: “condition” specifies the medical condition to search for and the optional parameter “location” specifies the geographic region in which to search for.
+    - Sample Params: ?condition=COVID&location=40.8075, 73.9626
+- api/history/top-conditions 
+  - GET 
+    - Description: Retrieves the most prevalent conditions within the specified search criteria 
+    - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria. 
+    - Fields: “location” specifies the geographic region in which to search for, , “start” specifies the start of the time range in which to search for, “end” specifies the end of the time range in which to search for, and the optional parameter “N” specifies how many conditions to search for 
+    - Sample Params: ? location=40.8075, 73.9626&start=2023-10-01&end=2023-10-26&N=3
+
 
 ## Testing
 
