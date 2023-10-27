@@ -29,7 +29,7 @@ public class BackgroundCheckController {
         }
 
         BackgroundCheckService backgroundCheckService = new BackgroundCheckService();
-        Map<String, Boolean> backgroundCheck = backgroundCheckService.getBGCheck(id, vac, allergy, diagnosis);
+        Map<String, Boolean> backgroundCheck = backgroundCheckService.getBackgroundCheck(id, vac, allergy, diagnosis);
 
         if (backgroundCheck == null) {
             String errorMessage = "Empty patient table.";
