@@ -12,10 +12,10 @@ import java.util.*;
 
 @Service
 public class BackgroundCheckService {
+
     @Autowired
     private DiagnosisRepository diagnosisRepository;
-    @Autowired
-    private InsurancePolicyRepository insurancePolicyRepository;
+
     @Autowired
     private PatientRepository patientRepository;
 
@@ -43,7 +43,6 @@ public class BackgroundCheckService {
         boolean validDiagnosis = false;
 
         // Get and check records
-//        String requestedVaccination = requirements.get("vaccination");
         if (!requestedVaccination.isEmpty()) {
             String vaccinations = patient.getVaccinations();
 
@@ -51,7 +50,6 @@ public class BackgroundCheckService {
                 validVaccine = true;
         }
 
-//        String requestedAllergy = requirements.get("allergy");
         if (!requestedAllergy.isEmpty()) {
             String allergies = patient.getAllergies();
 
@@ -59,7 +57,6 @@ public class BackgroundCheckService {
                 validAllergy = true;
         }
 
-//        String requestedDiagnosis = requirements.get("diagnosis");
         if (!requestedDiagnosis.isEmpty()) {
             List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
 

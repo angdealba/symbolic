@@ -1,4 +1,4 @@
-package com.symbolic.symbolic.services;
+package com.symbolic.symbolic.service;
 
 import com.symbolic.symbolic.entity.Diagnosis;
 import com.symbolic.symbolic.entity.MedicalPractitioner;

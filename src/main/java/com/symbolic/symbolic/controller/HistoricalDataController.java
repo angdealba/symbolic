@@ -1,7 +1,7 @@
 package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.entity.Diagnosis;
-import com.symbolic.symbolic.services.HistoricalDataService;
+import com.symbolic.symbolic.service.HistoricalDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
