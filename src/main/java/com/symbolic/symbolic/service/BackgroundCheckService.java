@@ -63,7 +63,10 @@ public class BackgroundCheckService {
     // String requestedAllergy = requirements.get("allergy");
     if (!requestedAllergy.isEmpty()) {
       String allergies = patient.getAllergies();
-
+        // Get and check records
+        if (!requestedVaccination.isEmpty()) {
+            String vaccinations = patient.getVaccinations();
+        }
       if (allergies.contains(requestedAllergy)) {
         validAllergy = true;
       }
@@ -72,6 +75,9 @@ public class BackgroundCheckService {
     // String requestedDiagnosis = requirements.get("diagnosis");
     if (!requestedDiagnosis.isEmpty()) {
       List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
+        if (!requestedAllergy.isEmpty()) {
+            String allergies = patient.getAllergies();
+        }
 
       for (Diagnosis diagnosis : diagnoses) {
         if (diagnosis.getCondition().equalsIgnoreCase(requestedDiagnosis)) {
@@ -82,6 +88,9 @@ public class BackgroundCheckService {
     }
 
     Map<String, Boolean> result = new HashMap<>();
+        if (!requestedDiagnosis.isEmpty()) {
+            List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
+        }
 
     // Return Map with all relevant data
     result.put("vaccination", validVaccine);

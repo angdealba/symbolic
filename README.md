@@ -560,6 +560,19 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - Sample Params: ? location=40.8075, 73.9626&start=2023-10-01&end=2023-10-26&N=3
 
 
+#### Background Check Endpoints
+- /api/bgcheck
+  - GET
+    - Description:
+    - Returns a JSON object of items indicating whether or not the requested user passes any of the given requirements and a 200 OK on success. Returns an error messaage and 400 Bad Request on missing user ID in request body.
+    - Fields: a JSON object containing the following values:
+      - id (type: Long)
+      - vaccine (type: String, optional)
+      - allergy (type: String, optional)
+      - diagnosis (type: String, optional)
+    - Sample body: {"id": 1002, "vaccine": "flu"}
+
+
 ## Testing
 In order to test our service, we have written a range of Unit Tests targeting all of the core methods to ensure that all of the data type classes behave as expected and that all of the functionality for setting and modifying values in the database work correctly.  Our tests rely upon the JUnit testing framework and aim to test every function within the data classes to ensure that they produce the expected outputs for various input scenarios.  We also aimed to test boundary conditions and exceptional scenarios within the input types for these classes to ensure that all possible inputs are handled appropriately and that our service does not reach an error state under unusual inputs.  Finally, we used the Mockito mocking framework to create mocks the repository lookup methods in our API service methods to simulate the database returning data objects matching a search query so that we are able to unit test the functionality of the Service class methods.
 
