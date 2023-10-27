@@ -1,6 +1,6 @@
 package com.symbolic.symbolic.service;
 
-import com.symbolic.symbolic.entity.MedicalPractitioner;
+import com.symbolic.symbolic.entity.Diagnosis;
 import com.symbolic.symbolic.entity.Patient;
 import com.symbolic.symbolic.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+
+import static org.mockito.Mockito.when;
 
 public class BackgroundCheckServiceTest {
 
@@ -30,14 +33,27 @@ public class BackgroundCheckServiceTest {
     @Test
     public void testBackgroundCheck() {
         // Mock patient
-        Patient subject = new Patient("flu", "peanut", null);
+        Patient patient = new Patient("flu", "peanut", null);
+
+        // Mock diagnosis
+        Diagnosis diagnosis = new Diagnosis("salmonella", "antibiotics", new Date());
+        List<Diagnosis> diag_list = new ArrayList<>();
+        diag_list.add(diagnosis);
 
         // Mock input
-        long request_id = subject.getId();
+        long request_id = patient.getId();
         String request_vaccinations = "measles";
         String request_allergies = "peanut";
-        String request_
+        String request_diagnosis = null;
 
+        // Mock operations
+        when(patientRepository.findById(request_id)).thenReturn(Optional.of(patient));
+        when(diagnosisRepository.findDiagnosesByPatientId(request_id)).thenReturn(diag_list);
+
+        // Test service
+        
+
+        // Assert correctness
 
     }
 }
