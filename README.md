@@ -576,3 +576,4 @@ A total of 176 API system tests are included across the two files in the **postm
 
     
 ## Style Checker
+The style checking for the project was done inside IntelliJ Idea using the Checkstyle-IDEA plugin, which allows for Checkstyle to be run as an embedded feature within the API.  For the project we chose to use the Google Checks checkstyle guide for the style of all of our code.  Before submitting the project, Checkstyle-IDEA was run on the entire **src/main/java** sources root directory and Checkstyle found no problems in any of the files contained in the subdirectories.  Although Checkstyle-IDEA does not produce a file output, a screenshot of this Checkstyle result is located at CheckstyleConfirmation.png in the root folder of this repository.
