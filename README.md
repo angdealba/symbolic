@@ -526,6 +526,19 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - Fields: None
     - Sample body: N/A
 
+#### Background Check Endpoints
+- /api/bgcheck
+  - GET
+    - Description:
+    - Returns a JSON object of items indicating whether or not the requested user passes any of the given requirements and a 200 OK on success. Returns an error messaage and 400 Bad Request on missing user ID in request body.
+    - Fields: a JSON object containing the following values:
+      - id (type: Long)
+      - vaccine (type: String, optional)
+      - allergy (type: String, optional)
+      - diagnosis (type: String, optional)
+    - Sample body: {"id": 1002, "vaccine": "flu"}
+
+
 ## Testing
 
 ### Unit Tests
