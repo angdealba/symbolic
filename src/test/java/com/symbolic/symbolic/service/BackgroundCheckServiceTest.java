@@ -11,6 +11,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 
 public class BackgroundCheckServiceTest {
@@ -44,16 +46,20 @@ public class BackgroundCheckServiceTest {
         long request_id = patient.getId();
         String request_vaccinations = "measles";
         String request_allergies = "peanut";
-        String request_diagnosis = null;
+        String request_diagnosis = "covid";
 
         // Mock operations
         when(patientRepository.findById(request_id)).thenReturn(Optional.of(patient));
         when(diagnosisRepository.findDiagnosesByPatientId(request_id)).thenReturn(diag_list);
 
         // Test service
-        
+        Map<String, Boolean> result = backgroundCheckService.getBGCheck(request_id, request_vaccinations,
+                request_allergies, request_diagnosis);
 
         // Assert correctness
-
+        assertNotEquals(null, result);
+        assertEquals(true, result.get("vaccination"));
+        assertEquals(false, result.get("allergy"));
+        assertEquals(false, result.get("diagnosis"));
     }
 }
