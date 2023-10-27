@@ -53,7 +53,7 @@ public class BackgroundCheckServiceTest {
         when(diagnosisRepository.findDiagnosesByPatientId(request_id)).thenReturn(diag_list);
 
         // Test service
-        Map<String, Boolean> result = backgroundCheckService.getBGCheck(request_id, request_vaccinations,
+        Map<String, Boolean> result = backgroundCheckService.getBackgroundCheck(request_id, request_vaccinations,
                 request_allergies, request_diagnosis);
 
         // Assert correctness
