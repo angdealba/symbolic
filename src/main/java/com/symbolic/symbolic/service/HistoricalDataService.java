@@ -14,15 +14,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
+
 
 /**
  * Implements the functionality for retrieving historical diagnosis trends.
  */
 @Service
+@RestController("HistoricalDataService")
 public class HistoricalDataService {
 
   @Autowired
   DiagnosisRepository diagnosisRepository;
+  @Autowired
   MedicalPractitionerRepository medicalPractitionerRepository;
 
   /**
@@ -67,10 +71,10 @@ public class HistoricalDataService {
       Double latitudeThreshold = 0.1;
       Double longitudeThreshold = 0.1;
 
-      Double minLatitude = Integer.parseInt(location.get(0)) - latitudeThreshold;
-      Double maxLatitude = Integer.parseInt(location.get(0)) + latitudeThreshold;
-      Double minLongitude = Integer.parseInt(location.get(0)) - longitudeThreshold;
-      Double maxLongitude = Integer.parseInt(location.get(0)) + longitudeThreshold;
+      Double minLatitude = Double.parseDouble(location.get(0)) - latitudeThreshold;
+      Double maxLatitude = Double.parseDouble(location.get(0)) + latitudeThreshold;
+      Double minLongitude = Double.parseDouble(location.get(1)) - longitudeThreshold;
+      Double maxLongitude = Double.parseDouble(location.get(1)) + longitudeThreshold;
 
       List<MedicalPractitioner> practitioners = medicalPractitionerRepository
           .findByLatitudeBetweenAndLongitudeBetween(
