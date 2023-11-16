@@ -34,10 +34,12 @@ public class HistoricalDataController {
       @RequestParam(required = false) List<String> location
 
   ) {
-    System.out.println("In history/week");
-    if (location != null && location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    if (location != null) {
+      if (location.size() == 1) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
+
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition,
         java.sql.Date.valueOf(LocalDate.now().minusWeeks(1)),
         java.sql.Date.valueOf(LocalDate.now()), location);
@@ -55,8 +57,10 @@ public class HistoricalDataController {
       @RequestParam("condition") String condition,
       @RequestParam(required = false) List<String> location
   ) {
-    if (location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    if (location != null) {
+      if (location.size() == 1) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition,
         java.sql.Date.valueOf(LocalDate.now().minusMonths(1)),
@@ -75,8 +79,10 @@ public class HistoricalDataController {
       @RequestParam("condition") String condition,
       @RequestParam(required = false) List<String> location
   ) {
-    if (location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    if (location != null) {
+      if (location.size() == 1) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition,
         java.sql.Date.valueOf(LocalDate.now().minusYears(1)),
@@ -97,8 +103,10 @@ public class HistoricalDataController {
       @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
       @RequestParam(required = false) List<String> location
   ) {
-    if (location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    if (location != null) {
+      if (location.size() == 1) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(
         condition, startDate, endDate, location);

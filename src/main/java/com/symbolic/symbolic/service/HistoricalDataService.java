@@ -42,12 +42,14 @@ public class HistoricalDataService {
                                                       Date endDate, List<String> location) {
     //search for condition
     List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByConditionIgnoreCase(condition);
+
     if (!diagnoses.isEmpty()) {
       diagnoses = filter(diagnoses, startDate, endDate, location);
     }
     return diagnoses;
 
   }
+
 
   /**
    * Performs the function of filtering a list of diagnoses to just the diagnoses
@@ -61,30 +63,36 @@ public class HistoricalDataService {
    */
   public List<Diagnosis> filter(List<Diagnosis> diagnoses, Date startDate,
                                 Date endDate, List<String> location) {
-    //filter by date
-    diagnoses = diagnoses.stream().filter(diagnosis ->
-        diagnosis.getDate().after(startDate)
-            && diagnosis.getDate().before(endDate)).collect(Collectors.toList());
-
-    //filter by location
-    if (!location.isEmpty()) {
-      Double latitudeThreshold = 0.1;
-      Double longitudeThreshold = 0.1;
-
-      Double minLatitude = Double.parseDouble(location.get(0)) - latitudeThreshold;
-      Double maxLatitude = Double.parseDouble(location.get(0)) + latitudeThreshold;
-      Double minLongitude = Double.parseDouble(location.get(1)) - longitudeThreshold;
-      Double maxLongitude = Double.parseDouble(location.get(1)) + longitudeThreshold;
-
-      List<MedicalPractitioner> practitioners = medicalPractitionerRepository
-          .findByLatitudeBetweenAndLongitudeBetween(
-          minLatitude, maxLatitude, minLongitude, maxLongitude
-      );
+      //filter by date
       diagnoses = diagnoses.stream().filter(diagnosis ->
-          practitioners.contains(diagnosis.getPractitioner())).collect(Collectors.toList());
+              diagnosis.getDate().after(startDate)
+                      && diagnosis.getDate().before(endDate)).collect(Collectors.toList());
 
-    }
-    return diagnoses;
+      //filter by location
+      List<Diagnosis> finalDiagnoses = diagnoses;
+      if (location != null) {
+          if (!location.isEmpty()) {
+              Double latitudeThreshold = 0.1;
+              Double longitudeThreshold = 0.1;
+
+              Double minLatitude = Double.parseDouble(location.get(0)) - latitudeThreshold;
+              Double maxLatitude = Double.parseDouble(location.get(0)) + latitudeThreshold;
+              Double minLongitude = Double.parseDouble(location.get(1)) - longitudeThreshold;
+              Double maxLongitude = Double.parseDouble(location.get(1)) + longitudeThreshold;
+
+              List<MedicalPractitioner> practitioners = medicalPractitionerRepository
+                      .findByLatitudeBetweenAndLongitudeBetween(
+                              minLatitude, maxLatitude, minLongitude, maxLongitude
+                      );
+
+              List<Diagnosis> filteredDiagnoses = practitioners.stream()
+                      .flatMap(practitioner -> practitioner.getDiagnoses().stream())
+                      .filter(diagnosis -> finalDiagnoses.contains(diagnosis))
+                      .collect(Collectors.toList());
+
+          }
+      }
+      return finalDiagnoses;
   }
 
   /**
