@@ -39,7 +39,7 @@ public class HistoricalDataService {
    * @return a list of diagnoses matching the search terms
    */
   public List<Diagnosis> getHistoricalDataByCondition(String condition, Date startDate,
-                                                      Date endDate, List<String> location) {
+                                                      Date endDate, List<Double> location) {
     //search for condition
     List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByConditionIgnoreCase(condition);
 
@@ -62,7 +62,7 @@ public class HistoricalDataService {
    * @return a list of diagnoses from the original list that match the search params
    */
   public List<Diagnosis> filter(List<Diagnosis> diagnoses, Date startDate,
-                                Date endDate, List<String> location) {
+                                Date endDate, List<Double> location) {
       //filter by date
       diagnoses = diagnoses.stream().filter(diagnosis ->
               diagnosis.getDate().after(startDate)
@@ -75,10 +75,10 @@ public class HistoricalDataService {
               Double latitudeThreshold = 0.1;
               Double longitudeThreshold = 0.1;
 
-              Double minLatitude = Double.parseDouble(location.get(0)) - latitudeThreshold;
-              Double maxLatitude = Double.parseDouble(location.get(0)) + latitudeThreshold;
-              Double minLongitude = Double.parseDouble(location.get(1)) - longitudeThreshold;
-              Double maxLongitude = Double.parseDouble(location.get(1)) + longitudeThreshold;
+              Double minLatitude = location.get(0) - latitudeThreshold;
+              Double maxLatitude = location.get(0) + latitudeThreshold;
+              Double minLongitude = location.get(1) - longitudeThreshold;
+              Double maxLongitude = location.get(1) + longitudeThreshold;
 
               List<MedicalPractitioner> practitioners = medicalPractitionerRepository
                       .findByLatitudeBetweenAndLongitudeBetween(
@@ -87,8 +87,8 @@ public class HistoricalDataService {
 
               List<Diagnosis> filteredDiagnoses = practitioners.stream()
                       .flatMap(practitioner -> practitioner.getDiagnoses().stream())
-                      .filter(diagnosis -> finalDiagnoses.contains(diagnosis))
-                      .collect(Collectors.toList());
+                      .filter(finalDiagnoses::contains)
+                      .toList();
 
           }
       }
@@ -104,7 +104,7 @@ public class HistoricalDataService {
    * @param n integer value for the number of conditions to return
    * @return a map of condition names to frequencies
    */
-  public Map<String, Integer> getTopConditions(List<String> location, Date startDate,
+  public Map<String, Integer> getTopConditions(List<Double> location, Date startDate,
                                                Date endDate, int n) {
     List<Diagnosis> diagnoses = new ArrayList<>(diagnosisRepository.findAll());
 
@@ -116,13 +116,12 @@ public class HistoricalDataService {
     }
 
     //alg from https://stackoverflow.com/questions/109383/sort-a-mapkey-value-by-values
-    Map<String, Integer> topN =
-        counts.entrySet().stream()
+    return counts.entrySet().stream()
             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .limit(n)
             .collect(Collectors.toMap(
                 Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
-    return topN;
+
   }
 }
