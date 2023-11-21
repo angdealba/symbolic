@@ -32,11 +32,6 @@ public class BackgroundCheckService {
                                                  String requestedDiagnosis) {
     // This implementation ignores irrelevant entries in `requirements`
 
-    // If no patients, abort
-    if (patientRepository == null) {
-      return null;
-    }
-
     // Ensure a valid patient ID
     Optional<Patient> patientOption = patientRepository.findById(id);
     Patient patient = null;
@@ -52,32 +47,26 @@ public class BackgroundCheckService {
 
     // Get and check records
     // String requestedVaccination = requirements.get("vaccination");
-    if (!requestedVaccination.isEmpty()) {
+    if (requestedVaccination != null) {
       String vaccinations = patient.getVaccinations();
 
-      if (vaccinations.contains(requestedVaccination)) {
+      if (vaccinations.toLowerCase().contains(requestedVaccination.toLowerCase())) {
         validVaccine = true;
       }
     }
 
     // String requestedAllergy = requirements.get("allergy");
-    if (!requestedAllergy.isEmpty()) {
+    if (requestedAllergy != null) {
       String allergies = patient.getAllergies();
       // Get and check records
-      if (!requestedVaccination.isEmpty()) {
-        String vaccinations = patient.getVaccinations();
-      }
-      if (allergies.contains(requestedAllergy)) {
+      if (allergies.toLowerCase().contains(requestedAllergy.toLowerCase())) {
         validAllergy = true;
       }
     }
 
     // String requestedDiagnosis = requirements.get("diagnosis");
-    if (!requestedDiagnosis.isEmpty()) {
+    if (requestedDiagnosis != null) {
       List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
-      if (!requestedAllergy.isEmpty()) {
-        String allergies = patient.getAllergies();
-      }
 
       for (Diagnosis diagnosis : diagnoses) {
         if (diagnosis.getCondition().equalsIgnoreCase(requestedDiagnosis)) {
@@ -88,9 +77,6 @@ public class BackgroundCheckService {
     }
 
     Map<String, Boolean> result = new HashMap<>();
-    if (!requestedDiagnosis.isEmpty()) {
-      List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
-    }
 
     // Return Map with all relevant data
     result.put("vaccination", validVaccine);
