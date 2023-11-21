@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /* Object used to represent HTTP body requests */
-class Body{
+class HistoricalDataBody{
   String condition;
   List<Double> Location;
   Date startDate;
@@ -75,7 +75,7 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/week")
   public ResponseEntity<?> getHistoricalDataByConditionWeek(
-          @RequestBody Body body
+          @RequestBody HistoricalDataBody body
   ) {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
@@ -107,7 +107,7 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/month")
   public ResponseEntity<?> getHistoricalDataByConditionMonth(
-          @RequestBody Body body
+          @RequestBody HistoricalDataBody body
   ) {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
@@ -137,7 +137,7 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/year")
   public ResponseEntity<?> getHistoricalDataByConditionYear(
-      @RequestBody Body body
+      @RequestBody HistoricalDataBody body
   ) {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
@@ -167,7 +167,7 @@ public class HistoricalDataController {
    */
   @GetMapping("/history")
   public ResponseEntity<?> getHistoricalDataByCondition(
-      @RequestBody Body body
+      @RequestBody HistoricalDataBody body
   ) {
 
     List<Double> location = body.getLocation();
@@ -199,7 +199,7 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/top-conditions")
   public ResponseEntity<?> getTopConditions(
-          @RequestBody Body body
+          @RequestBody HistoricalDataBody body
   ) {
     List<Double> location = body.getLocation();
     Date startDate = body.getStartDate();
