@@ -33,7 +33,7 @@ public class HistoricalDataServiceTest {
     private MedicalPractitioner practitioner;
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-    private List<String> location = new ArrayList<>();
+    private List<Double> location = new ArrayList<>();
 
     Date begin;
     Date end;
@@ -58,8 +58,8 @@ public class HistoricalDataServiceTest {
         practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
         diagnosis.setPractitioner(practitioner);
 
-        location.add("40.7");
-        location.add("74.0");
+        location.add(40.7);
+        location.add(74.0);
         begin = formatter.parse("2023-10-10");
         end = formatter.parse("2023-10-30");
 

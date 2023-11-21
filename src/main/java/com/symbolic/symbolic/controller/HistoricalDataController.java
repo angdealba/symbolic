@@ -10,11 +10,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+/* Object used to represent HTTP body requests */
+class HistoricalDataBody{
+  String condition;
+  List<Double> Location;
+  Date startDate;
+  Date endDate;
+  int N;
+
+  public String getCondition() {
+    return condition;
+  }
+
+  public Date getEndDate() {
+    return endDate;
+  }
+
+  public Date getStartDate(){
+    return startDate;
+  }
+
+  public List<Double> getLocation() {
+    return Location;
+  }
+
+  public int getN() {
+    return N;
+  }
+
+  public void setCondition(String condition) {
+    this.condition = condition;
+  }
+
+  public void setEndDate(Date endDate) {
+    this.endDate = endDate;
+  }
+
+  public void setLocation(List<Double> location) {
+    Location = location;
+  }
+
+  public void setStartDate(Date startDate) {
+    this.startDate = startDate;
+  }
+
+  public void setN(int n) {
+    N = n;
+  }
+}
 /**
  * Implements all functionality for the historical data API.
  */
@@ -30,14 +75,24 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/week")
   public ResponseEntity<?> getHistoricalDataByConditionWeek(
-      @RequestParam("condition") String condition,
-      @RequestParam(required = false) List<String> location
-
+          @RequestBody HistoricalDataBody body
   ) {
-    System.out.println("In history/week");
-    if (location != null && location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    List<Double> location = body.getLocation();
+    String condition = body.getCondition();
+
+    if (condition == null){
+      return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
+
+    if (location != null) {
+      if (location.size() != 2) {
+        return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
+      }
+      if (location.get(0) < 0 || location.get(1) < 0) {
+        return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
+      }
+    }
+
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition,
         java.sql.Date.valueOf(LocalDate.now().minusWeeks(1)),
         java.sql.Date.valueOf(LocalDate.now()), location);
@@ -52,11 +107,21 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/month")
   public ResponseEntity<?> getHistoricalDataByConditionMonth(
-      @RequestParam("condition") String condition,
-      @RequestParam(required = false) List<String> location
+          @RequestBody HistoricalDataBody body
   ) {
-    if (location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    List<Double> location = body.getLocation();
+    String condition = body.getCondition();
+
+    if (condition == null){
+      return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
+    }
+    if (location != null) {
+      if (location.size() != 2) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
+      if (location.get(0) < 0 || location.get(1) < 0) {
+        return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition,
         java.sql.Date.valueOf(LocalDate.now().minusMonths(1)),
@@ -72,11 +137,21 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/year")
   public ResponseEntity<?> getHistoricalDataByConditionYear(
-      @RequestParam("condition") String condition,
-      @RequestParam(required = false) List<String> location
+      @RequestBody HistoricalDataBody body
   ) {
-    if (location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    List<Double> location = body.getLocation();
+    String condition = body.getCondition();
+
+    if (condition == null){
+      return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
+    }
+    if (location != null) {
+      if (location.size() != 2) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
+      if (location.get(0) < 0 || location.get(1) < 0) {
+        return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(condition,
         java.sql.Date.valueOf(LocalDate.now().minusYears(1)),
@@ -92,13 +167,24 @@ public class HistoricalDataController {
    */
   @GetMapping("/history")
   public ResponseEntity<?> getHistoricalDataByCondition(
-      @RequestParam("condition") String condition,
-      @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-      @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-      @RequestParam(required = false) List<String> location
+      @RequestBody HistoricalDataBody body
   ) {
-    if (location.size() == 1) {
-      return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+
+    List<Double> location = body.getLocation();
+    String condition = body.getCondition();
+    Date startDate = body.getStartDate();
+    Date endDate = body.getEndDate();
+
+    if (condition == null){
+      return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
+    }
+    if (location != null) {
+      if (location.size() != 2) {
+        return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+      }
+      if (location.get(0) < 0 || location.get(1) < 0) {
+        return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
+      }
     }
     List<Diagnosis> result = historicalDataService.getHistoricalDataByCondition(
         condition, startDate, endDate, location);
@@ -113,13 +199,22 @@ public class HistoricalDataController {
    */
   @GetMapping("/history/top-conditions")
   public ResponseEntity<?> getTopConditions(
-      @RequestParam("location") List<String> location,
-      @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-      @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-      @RequestParam(defaultValue = "3") int n
+          @RequestBody HistoricalDataBody body
   ) {
-    if (location.size() == 1) {
+    List<Double> location = body.getLocation();
+    Date startDate = body.getStartDate();
+    Date endDate = body.getEndDate();
+    int n = body.getN();
+
+    if(n == 0){
+      n = 3;
+    }
+
+    if (location.size() != 2) {
       return new ResponseEntity<>("Missing coordinate information", HttpStatus.BAD_REQUEST);
+    }
+    if (location.get(0) < 0 || location.get(1) < 0) {
+      return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
     }
 
     Map<String, Integer> result = historicalDataService.getTopConditions(

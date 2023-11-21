@@ -857,6 +857,99 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Patient-Diagnosis 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/diagnosis?patientId=1&diagnosisId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "1"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Diagnosis 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/diagnosis?patientId=2&diagnosisId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "2"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patient-Diagnosis 3",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/patient/diagnosis?patientId=2&diagnosisId=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"patient",
+								"diagnosis"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "2"
+								},
+								{
+									"key": "diagnosisId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
