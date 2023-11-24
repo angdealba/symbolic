@@ -3,6 +3,7 @@ package com.symbolic.symbolic.controller;
 import com.symbolic.symbolic.entity.Diagnosis;
 import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
+import com.symbolic.symbolic.entity.Prescription;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
@@ -20,6 +21,30 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * RequestBody object used to represent Diagnosis-related requests
+ */
+class DiagnosisRequestBody {
+  Long id;
+  Diagnosis diagnosis;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Diagnosis getDiagnosis() {
+    return diagnosis;
+  }
+
+  public void setDiagnosis(Diagnosis diagnosis) {
+    this.diagnosis = diagnosis;
+  }
+}
 
 /**
  * Implements all functionality for the diagnosis data API.
@@ -53,7 +78,13 @@ public class DiagnosisController {
    * Implements GET endpoint /diagnosis for returning data matching an id.
    */
   @GetMapping("/diagnosis")
-  public ResponseEntity<?> getDiagnosisById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getDiagnosisById(@RequestBody DiagnosisRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
     if (diagnosisData.isPresent()) {
@@ -69,7 +100,13 @@ public class DiagnosisController {
    * Implements POST endpoint /diagnosis for uploading data.
    */
   @PostMapping("/diagnosis")
-  public ResponseEntity<?> createDiagnosis(@RequestBody Diagnosis diagnosis) {
+  public ResponseEntity<?> createDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
+    if (requestBody.getDiagnosis() == null) {
+      String errorMessage = "Missing 'diagnosis' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Diagnosis diagnosis = requestBody.getDiagnosis();
+
     Diagnosis newDiagnosis = new Diagnosis(
         diagnosis.getCondition(), diagnosis.getTreatmentInfo(), diagnosis.getDate()
     );
@@ -82,8 +119,19 @@ public class DiagnosisController {
    * Implements PUT endpoint /diagnosis for updating data matching an id.
    */
   @PutMapping("/diagnosis")
-  public ResponseEntity<?> updateDiagnosis(@RequestParam("id") Long id,
-                                           @RequestBody Diagnosis diagnosis) {
+  public ResponseEntity<?> updateDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
+    if (requestBody.getDiagnosis() == null) {
+      String errorMessage = "Missing 'diagnosis' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Diagnosis diagnosis = requestBody.getDiagnosis();
+
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
     if (diagnosisData.isPresent()) {
@@ -104,7 +152,13 @@ public class DiagnosisController {
    * Implements DELETE endpoint /diagnosis for removing data matching an id.
    */
   @DeleteMapping("/diagnosis")
-  public ResponseEntity<?> deleteDiagnosis(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deleteDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
     if (diagnosisData.isPresent()) {

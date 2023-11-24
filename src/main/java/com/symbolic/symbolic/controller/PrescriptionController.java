@@ -18,8 +18,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * RequestBody object used to represent Prescription-related requests
+ */
+class PrescriptionRequestBody {
+  Long id;
+  Prescription prescription;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Prescription getPrescription() {
+    return prescription;
+  }
+
+  public void setPrescription(Prescription prescription) {
+    this.prescription = prescription;
+  }
+}
 
 /**
  * Implements all functionality for the prescription data API.
@@ -53,7 +76,13 @@ public class PrescriptionController {
    * Implements GET endpoint /prescription for returning data matching an id.
    */
   @GetMapping("/prescription")
-  public ResponseEntity<?> getPrescriptionById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getPrescriptionById(@RequestBody PrescriptionRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
     if (prescriptionData.isPresent()) {
@@ -69,7 +98,13 @@ public class PrescriptionController {
    * Implements POST endpoint /prescription for uploading data.
    */
   @PostMapping("/prescription")
-  public ResponseEntity<?> createPrescription(@RequestBody Prescription prescription) {
+  public ResponseEntity<?> createPrescription(@RequestBody PrescriptionRequestBody requestBody) {
+    if (requestBody.getPrescription() == null) {
+      String errorMessage = "Missing 'prescription' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Prescription prescription = requestBody.getPrescription();
+
     Prescription newPrescription = new Prescription(
         prescription.getDosage(), prescription.getDailyUses(), prescription.getCost(),
         prescription.getInstructions()
@@ -83,8 +118,19 @@ public class PrescriptionController {
    * Implements PUT endpoint /prescription for updating data matching an id.
    */
   @PutMapping("/prescription")
-  public ResponseEntity<?> updatePrescription(@RequestParam("id") Long id,
-                                              @RequestBody Prescription prescription) {
+  public ResponseEntity<?> updatePrescription(@RequestBody PrescriptionRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
+    if (requestBody.getPrescription() == null) {
+      String errorMessage = "Missing 'prescription' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Prescription prescription = requestBody.getPrescription();
+
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
     if (prescriptionData.isPresent()) {
@@ -106,7 +152,13 @@ public class PrescriptionController {
    * Implements DELETE endpoint /prescription for removing data matching an id.
    */
   @DeleteMapping("/prescription")
-  public ResponseEntity<?> deletePrescription(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deletePrescription(@RequestBody PrescriptionRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
     if (prescriptionData.isPresent()) {
