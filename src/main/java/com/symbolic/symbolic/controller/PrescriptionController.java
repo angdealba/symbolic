@@ -25,7 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
  */
 class PrescriptionRequestBody {
   Long id;
-  Prescription prescription;
+  Integer dosage;
+  Integer dailyUses;
+  Integer cost;
+  String instructions;
 
   public Long getId() {
     return id;
@@ -35,12 +38,20 @@ class PrescriptionRequestBody {
     this.id = id;
   }
 
-  public Prescription getPrescription() {
-    return prescription;
+  public Integer getDosage() {
+    return dosage;
   }
 
-  public void setPrescription(Prescription prescription) {
-    this.prescription = prescription;
+  public Integer getDailyUses() {
+    return dailyUses;
+  }
+
+  public Integer getCost() {
+    return cost;
+  }
+
+  public String getInstructions() {
+    return instructions;
   }
 }
 
@@ -99,15 +110,20 @@ public class PrescriptionController {
    */
   @PostMapping("/prescription")
   public ResponseEntity<?> createPrescription(@RequestBody PrescriptionRequestBody requestBody) {
-    if (requestBody.getPrescription() == null) {
-      String errorMessage = "Missing 'prescription' field in request body";
+    if (requestBody.getDosage() == null) {
+      String errorMessage = "Missing 'dosage' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDailyUses() == null) {
+      String errorMessage = "Missing 'dailyUses' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getCost() == null) {
+      String errorMessage = "Missing 'cost' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Prescription prescription = requestBody.getPrescription();
 
     Prescription newPrescription = new Prescription(
-        prescription.getDosage(), prescription.getDailyUses(), prescription.getCost(),
-        prescription.getInstructions()
+        requestBody.getDosage(), requestBody.getDailyUses(), requestBody.getCost(),
+        requestBody.getInstructions()
     );
 
     prescriptionRepository.save(newPrescription);
@@ -125,22 +141,28 @@ public class PrescriptionController {
     }
     Long id = requestBody.getId();
 
-    if (requestBody.getPrescription() == null) {
-      String errorMessage = "Missing 'prescription' field in request body";
-      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-    }
-    Prescription prescription = requestBody.getPrescription();
-
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
     if (prescriptionData.isPresent()) {
       Prescription oldPrescription = prescriptionData.get();
-      oldPrescription.setDosage(prescription.getDosage());
-      oldPrescription.setDailyUses(prescription.getDailyUses());
-      oldPrescription.setCost(prescription.getCost());
-      oldPrescription.setInstructions(prescription.getInstructions());
-      prescriptionRepository.save(oldPrescription);
 
+      if (requestBody.getDosage() != null) {
+        oldPrescription.setDosage(requestBody.getDosage());
+      }
+
+      if (requestBody.getDailyUses() != null) {
+        oldPrescription.setDailyUses(requestBody.getDailyUses());
+      }
+
+      if (requestBody.getCost() != null) {
+        oldPrescription.setCost(requestBody.getCost());
+      }
+
+      if (requestBody.getInstructions() != null) {
+        oldPrescription.setInstructions(requestBody.getInstructions());
+      }
+
+      prescriptionRepository.save(oldPrescription);
       return new ResponseEntity<>(oldPrescription, HttpStatus.OK);
     } else {
       String errorMessage = "No prescription found with id " + id;

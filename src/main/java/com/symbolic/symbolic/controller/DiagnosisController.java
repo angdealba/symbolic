@@ -7,7 +7,11 @@ import com.symbolic.symbolic.entity.Prescription;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
  */
 class DiagnosisRequestBody {
   Long id;
-  Diagnosis diagnosis;
+  String condition;
+  String treatmentInfo;
+  String date;
 
   public Long getId() {
     return id;
@@ -37,12 +43,16 @@ class DiagnosisRequestBody {
     this.id = id;
   }
 
-  public Diagnosis getDiagnosis() {
-    return diagnosis;
+  public String getCondition() {
+    return condition;
   }
 
-  public void setDiagnosis(Diagnosis diagnosis) {
-    this.diagnosis = diagnosis;
+  public String getTreatmentInfo() {
+    return treatmentInfo;
+  }
+
+  public String getDate() {
+    return date;
   }
 }
 
@@ -58,6 +68,8 @@ public class DiagnosisController {
   PatientRepository patientRepository;
   @Autowired
   MedicalPractitionerRepository practitionerRepository;
+
+  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
   /**
    * Implements GET endpoint /diagnoses for returning all data.
@@ -101,14 +113,28 @@ public class DiagnosisController {
    */
   @PostMapping("/diagnosis")
   public ResponseEntity<?> createDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
-    if (requestBody.getDiagnosis() == null) {
-      String errorMessage = "Missing 'diagnosis' field in request body";
+    if (requestBody.getCondition() == null) {
+      String errorMessage = "Missing 'condition' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getTreatmentInfo() == null) {
+      String errorMessage = "Missing 'treatmentInfo' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDate() == null) {
+      String errorMessage = "Missing 'date' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Diagnosis diagnosis = requestBody.getDiagnosis();
+
+    // Attempt to parse the date and return an error message if it is not in the yyyy-MM-dd format
+    Date parsedDate;
+    try {
+      parsedDate = formatter.parse(requestBody.getDate());
+    } catch (ParseException e) {
+      String errorMessage = "'date' field value must be in the format yyyy-MM-dd";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Diagnosis newDiagnosis = new Diagnosis(
-        diagnosis.getCondition(), diagnosis.getTreatmentInfo(), diagnosis.getDate()
+        requestBody.getCondition(), requestBody.getTreatmentInfo(), parsedDate
     );
 
     diagnosisRepository.save(newDiagnosis);
@@ -126,21 +152,30 @@ public class DiagnosisController {
     }
     Long id = requestBody.getId();
 
-    if (requestBody.getDiagnosis() == null) {
-      String errorMessage = "Missing 'diagnosis' field in request body";
-      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-    }
-    Diagnosis diagnosis = requestBody.getDiagnosis();
-
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
     if (diagnosisData.isPresent()) {
       Diagnosis oldDiagnosis = diagnosisData.get();
-      oldDiagnosis.setCondition(diagnosis.getCondition());
-      oldDiagnosis.setTreatmentInfo(diagnosis.getTreatmentInfo());
-      oldDiagnosis.setDate(diagnosis.getDate());
-      diagnosisRepository.save(oldDiagnosis);
 
+      if (requestBody.getCondition() != null) {
+        oldDiagnosis.setCondition(requestBody.getCondition());
+      }
+
+      if (requestBody.getTreatmentInfo() != null) {
+        oldDiagnosis.setTreatmentInfo(requestBody.getTreatmentInfo());
+      }
+
+      if (requestBody.getDate() != null) {
+        try {
+          Date parsedDate = formatter.parse(requestBody.getDate());
+          oldDiagnosis.setDate(parsedDate);
+        } catch (ParseException e) {
+          String errorMessage = "'date' field value must be in the format yyyy-MM-dd";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        }
+      }
+
+      diagnosisRepository.save(oldDiagnosis);
       return new ResponseEntity<>(oldDiagnosis, HttpStatus.OK);
     } else {
       String errorMessage = "No diagnosis found with id " + id;
