@@ -47,6 +47,51 @@ jobs:
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: jacoco-reporter
+      # You may pin to the exact commit or the version.
+      # uses: PavanMudigonda/jacoco-reporter@76044ebc031589dcbce0bb1048ffee1072a43f97
+      uses: PavanMudigonda/jacoco-reporter@v4.9
+      with:
+        # Path to the JaCoCo coverage results file which will be used to generate a report. The only coverage results format supported is the JaCoCo XML schema.
+        coverage_results_path: target/site/jacoco/jacoco.xml
+        # Optionally specify the level of output detail for the test results.
+    
+    #     output_level: # optional
+    #     # GITHUB_TOKEN to authenticate against API calls to attach report to Workflow Run.
+    
+    #     github_token: # optional, default is ${{github.token}}
+    #     # If true, will skip attaching the Tests Result report to
+    # the Workflow Run using a Check Run.  Useful if you just
+    # want to produce a Gist-based report via the `gist_name`
+    # and `gist_token` input parameters.
+    
+    #     skip_check_run: # optional
+    #     # Comma-separated list of one or more directories to scan for code 
+    # coverage, relative to the root of the project. Will include all .ps1
+    # and .psm1 files under these directories recursively.
+    
+    #     coverage_paths: # optional
+    #     # The name of the code coverage report object that will be attached
+    # to the Workflow Run.  Defaults to the name
+    # `COVERAGE_RESULTS_<datetime>` where `<datetime>` is in the form
+    # `yyyyMMdd_hhmmss`.
+    
+    #     coverage_report_name: # optional
+    #     # The title of the code coverage report that will be embedded in the
+    # report itself, which defaults to the same as the
+    # `code_coverage_report_name` input.
+    
+    #     coverage_report_title: # optional
+    #     # Minimum allowed coverage percentage as an integer.
+    #     minimum_coverage: # optional
+    #     # Fail the action when the minimum coverage was not met.
+    #     fail_below_threshold: # optional
+    #     # If true, will skip attaching the Tests Result report to the 
+    # Workflow Run using a Check Run. Useful if your report has 65k 
+    # characters that is not accepted by Github REST and GraphQL APIs
+    
+    #     publish_only_summary: # optional
+          
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     # - name: Update dependency graph
