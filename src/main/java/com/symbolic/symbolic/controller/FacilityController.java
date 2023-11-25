@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -169,7 +168,6 @@ public class FacilityController {
       String errorMessage = "Missing 'specialization' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-
 
     Facility newFacility = new Facility(
         requestBody.getLatitude(), requestBody.getLongitude(), requestBody.getSpecialization()
@@ -562,7 +560,7 @@ public class FacilityController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long appointmentId = requestBody.getFacilityId();
+    Long appointmentId = requestBody.getAppointmentId();
 
     if (!appointmentRepository.existsById(appointmentId)) {
       String errorMessage = "No appointment found with id " + appointmentId;
