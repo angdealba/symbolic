@@ -20,42 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RequestBody object used to represent InsurancePolicy-related requests
- */
-class PolicyRequestBody {
-  Long id;
-  Integer premiumCost;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Integer getPremiumCost() {
-    return premiumCost;
-  }
-}
-
-/**
- * RequestBody object used to represent Policy-Patient join requests
- */
-class PolicyPatientBody {
-  Long policyId;
-  Long patientId;
-
-  public Long getPolicyId() {
-    return policyId;
-  }
-
-  public Long getPatientId() {
-    return patientId;
-  }
-}
-
-/**
  * Implements all functionality for the insurance policy data API.
  */
 @RestController
@@ -65,6 +29,42 @@ public class InsurancePolicyController {
   InsurancePolicyRepository insurancePolicyRepository;
   @Autowired
   PatientRepository patientRepository;
+
+  /**
+   * RequestBody object used to represent InsurancePolicy-related requests.
+   */
+  class PolicyRequestBody {
+    Long id;
+    Integer premiumCost;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public Integer getPremiumCost() {
+      return premiumCost;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Policy-Patient join requests.
+   */
+  class PolicyPatientBody {
+    Long policyId;
+    Long patientId;
+
+    public Long getPolicyId() {
+      return policyId;
+    }
+
+    public Long getPatientId() {
+      return patientId;
+    }
+  }
 
   /**
    * Implements GET endpoint /policies for returning all data.

@@ -8,7 +8,6 @@ import com.symbolic.symbolic.repository.AppointmentRepository;
 import com.symbolic.symbolic.repository.FacilityRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,31 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RequestBody object used to represent Appointment-related requests
- */
-class AppointmentRequestBody {
-  Long id;
-  String dateTime;
-  Integer cost;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getDateTime() {
-    return dateTime;
-  }
-
-  public Integer getCost() {
-    return cost;
-  }
-}
-
-/**
  * Implements all functionality for the appointment data API.
  */
 @RestController
@@ -67,6 +41,31 @@ public class AppointmentController {
   FacilityRepository facilityRepository;
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+  /**
+   * RequestBody object used to represent Appointment-related requests.
+   */
+  class AppointmentRequestBody {
+    Long id;
+    String dateTime;
+    Integer cost;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public String getDateTime() {
+      return dateTime;
+    }
+
+    public Integer getCost() {
+      return cost;
+    }
+  }
 
   /**
    * Implements GET endpoint /appointments for returning all data.

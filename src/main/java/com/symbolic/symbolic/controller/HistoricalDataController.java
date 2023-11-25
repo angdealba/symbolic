@@ -10,56 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/* Object used to represent HTTP body requests */
-class HistoricalDataBody{
-  String condition;
-  List<Double> Location;
-  Date startDate;
-  Date endDate;
-  int N;
-
-  public String getCondition() {
-    return condition;
-  }
-
-  public Date getEndDate() {
-    return endDate;
-  }
-
-  public Date getStartDate(){
-    return startDate;
-  }
-
-  public List<Double> getLocation() {
-    return Location;
-  }
-
-  public int getN() {
-    return N;
-  }
-
-  public void setCondition(String condition) {
-    this.condition = condition;
-  }
-
-  public void setEndDate(Date endDate) {
-    this.endDate = endDate;
-  }
-
-  public void setLocation(List<Double> location) {
-    Location = location;
-  }
-
-  public void setStartDate(Date startDate) {
-    this.startDate = startDate;
-  }
-
-  public void setN(int n) {
-    N = n;
-  }
-}
 /**
  * Implements all functionality for the historical data API.
  */
@@ -69,6 +24,55 @@ public class HistoricalDataController {
 
   @Autowired
   HistoricalDataService historicalDataService;
+
+  /* Object used to represent HTTP body requests */
+  class HistoricalDataBody{
+    String condition;
+    List<Double> Location;
+    Date startDate;
+    Date endDate;
+    int N;
+
+    public String getCondition() {
+      return condition;
+    }
+
+    public Date getEndDate() {
+      return endDate;
+    }
+
+    public Date getStartDate(){
+      return startDate;
+    }
+
+    public List<Double> getLocation() {
+      return Location;
+    }
+
+    public int getN() {
+      return N;
+    }
+
+    public void setCondition(String condition) {
+      this.condition = condition;
+    }
+
+    public void setEndDate(Date endDate) {
+      this.endDate = endDate;
+    }
+
+    public void setLocation(List<Double> location) {
+      Location = location;
+    }
+
+    public void setStartDate(Date startDate) {
+      this.startDate = startDate;
+    }
+
+    public void setN(int n) {
+      N = n;
+    }
+  }
 
   /**
    * Retrieves a list of Diagnoses that meet the specified search criteria in the past week.

@@ -30,84 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RequestBody object used to represent Patient-related requests
- */
-class PatientRequestBody {
-  Long id;
-  String vaccinations;
-  String allergies;
-  String accommodations;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getVaccinations() {
-    return vaccinations;
-  }
-
-  public String getAllergies() {
-    return allergies;
-  }
-
-  public String getAccommodations() {
-    return accommodations;
-  }
-}
-
-/**
- * RequestBody object used to represent Patient-Appointment join requests
- */
-class PatientAppointmentBody {
-  Long patientId;
-  Long appointmentId;
-
-  public Long getPatientId() {
-    return patientId;
-  }
-
-  public Long getAppointmentId() {
-    return appointmentId;
-  }
-}
-
-/**
- * RequestBody object used to represent Patient-Prescription join requests
- */
-class PatientPrescriptionBody {
-  Long patientId;
-  Long prescriptionId;
-
-  public Long getPatientId() {
-    return patientId;
-  }
-
-  public Long getPrescriptionId() {
-    return prescriptionId;
-  }
-}
-
-/**
- * RequestBody object used to represent Patient-Diagnosis join requests
- */
-class PatientDiagnosisBody {
-  Long patientId;
-  Long diagnosisId;
-
-  public Long getPatientId() {
-    return patientId;
-  }
-
-  public Long getDiagnosisId() {
-    return diagnosisId;
-  }
-}
-
-/**
  * Implements all functionality for the patient data API.
  */
 @RestController
@@ -127,6 +49,84 @@ public class PatientController {
   DiagnosisRepository diagnosisRepository;
   @Autowired
   InsurancePolicyRepository insurancePolicyRepository;
+
+  /**
+   * RequestBody object used to represent Patient-related requests.
+   */
+  class PatientRequestBody {
+    Long id;
+    String vaccinations;
+    String allergies;
+    String accommodations;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public String getVaccinations() {
+      return vaccinations;
+    }
+
+    public String getAllergies() {
+      return allergies;
+    }
+
+    public String getAccommodations() {
+      return accommodations;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Patient-Appointment join requests.
+   */
+  class PatientAppointmentBody {
+    Long patientId;
+    Long appointmentId;
+
+    public Long getPatientId() {
+      return patientId;
+    }
+
+    public Long getAppointmentId() {
+      return appointmentId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Patient-Prescription join requests.
+   */
+  class PatientPrescriptionBody {
+    Long patientId;
+    Long prescriptionId;
+
+    public Long getPatientId() {
+      return patientId;
+    }
+
+    public Long getPrescriptionId() {
+      return prescriptionId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Patient-Diagnosis join requests.
+   */
+  class PatientDiagnosisBody {
+    Long patientId;
+    Long diagnosisId;
+
+    public Long getPatientId() {
+      return patientId;
+    }
+
+    public Long getDiagnosisId() {
+      return diagnosisId;
+    }
+  }
 
   /**
    * Implements GET endpoint /patients for returning all data.

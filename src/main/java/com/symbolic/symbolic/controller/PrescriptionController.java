@@ -21,41 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RequestBody object used to represent Prescription-related requests
- */
-class PrescriptionRequestBody {
-  Long id;
-  Integer dosage;
-  Integer dailyUses;
-  Integer cost;
-  String instructions;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Integer getDosage() {
-    return dosage;
-  }
-
-  public Integer getDailyUses() {
-    return dailyUses;
-  }
-
-  public Integer getCost() {
-    return cost;
-  }
-
-  public String getInstructions() {
-    return instructions;
-  }
-}
-
-/**
  * Implements all functionality for the prescription data API.
  */
 @RestController
@@ -67,6 +32,41 @@ public class PrescriptionController {
   PatientRepository patientRepository;
   @Autowired
   MedicalPractitionerRepository practitionerRepository;
+
+  /**
+   * RequestBody object used to represent Prescription-related requests.
+   */
+  class PrescriptionRequestBody {
+    Long id;
+    Integer dosage;
+    Integer dailyUses;
+    Integer cost;
+    String instructions;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public Integer getDosage() {
+      return dosage;
+    }
+
+    public Integer getDailyUses() {
+      return dailyUses;
+    }
+
+    public Integer getCost() {
+      return cost;
+    }
+
+    public String getInstructions() {
+      return instructions;
+    }
+  }
 
   /**
    * Implements GET endpoint /prescriptions for returning all data.

@@ -6,48 +6,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-
-/* Object used to represent HTTP body requests */
-class BGCheckBody{
-  Long id;
-  String vaccine;
-  String allergy;
-  String diagnosis;
-
-  public Long getId() {
-    return id;
-  }
-
-  public String getAllergy() {
-    return allergy;
-  }
-
-  public String getDiagnosis() {
-    return diagnosis;
-  }
-
-  public String getVaccine() {
-    return vaccine;
-  }
-
-  public void setAllergy(String allergy) {
-    this.allergy = allergy;
-  }
-
-  public void setDiagnosis(String diagnosis) {
-    this.diagnosis = diagnosis;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public void setVaccine(String vac) {
-    this.vaccine = vac;
-  }
-}
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Implements all functionality for the background check API.
@@ -58,6 +20,45 @@ public class BackgroundCheckController {
   @Autowired
   BackgroundCheckService backgroundCheckService;
 
+  /* Object used to represent HTTP body requests */
+  class BGCheckBody {
+    Long id;
+    String vaccine;
+    String allergy;
+    String diagnosis;
+
+    public Long getId() {
+      return id;
+    }
+
+    public String getAllergy() {
+      return allergy;
+    }
+
+    public String getDiagnosis() {
+      return diagnosis;
+    }
+
+    public String getVaccine() {
+      return vaccine;
+    }
+
+    public void setAllergy(String allergy) {
+      this.allergy = allergy;
+    }
+
+    public void setDiagnosis(String diagnosis) {
+      this.diagnosis = diagnosis;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public void setVaccine(String vac) {
+      this.vaccine = vac;
+    }
+  }
 
   /**
    * Implements the /bgcheck endpoint for running a health background check.
@@ -68,7 +69,7 @@ public class BackgroundCheckController {
   public ResponseEntity<?> checkBackground(
           @RequestBody BGCheckBody body) {
 
-    if(body.getId() == null){
+    if (body.getId() == null) {
       return new ResponseEntity<>("Missing ID", HttpStatus.BAD_REQUEST);
     }
     // Check for (mostly) empty input
@@ -78,7 +79,8 @@ public class BackgroundCheckController {
     }
 
     Map<String, Boolean> backgroundCheck
-        = backgroundCheckService.getBackgroundCheck(body.getId(), body.getVaccine(), body.getAllergy(), body.getDiagnosis());
+        = backgroundCheckService.getBackgroundCheck(body.getId(), body.getVaccine(),
+        body.getAllergy(), body.getDiagnosis());
 
     if (backgroundCheck == null) {
       String errorMessage = "Empty patient table.";

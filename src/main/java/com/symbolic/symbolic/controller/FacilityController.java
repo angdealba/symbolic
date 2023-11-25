@@ -24,84 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RequestBody object used to represent Facility-related requests
- */
-class FacilityRequestBody {
-  Long id;
-  Double latitude;
-  Double longitude;
-  String specialization;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Double getLatitude() {
-    return latitude;
-  }
-
-  public Double getLongitude() {
-    return longitude;
-  }
-
-  public String getSpecialization() {
-    return specialization;
-  }
-}
-
-/**
- * RequestBody object used to represent Facility-Patient join requests
- */
-class FacilityPatientBody {
-  Long facilityId;
-  Long patientId;
-
-  public Long getFacilityId() {
-    return facilityId;
-  }
-
-  public Long getPatientId() {
-    return patientId;
-  }
-}
-
-/**
- * RequestBody object used to represent Facility-Practitioner join requests
- */
-class FacilityPractitionerBody {
-  Long facilityId;
-  Long practitionerId;
-
-  public Long getFacilityId() {
-    return facilityId;
-  }
-
-  public Long getPractitionerId() {
-    return practitionerId;
-  }
-}
-
-/**
- * RequestBody object used to represent Facility-Appointment join requests
- */
-class FacilityAppointmentBody {
-  Long facilityId;
-  Long appointmentId;
-
-  public Long getFacilityId() {
-    return facilityId;
-  }
-
-  public Long getAppointmentId() {
-    return appointmentId;
-  }
-}
-
-/**
  * Implements all functionality for the facility data API.
  */
 @RestController
@@ -115,6 +37,84 @@ public class FacilityController {
   PatientRepository patientRepository;
   @Autowired
   AppointmentRepository appointmentRepository;
+
+  /**
+   * RequestBody object used to represent Facility-related requests.
+   */
+  class FacilityRequestBody {
+    Long id;
+    Double latitude;
+    Double longitude;
+    String specialization;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public Double getLatitude() {
+      return latitude;
+    }
+
+    public Double getLongitude() {
+      return longitude;
+    }
+
+    public String getSpecialization() {
+      return specialization;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Facility-Patient join requests.
+   */
+  class FacilityPatientBody {
+    Long facilityId;
+    Long patientId;
+
+    public Long getFacilityId() {
+      return facilityId;
+    }
+
+    public Long getPatientId() {
+      return patientId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Facility-Practitioner join requests.
+   */
+  class FacilityPractitionerBody {
+    Long facilityId;
+    Long practitionerId;
+
+    public Long getFacilityId() {
+      return facilityId;
+    }
+
+    public Long getPractitionerId() {
+      return practitionerId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Facility-Appointment join requests.
+   */
+  class FacilityAppointmentBody {
+    Long facilityId;
+    Long appointmentId;
+
+    public Long getFacilityId() {
+      return facilityId;
+    }
+
+    public Long getAppointmentId() {
+      return appointmentId;
+    }
+  }
 
   /**
    * Implements GET endpoint /facilities for returning all data.

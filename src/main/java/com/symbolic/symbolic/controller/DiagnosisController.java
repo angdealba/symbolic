@@ -7,7 +7,6 @@ import com.symbolic.symbolic.entity.Prescription;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,36 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RequestBody object used to represent Diagnosis-related requests
- */
-class DiagnosisRequestBody {
-  Long id;
-  String condition;
-  String treatmentInfo;
-  String date;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getCondition() {
-    return condition;
-  }
-
-  public String getTreatmentInfo() {
-    return treatmentInfo;
-  }
-
-  public String getDate() {
-    return date;
-  }
-}
-
-/**
  * Implements all functionality for the diagnosis data API.
  */
 @RestController
@@ -69,6 +38,36 @@ public class DiagnosisController {
   MedicalPractitionerRepository practitionerRepository;
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+  /**
+   * RequestBody object used to represent Diagnosis-related requests.
+   */
+  class DiagnosisRequestBody {
+    Long id;
+    String condition;
+    String treatmentInfo;
+    String date;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public String getCondition() {
+      return condition;
+    }
+
+    public String getTreatmentInfo() {
+      return treatmentInfo;
+    }
+
+    public String getDate() {
+      return date;
+    }
+  }
 
   /**
    * Implements GET endpoint /diagnoses for returning all data.
