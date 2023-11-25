@@ -42,6 +42,7 @@ jobs:
     - name: Set up MySQL Database
       run: |
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';"
+        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "DROP DATABASE IF EXISTS medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE DATABASE medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
     - name: Build with Maven
