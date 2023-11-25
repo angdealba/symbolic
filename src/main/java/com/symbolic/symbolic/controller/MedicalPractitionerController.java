@@ -52,6 +52,110 @@ public class MedicalPractitionerController {
   private MedicalPractitionerService medicalPractitionerService;
 
   /**
+   * RequestBody object used to represent Patient-related requests.
+   */
+  class PractitionerRequestBody {
+    Long id;
+    Double latitude;
+    Double longitude;
+    String specialization;
+    Integer consultationCost;
+    Integer yearsExperience;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public Double getLatitude() {
+      return latitude;
+    }
+
+    public Double getLongitude() {
+      return longitude;
+    }
+
+    public String getSpecialization() {
+      return specialization;
+    }
+
+    public Integer getConsultationCost() {
+      return consultationCost;
+    }
+
+    public Integer getYearsExperience() {
+      return yearsExperience;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Practitioner-Patient join requests.
+   */
+  class PractitionerPatientBody {
+    Long practitionerId;
+    Long patientId;
+
+    public Long getPractitionerId() {
+      return practitionerId;
+    }
+
+    public Long getPatientId() {
+      return patientId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Practitioner-Appointment join requests.
+   */
+  class PractitionerAppointmentBody {
+    Long practitionerId;
+    Long appointmentId;
+
+    public Long getPractitionerId() {
+      return practitionerId;
+    }
+
+    public Long getAppointmentId() {
+      return appointmentId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Practitioner-Prescription join requests.
+   */
+  class PractitionerPrescriptionBody {
+    Long practitionerId;
+    Long prescriptionId;
+
+    public Long getPractitionerId() {
+      return practitionerId;
+    }
+
+    public Long getPrescriptionId() {
+      return prescriptionId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Practitioner-Diagnosis join requests.
+   */
+  class PractitionerDiagnosisBody {
+    Long practitionerId;
+    Long diagnosisId;
+
+    public Long getPractitionerId() {
+      return practitionerId;
+    }
+
+    public Long getDiagnosisId() {
+      return diagnosisId;
+    }
+  }
+
+  /**
    * Implements GET endpoint /practitioners for returning all data.
    */
   @GetMapping("/practitioners")
@@ -70,7 +174,13 @@ public class MedicalPractitionerController {
    * Implements GET endpoint /practitioner for returning data matching an id.
    */
   @GetMapping("/practitioner")
-  public ResponseEntity<?> getPractitionerById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getPractitionerById(@RequestBody PractitionerRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(id);
 
     if (practitionerData.isPresent()) {
@@ -86,10 +196,27 @@ public class MedicalPractitionerController {
    * Implements POST endpoint /practitioner for uploading data.
    */
   @PostMapping("/practitioner")
-  public ResponseEntity<?> createPractitioner(@RequestBody MedicalPractitioner practitioner) {
+  public ResponseEntity<?> createPractitioner(@RequestBody PractitionerRequestBody requestBody) {
+    if (requestBody.getLatitude() == null) {
+      String errorMessage = "Missing 'latitude' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getLongitude() == null) {
+      String errorMessage = "Missing 'longitude' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getSpecialization() == null) {
+      String errorMessage = "Missing 'specialization' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getConsultationCost() == null) {
+      String errorMessage = "Missing 'consultationCost' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getYearsExperience() == null) {
+      String errorMessage = "Missing 'yearsExperience' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     MedicalPractitioner newPractitioner = new MedicalPractitioner(
-        practitioner.getLatitude(), practitioner.getLongitude(), practitioner.getSpecialization(),
-        practitioner.getConsultationCost(), practitioner.getYearsExperience()
+        requestBody.getLatitude(), requestBody.getLongitude(), requestBody.getSpecialization(),
+        requestBody.getConsultationCost(), requestBody.getYearsExperience()
     );
     practitionerRepository.save(newPractitioner);
     return new ResponseEntity<>(newPractitioner, HttpStatus.CREATED);
@@ -99,19 +226,39 @@ public class MedicalPractitionerController {
    * Implements PUT endpoint /practitioner for updating data matching an id.
    */
   @PutMapping("/practitioner")
-  public ResponseEntity<?> updatePractitioner(@RequestParam("id") Long id,
-                                              @RequestBody MedicalPractitioner practitioner) {
+  public ResponseEntity<?> updatePractitioner(@RequestBody PractitionerRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(id);
 
     if (practitionerData.isPresent()) {
       MedicalPractitioner oldPractitioner = practitionerData.get();
-      oldPractitioner.setLatitude(practitioner.getLatitude());
-      oldPractitioner.setLongitude(practitioner.getLongitude());
-      oldPractitioner.setSpecialization(practitioner.getSpecialization());
-      oldPractitioner.setConsultationCost(practitioner.getConsultationCost());
-      oldPractitioner.setYearsExperience(practitioner.getYearsExperience());
-      practitionerRepository.save(oldPractitioner);
 
+      if (requestBody.getLatitude() != null) {
+        oldPractitioner.setLatitude(requestBody.getLatitude());
+      }
+
+      if (requestBody.getLongitude() != null) {
+        oldPractitioner.setLongitude(requestBody.getLongitude());
+      }
+
+      if (requestBody.getSpecialization() != null) {
+        oldPractitioner.setSpecialization(requestBody.getSpecialization());
+      }
+
+      if (requestBody.getConsultationCost() != null) {
+        oldPractitioner.setConsultationCost(requestBody.getConsultationCost());
+      }
+
+      if (requestBody.getYearsExperience() != null) {
+        oldPractitioner.setYearsExperience(requestBody.getYearsExperience());
+      }
+
+      practitionerRepository.save(oldPractitioner);
       return new ResponseEntity<>(oldPractitioner, HttpStatus.OK);
     } else {
       String errorMessage = "No practitioner found with id " + id;
@@ -123,7 +270,13 @@ public class MedicalPractitionerController {
    * Implements DELETE endpoint /practitioner for removing data matching an id.
    */
   @DeleteMapping("/practitioner")
-  public ResponseEntity<?> deletePractitioner(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deletePractitioner(@RequestBody PractitionerRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<MedicalPractitioner> practitionerData = practitionerRepository.findById(id);
 
     if (practitionerData.isPresent()) {
@@ -217,16 +370,20 @@ public class MedicalPractitionerController {
    * within a radius of the location.
    */
   @GetMapping("/practitioners/search")
-  public ResponseEntity<?> search(
-      @RequestParam Double latitude,
-      @RequestParam Double longitude,
-      @RequestParam(required = false) String specialization,
-      @RequestParam(required = false) Integer consultationCost,
-      @RequestParam(required = false) Integer yearsOfExperience
-  ) {
+  public ResponseEntity<?> search(@RequestBody PractitionerRequestBody requestBody) {
+    if (requestBody.getLatitude() == null) {
+      String errorMessage = "Missing 'latitude' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getLongitude() == null) {
+      String errorMessage = "Missing 'longitude' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     return new ResponseEntity<>(
         medicalPractitionerService
-            .search(latitude, longitude, specialization, consultationCost, yearsOfExperience),
+            .search(requestBody.getLatitude(), requestBody.getLongitude(),
+                requestBody.getSpecialization(), requestBody.getConsultationCost(),
+                requestBody.getYearsExperience()),
         HttpStatus.OK);
   }
 
@@ -235,7 +392,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/practitioner/patients")
   public ResponseEntity<?> getAllPatientsByPractitionerId(
-      @RequestParam("practitionerId") Long practitionerId) {
+      @RequestBody PractitionerPatientBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+
     if (!practitionerRepository.existsById(practitionerId)) {
       String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -250,7 +413,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/patient/practitioners")
   public ResponseEntity<?> getAllPractitionersByPatientId(
-      @RequestParam("patientId") Long patientId) {
+      @RequestBody PractitionerPatientBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long patientId = requestBody.getPatientId();
+
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -266,8 +435,17 @@ public class MedicalPractitionerController {
    */
   @PostMapping("/practitioner/patient")
   public ResponseEntity<?> addPatientToPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("patientId") Long patientId) {
+      @RequestBody PractitionerPatientBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long patientId = requestBody.getPatientId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -297,8 +475,17 @@ public class MedicalPractitionerController {
    */
   @DeleteMapping("/practitioner/patient")
   public ResponseEntity<?> removePatientFromPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("patientId") Long patientId) {
+      @RequestBody PractitionerPatientBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long patientId = requestBody.getPatientId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -324,7 +511,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/practitioner/appointments")
   public ResponseEntity<?> getAllAppointmentsByPractitionerId(
-      @RequestParam("practitionerId") Long practitionerId) {
+      @RequestBody PractitionerAppointmentBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+
     if (!practitionerRepository.existsById(practitionerId)) {
       String errorMessage = "No practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -340,7 +533,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/appointment/practitioner")
   public ResponseEntity<?> getPractitionerByAppointmentId(
-      @RequestParam("appointmentId") Long appointmentId) {
+      @RequestBody PractitionerAppointmentBody requestBody) {
+    if (requestBody.getAppointmentId() == null) {
+      String errorMessage = "Missing 'appointmentId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long appointmentId = requestBody.getAppointmentId();
+
     if (!appointmentRepository.existsById(appointmentId)) {
       String errorMessage = "No appointment found with id " + appointmentId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -356,8 +555,17 @@ public class MedicalPractitionerController {
    */
   @PostMapping("/practitioner/appointment")
   public ResponseEntity<?> addAppointmentToPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("appointmentId") Long appointmentId) {
+      @RequestBody PractitionerAppointmentBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getAppointmentId() == null) {
+      String errorMessage = "Missing 'appointmentId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long appointmentId = requestBody.getAppointmentId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -399,8 +607,17 @@ public class MedicalPractitionerController {
    */
   @DeleteMapping("/practitioner/appointment")
   public ResponseEntity<?> removeAppointmentFromPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("appointmentId") Long appointmentId) {
+      @RequestBody PractitionerAppointmentBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getAppointmentId() == null) {
+      String errorMessage = "Missing 'appointmentId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long appointmentId = requestBody.getAppointmentId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -426,7 +643,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/practitioner/prescriptions")
   public ResponseEntity<?> getAllPrescriptionsByPractitionerId(
-      @RequestParam("practitionerId") Long practitionerId) {
+      @RequestBody PractitionerPrescriptionBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+
     if (!practitionerRepository.existsById(practitionerId)) {
       String errorMessage = "No practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -442,7 +665,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/prescription/practitioner")
   public ResponseEntity<?> getPractitionerByPrescriptionId(
-      @RequestParam("prescriptionId") Long prescriptionId) {
+      @RequestBody PractitionerPrescriptionBody requestBody) {
+    if (requestBody.getPrescriptionId() == null) {
+      String errorMessage = "Missing 'prescriptionId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long prescriptionId = requestBody.getPrescriptionId();
+
     if (!prescriptionRepository.existsById(prescriptionId)) {
       String errorMessage = "No prescription found with id " + prescriptionId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -458,8 +687,17 @@ public class MedicalPractitionerController {
    */
   @PostMapping("/practitioner/prescription")
   public ResponseEntity<?> addPrescriptionToPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("prescriptionId") Long prescriptionId) {
+      @RequestBody PractitionerPrescriptionBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPrescriptionId() == null) {
+      String errorMessage = "Missing 'prescriptionId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long prescriptionId = requestBody.getPrescriptionId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -501,8 +739,17 @@ public class MedicalPractitionerController {
    */
   @DeleteMapping("/practitioner/prescription")
   public ResponseEntity<?> removePrescriptionFromPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("prescriptionId") Long prescriptionId) {
+      @RequestBody PractitionerPrescriptionBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPrescriptionId() == null) {
+      String errorMessage = "Missing 'prescriptionId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long prescriptionId = requestBody.getPrescriptionId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -528,7 +775,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/practitioner/diagnoses")
   public ResponseEntity<?> getAllDiagnosesByPractitionerId(
-      @RequestParam("practitionerId") Long practitionerId) {
+      @RequestBody PractitionerDiagnosisBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+
     if (!practitionerRepository.existsById(practitionerId)) {
       String errorMessage = "No practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -543,7 +796,13 @@ public class MedicalPractitionerController {
    */
   @GetMapping("/diagnosis/practitioner")
   public ResponseEntity<?> getPractitionerByDiagnosisId(
-      @RequestParam("diagnosisId") Long diagnosisId) {
+      @RequestBody PractitionerDiagnosisBody requestBody) {
+    if (requestBody.getDiagnosisId() == null) {
+      String errorMessage = "Missing 'diagnosisId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long diagnosisId = requestBody.getDiagnosisId();
+
     if (!diagnosisRepository.existsById(diagnosisId)) {
       String errorMessage = "No diagnosis found with id " + diagnosisId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -559,8 +818,17 @@ public class MedicalPractitionerController {
    */
   @PostMapping("/practitioner/diagnosis")
   public ResponseEntity<?> addDiagnosisToPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("diagnosisId") Long diagnosisId) {
+      @RequestBody PractitionerDiagnosisBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDiagnosisId() == null) {
+      String errorMessage = "Missing 'diagnosisId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long diagnosisId = requestBody.getDiagnosisId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 
@@ -602,8 +870,17 @@ public class MedicalPractitionerController {
    */
   @DeleteMapping("/practitioner/diagnosis")
   public ResponseEntity<?> removeDiagnosisFromPractitioner(
-      @RequestParam("practitionerId") Long practitionerId,
-      @RequestParam("diagnosisId") Long diagnosisId) {
+      @RequestBody PractitionerDiagnosisBody requestBody) {
+    if (requestBody.getPractitionerId() == null) {
+      String errorMessage = "Missing 'practitionerId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDiagnosisId() == null) {
+      String errorMessage = "Missing 'diagnosisId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long practitionerId = requestBody.getPractitionerId();
+    Long diagnosisId = requestBody.getDiagnosisId();
+
     Optional<MedicalPractitioner> practitionerData
         = practitionerRepository.findById(practitionerId);
 

@@ -8,7 +8,10 @@ import com.symbolic.symbolic.repository.AppointmentRepository;
 import com.symbolic.symbolic.repository.FacilityRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -37,6 +39,33 @@ public class AppointmentController {
   MedicalPractitionerRepository practitionerRepository;
   @Autowired
   FacilityRepository facilityRepository;
+
+  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+  /**
+   * RequestBody object used to represent Appointment-related requests.
+   */
+  class AppointmentRequestBody {
+    Long id;
+    String dateTime;
+    Integer cost;
+
+    public Long getId() {
+      return id;
+    }
+
+    public void setId(Long id) {
+      this.id = id;
+    }
+
+    public String getDateTime() {
+      return dateTime;
+    }
+
+    public Integer getCost() {
+      return cost;
+    }
+  }
 
   /**
    * Implements GET endpoint /appointments for returning all data.
@@ -57,7 +86,13 @@ public class AppointmentController {
    * Implements GET endpoint /appointment for returning data matching an id.
    */
   @GetMapping("/appointment")
-  public ResponseEntity<?> getAppointmentById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getAppointmentById(@RequestBody AppointmentRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Appointment> appointmentData = appointmentRepository.findById(id);
 
     if (appointmentData.isPresent()) {
@@ -73,9 +108,26 @@ public class AppointmentController {
    * Implements POST endpoint /appointment for uploading data.
    */
   @PostMapping("/appointment")
-  public ResponseEntity<?> createAppointment(@RequestBody Appointment appointment) {
+  public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequestBody requestBody) {
+    if (requestBody.getDateTime() == null) {
+      String errorMessage = "Missing 'dateTime' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getCost() == null) {
+      String errorMessage = "Missing 'cost' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    // Parse the date and return an error message if it is not in the yyyy-MM-dd HH:mm format
+    Date parsedDateTime;
+    try {
+      parsedDateTime = formatter.parse(requestBody.getDateTime());
+    } catch (ParseException e) {
+      String errorMessage = "'dateTime' field value must be in the format yyyy-MM-dd HH:mm";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Appointment newAppointment = new Appointment(
-        appointment.getDateTime(), appointment.getCost()
+        parsedDateTime, requestBody.getCost()
     );
 
     appointmentRepository.save(newAppointment);
@@ -86,16 +138,34 @@ public class AppointmentController {
    * Implements PUT endpoint /appointment for updating data matching an id.
    */
   @PutMapping("/appointment")
-  public ResponseEntity<?> updateAppointment(@RequestParam("id") Long id,
-                                             @RequestBody Appointment appointment) {
+  public ResponseEntity<?> updateAppointment(@RequestBody AppointmentRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Appointment> appointmentData = appointmentRepository.findById(id);
 
     if (appointmentData.isPresent()) {
       Appointment oldAppointment = appointmentData.get();
-      oldAppointment.setDateTime(appointment.getDateTime());
-      oldAppointment.setCost(appointment.getCost());
-      appointmentRepository.save(oldAppointment);
 
+      if (requestBody.getDateTime() != null) {
+        // Parse the date and return an error message if it is not in the yyyy-MM-dd HH:mm format
+        try {
+          Date parsedDateTime = formatter.parse(requestBody.getDateTime());
+          oldAppointment.setDateTime(parsedDateTime);
+        } catch (ParseException e) {
+          String errorMessage = "'dateTime' field value must be in the format yyyy-MM-dd HH:mm";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        }
+      }
+
+      if (requestBody.getCost() != null) {
+        oldAppointment.setCost(requestBody.getCost());
+      }
+
+      appointmentRepository.save(oldAppointment);
       return new ResponseEntity<>(oldAppointment, HttpStatus.OK);
     } else {
       String errorMessage = "No appointment found with id " + id;
@@ -107,7 +177,13 @@ public class AppointmentController {
    * Implements DELETE endpoint /appointment for removing data matching an id.
    */
   @DeleteMapping("/appointment")
-  public ResponseEntity<?> deleteAppointment(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deleteAppointment(@RequestBody AppointmentRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<Appointment> appointmentData = appointmentRepository.findById(id);
 
     if (appointmentData.isPresent()) {
