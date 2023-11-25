@@ -54,12 +54,8 @@ jobs:
       with:
         # Path to the JaCoCo coverage results file which will be used to generate a report. The only coverage results format supported is the JaCoCo XML schema.
         coverage_results_path: target/site/jacoco/jacoco.xml
-        # Optionally specify the level of output detail for the test results.
-    
-    #     output_level: # optional
-    #     # GITHUB_TOKEN to authenticate against API calls to attach report to Workflow Run.
-    
-    #     github_token: # optional, default is ${{github.token}}
+        # GITHUB_TOKEN to authenticate against API calls to attach report to Workflow Run.
+        github_token: ${{ secrets.GITHUB_TOKEN }}
     #     # If true, will skip attaching the Tests Result report to
     # the Workflow Run using a Check Run.  Useful if you just
     # want to produce a Gist-based report via the `gist_name`
