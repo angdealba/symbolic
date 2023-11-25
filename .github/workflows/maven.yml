@@ -25,6 +25,8 @@ jobs:
         env:
           MYSQL_DATABASE: medical_db
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: password
         ports:
         - 3306
 
