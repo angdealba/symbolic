@@ -19,18 +19,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.1
-        env:
-          MYSQL_DATABASE: medical_db
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: password
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 21
@@ -39,6 +27,12 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+    - name: Set up MySQL Database
+      run: |
+        sudo /etc/init.d/mysql start
+        mysql -e 'CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';'
+        mysql -e 'CREATE DATABASE medical_db;'
+        mysql -e 'GRANT ALL ON medical_db.* TO 'testuser'@'localhost';'
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
