@@ -21,6 +21,42 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * RequestBody object used to represent InsuracePolicy-related requests
+ */
+class PolicyRequestBody {
+  Long id;
+  Integer premiumCost;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Integer getPremiumCost() {
+    return premiumCost;
+  }
+}
+
+/**
+ * RequestBody object used to represent Policy-Patient join requests
+ */
+class PolicyPatientBody {
+  Long policyId;
+  Long patientId;
+
+  public Long getPolicyId() {
+    return policyId;
+  }
+
+  public Long getPatientId() {
+    return patientId;
+  }
+}
+
+/**
  * Implements all functionality for the insurance policy data API.
  */
 @RestController
@@ -50,7 +86,13 @@ public class InsurancePolicyController {
    * Implements GET endpoint /policy for returning data matching an id.
    */
   @GetMapping("/policy")
-  public ResponseEntity<?> getPolicyById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getPolicyById(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
     if (policyData.isPresent()) {
@@ -66,8 +108,13 @@ public class InsurancePolicyController {
    * Implements POST endpoint /policy for uploading data.
    */
   @PostMapping("/policy")
-  public ResponseEntity<?> createPolicy(@RequestBody InsurancePolicy policy) {
-    InsurancePolicy newPolicy = new InsurancePolicy(policy.getPremiumCost());
+  public ResponseEntity<?> createPolicy(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getPremiumCost() == null) {
+      String errorMessage = "Missing 'premiumCost' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    InsurancePolicy newPolicy = new InsurancePolicy(requestBody.getPremiumCost());
     insurancePolicyRepository.save(newPolicy);
     return new ResponseEntity<>(newPolicy, HttpStatus.CREATED);
   }
@@ -76,15 +123,23 @@ public class InsurancePolicyController {
    * Implements PUT endpoint /policy for updating data matching an id.
    */
   @PutMapping("/policy")
-  public ResponseEntity<?> updatePolicy(@RequestParam("id") Long id,
-                                        @RequestBody InsurancePolicy policy) {
+  public ResponseEntity<?> updatePolicy(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
     if (policyData.isPresent()) {
       InsurancePolicy oldPolicy = policyData.get();
-      oldPolicy.setPremiumCost(policy.getPremiumCost());
-      insurancePolicyRepository.save(oldPolicy);
 
+      if (requestBody.getPremiumCost() != null) {
+        oldPolicy.setPremiumCost(requestBody.getPremiumCost());
+      }
+
+      insurancePolicyRepository.save(oldPolicy);
       return new ResponseEntity<>(oldPolicy, HttpStatus.OK);
     } else {
       String errorMessage = "No insurance policy found with id " + id;
@@ -96,7 +151,13 @@ public class InsurancePolicyController {
    * Implements DELETE endpoint /policy for removing data matching an id.
    */
   @DeleteMapping("/policy")
-  public ResponseEntity<?> deletePolicy(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deletePolicy(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long id = requestBody.getId();
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
     if (policyData.isPresent()) {
@@ -139,7 +200,13 @@ public class InsurancePolicyController {
    * Implements GET endpoint /policy/patients for returning data matching an id.
    */
   @GetMapping("/policy/patients")
-  public ResponseEntity<?> getAllPatientsByPolicyId(@RequestParam("policyId") Long policyId) {
+  public ResponseEntity<?> getAllPatientsByPolicyId(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPolicyId() == null) {
+      String errorMessage = "Missing 'policyId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long policyId = requestBody.getPolicyId();
+
     if (!insurancePolicyRepository.existsById(policyId)) {
       String errorMessage = "No insurance policy found with id " + policyId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -153,7 +220,13 @@ public class InsurancePolicyController {
    * Implements GET endpoint /patient/policy for returning data matching an id.
    */
   @GetMapping("/patient/policy")
-  public ResponseEntity<?> getPolicyByPatientId(@RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> getPolicyByPatientId(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long patientId = requestBody.getPatientId();
+
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -167,8 +240,17 @@ public class InsurancePolicyController {
    * Implements POST endpoint for linking the two data types.
    */
   @PostMapping("/policy/patient")
-  public ResponseEntity<?> addPatientToPolicy(@RequestParam("policyId") Long policyId,
-                                              @RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> addPatientToPolicy(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPolicyId() == null) {
+      String errorMessage = "Missing 'policyId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long policyId = requestBody.getPolicyId();
+    Long patientId = requestBody.getPatientId();
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(policyId);
 
     if (policyData.isPresent()) {
@@ -208,8 +290,17 @@ public class InsurancePolicyController {
    * Implements DELETE endpoint for removing a link between the two data types.
    */
   @DeleteMapping("/policy/patient")
-  public ResponseEntity<?> removePatientFromPolicy(@RequestParam("policyId") Long policyId,
-                                                   @RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> removePatientFromPolicy(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPolicyId() == null) {
+      String errorMessage = "Missing 'policyId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    Long policyId = requestBody.getPolicyId();
+    Long patientId = requestBody.getPatientId();
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(policyId);
 
     if (policyData.isPresent()) {
