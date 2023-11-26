@@ -9,6 +9,7 @@ import com.symbolic.symbolic.repository.PrescriptionRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,18 +37,18 @@ public class PrescriptionController {
   /**
    * RequestBody object used to represent Prescription-related requests.
    */
-  class PrescriptionRequestBody {
-    Long id;
+  static class PrescriptionRequestBody {
+    UUID id;
     Integer dosage;
     Integer dailyUses;
     Integer cost;
     String instructions;
 
-    public Long getId() {
+    public UUID getId() {
       return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
       this.id = id;
     }
 
@@ -92,7 +93,7 @@ public class PrescriptionController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
@@ -139,7 +140,7 @@ public class PrescriptionController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
@@ -179,7 +180,7 @@ public class PrescriptionController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
@@ -214,7 +215,7 @@ public class PrescriptionController {
     List<Prescription> prescriptions = prescriptionRepository.findAll();
 
     for (Prescription prescription : prescriptions) {
-      Long id = prescription.getId();
+      UUID id = prescription.getId();
 
       Patient patient = prescription.getPatient();
       if (patient != null) {

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,16 +46,16 @@ public class AppointmentController {
   /**
    * RequestBody object used to represent Appointment-related requests.
    */
-  class AppointmentRequestBody {
-    Long id;
+  static class AppointmentRequestBody {
+    UUID id;
     String dateTime;
     Integer cost;
 
-    public Long getId() {
+    public UUID getId() {
       return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
       this.id = id;
     }
 
@@ -91,7 +92,7 @@ public class AppointmentController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Appointment> appointmentData = appointmentRepository.findById(id);
 
@@ -143,7 +144,7 @@ public class AppointmentController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Appointment> appointmentData = appointmentRepository.findById(id);
 
@@ -182,7 +183,7 @@ public class AppointmentController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Appointment> appointmentData = appointmentRepository.findById(id);
 
@@ -223,7 +224,7 @@ public class AppointmentController {
     List<Appointment> appointments = appointmentRepository.findAll();
 
     for (Appointment appointment : appointments) {
-      Long id = appointment.getId();
+      UUID id = appointment.getId();
 
       Patient patient = appointment.getPatient();
       if (patient != null) {

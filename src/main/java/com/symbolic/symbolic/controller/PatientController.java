@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,17 +54,17 @@ public class PatientController {
   /**
    * RequestBody object used to represent Patient-related requests.
    */
-  class PatientRequestBody {
-    Long id;
+  static class PatientRequestBody {
+    UUID id;
     String vaccinations;
     String allergies;
     String accommodations;
 
-    public Long getId() {
+    public UUID getId() {
       return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
       this.id = id;
     }
 
@@ -83,15 +84,15 @@ public class PatientController {
   /**
    * RequestBody object used to represent Patient-Appointment join requests.
    */
-  class PatientAppointmentBody {
-    Long patientId;
-    Long appointmentId;
+  static class PatientAppointmentBody {
+    UUID patientId;
+    UUID appointmentId;
 
-    public Long getPatientId() {
+    public UUID getPatientId() {
       return patientId;
     }
 
-    public Long getAppointmentId() {
+    public UUID getAppointmentId() {
       return appointmentId;
     }
   }
@@ -99,15 +100,15 @@ public class PatientController {
   /**
    * RequestBody object used to represent Patient-Prescription join requests.
    */
-  class PatientPrescriptionBody {
-    Long patientId;
-    Long prescriptionId;
+  static class PatientPrescriptionBody {
+    UUID patientId;
+    UUID prescriptionId;
 
-    public Long getPatientId() {
+    public UUID getPatientId() {
       return patientId;
     }
 
-    public Long getPrescriptionId() {
+    public UUID getPrescriptionId() {
       return prescriptionId;
     }
   }
@@ -115,15 +116,15 @@ public class PatientController {
   /**
    * RequestBody object used to represent Patient-Diagnosis join requests.
    */
-  class PatientDiagnosisBody {
-    Long patientId;
-    Long diagnosisId;
+  static class PatientDiagnosisBody {
+    UUID patientId;
+    UUID diagnosisId;
 
-    public Long getPatientId() {
+    public UUID getPatientId() {
       return patientId;
     }
 
-    public Long getDiagnosisId() {
+    public UUID getDiagnosisId() {
       return diagnosisId;
     }
   }
@@ -152,7 +153,7 @@ public class PatientController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Patient> patientData = patientRepository.findById(id);
 
@@ -196,7 +197,7 @@ public class PatientController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Patient> patientData = patientRepository.findById(id);
 
@@ -232,7 +233,7 @@ public class PatientController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Patient> patientData = patientRepository.findById(id);
 
@@ -291,7 +292,7 @@ public class PatientController {
     List<Patient> patients = patientRepository.findAll();
 
     for (Patient patient : patients) {
-      Long id = patient.getId();
+      UUID id = patient.getId();
 
       Set<MedicalPractitioner> practitioners = patient.getPractitioners();
       for (MedicalPractitioner practitioner : practitioners) {
@@ -344,7 +345,7 @@ public class PatientController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
+    UUID patientId = requestBody.getPatientId();
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -365,7 +366,7 @@ public class PatientController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long appointmentId = requestBody.getAppointmentId();
+    UUID appointmentId = requestBody.getAppointmentId();
 
     if (!appointmentRepository.existsById(appointmentId)) {
       String errorMessage = "No appointment found with id " + appointmentId;
@@ -389,8 +390,8 @@ public class PatientController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
-    Long appointmentId = requestBody.getAppointmentId();
+    UUID patientId = requestBody.getPatientId();
+    UUID appointmentId = requestBody.getAppointmentId();
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -439,8 +440,8 @@ public class PatientController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
-    Long appointmentId = requestBody.getAppointmentId();
+    UUID patientId = requestBody.getPatientId();
+    UUID appointmentId = requestBody.getAppointmentId();
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -471,7 +472,7 @@ public class PatientController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
+    UUID patientId = requestBody.getPatientId();
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -493,7 +494,7 @@ public class PatientController {
       String errorMessage = "Missing 'prescriptionId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long prescriptionId = requestBody.getPrescriptionId();
+    UUID prescriptionId = requestBody.getPrescriptionId();
 
     if (!prescriptionRepository.existsById(prescriptionId)) {
       String errorMessage = "No prescription found with id " + prescriptionId;
@@ -517,8 +518,8 @@ public class PatientController {
       String errorMessage = "Missing 'prescriptionId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
-    Long prescriptionId = requestBody.getPrescriptionId();
+    UUID patientId = requestBody.getPatientId();
+    UUID prescriptionId = requestBody.getPrescriptionId();
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -567,8 +568,8 @@ public class PatientController {
       String errorMessage = "Missing 'prescriptionId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
-    Long prescriptionId = requestBody.getPrescriptionId();
+    UUID patientId = requestBody.getPatientId();
+    UUID prescriptionId = requestBody.getPrescriptionId();
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -599,7 +600,7 @@ public class PatientController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
+    UUID patientId = requestBody.getPatientId();
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -620,7 +621,7 @@ public class PatientController {
       String errorMessage = "Missing 'diagnosisId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long diagnosisId = requestBody.getDiagnosisId();
+    UUID diagnosisId = requestBody.getDiagnosisId();
 
     if (!diagnosisRepository.existsById(diagnosisId)) {
       String errorMessage = "No diagnosis found with id " + diagnosisId;
@@ -643,8 +644,8 @@ public class PatientController {
       String errorMessage = "Missing 'diagnosisId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
-    Long diagnosisId = requestBody.getDiagnosisId();
+    UUID patientId = requestBody.getPatientId();
+    UUID diagnosisId = requestBody.getDiagnosisId();
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -693,8 +694,8 @@ public class PatientController {
       String errorMessage = "Missing 'diagnosisId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
-    Long diagnosisId = requestBody.getDiagnosisId();
+    UUID patientId = requestBody.getPatientId();
+    UUID diagnosisId = requestBody.getDiagnosisId();
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 

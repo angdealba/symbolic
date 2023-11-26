@@ -6,10 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.NoArgsConstructor;
 
 /**
@@ -21,8 +23,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Prescription {
   @Id
-  @GeneratedValue
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @Column(name = "dosage")
   private Integer dosage;
@@ -71,7 +73,7 @@ public class Prescription {
     this.instructions = instructions;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 

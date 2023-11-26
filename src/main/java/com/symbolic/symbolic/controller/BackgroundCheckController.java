@@ -2,6 +2,7 @@ package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.service.BackgroundCheckService;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +21,13 @@ public class BackgroundCheckController {
   BackgroundCheckService backgroundCheckService;
 
   /* Object used to represent HTTP body requests */
-  class BackgroundCheckBody {
-    Long id;
+  static class BackgroundCheckBody {
+    UUID id;
     String vaccine;
     String allergy;
     String diagnosis;
 
-    public Long getId() {
+    public UUID getId() {
       return id;
     }
 
@@ -50,7 +51,7 @@ public class BackgroundCheckController {
       this.diagnosis = diagnosis;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
       this.id = id;
     }
 

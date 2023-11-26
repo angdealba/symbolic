@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -14,8 +15,8 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.parameters.P;
 
 /**
  * A data model for a diagnosis, representing the condition name,
@@ -26,8 +27,8 @@ import org.springframework.security.core.parameters.P;
 @NoArgsConstructor
 public class Diagnosis {
   @Id
-  @GeneratedValue
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @Column(name = "cond")
   private String condition;
@@ -73,7 +74,7 @@ public class Diagnosis {
     this.date = date;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 

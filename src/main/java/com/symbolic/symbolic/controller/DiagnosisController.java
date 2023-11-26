@@ -3,7 +3,6 @@ package com.symbolic.symbolic.controller;
 import com.symbolic.symbolic.entity.Diagnosis;
 import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
-import com.symbolic.symbolic.entity.Prescription;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,17 +42,17 @@ public class DiagnosisController {
   /**
    * RequestBody object used to represent Diagnosis-related requests.
    */
-  class DiagnosisRequestBody {
-    Long id;
+  static class DiagnosisRequestBody {
+    UUID id;
     String condition;
     String treatmentInfo;
     String date;
 
-    public Long getId() {
+    public UUID getId() {
       return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
       this.id = id;
     }
 
@@ -93,7 +93,7 @@ public class DiagnosisController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
@@ -148,7 +148,7 @@ public class DiagnosisController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
@@ -190,7 +190,7 @@ public class DiagnosisController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<Diagnosis> diagnosisData = diagnosisRepository.findById(id);
 
@@ -225,7 +225,7 @@ public class DiagnosisController {
     List<Diagnosis> diagnoses = diagnosisRepository.findAll();
 
     for (Diagnosis diagnosis : diagnoses) {
-      Long id = diagnosis.getId();
+      UUID id = diagnosis.getId();
 
       Patient patient = diagnosis.getPatient();
       if (patient != null) {

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,15 +34,15 @@ public class InsurancePolicyController {
   /**
    * RequestBody object used to represent InsurancePolicy-related requests.
    */
-  class PolicyRequestBody {
-    Long id;
+  static class PolicyRequestBody {
+    UUID id;
     Integer premiumCost;
 
-    public Long getId() {
+    public UUID getId() {
       return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
       this.id = id;
     }
 
@@ -53,15 +54,15 @@ public class InsurancePolicyController {
   /**
    * RequestBody object used to represent Policy-Patient join requests.
    */
-  class PolicyPatientBody {
-    Long policyId;
-    Long patientId;
+  static class PolicyPatientBody {
+    UUID policyId;
+    UUID patientId;
 
-    public Long getPolicyId() {
+    public UUID getPolicyId() {
       return policyId;
     }
 
-    public Long getPatientId() {
+    public UUID getPatientId() {
       return patientId;
     }
   }
@@ -90,7 +91,7 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
@@ -127,7 +128,7 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
@@ -155,7 +156,7 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = requestBody.getId();
 
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
@@ -204,7 +205,7 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'policyId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long policyId = requestBody.getPolicyId();
+    UUID policyId = requestBody.getPolicyId();
 
     if (!insurancePolicyRepository.existsById(policyId)) {
       String errorMessage = "No insurance policy found with id " + policyId;
@@ -224,7 +225,7 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
+    UUID patientId = requestBody.getPatientId();
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -247,8 +248,8 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long policyId = requestBody.getPolicyId();
-    Long patientId = requestBody.getPatientId();
+    UUID policyId = requestBody.getPolicyId();
+    UUID patientId = requestBody.getPatientId();
 
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(policyId);
 
@@ -297,8 +298,8 @@ public class InsurancePolicyController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long policyId = requestBody.getPolicyId();
-    Long patientId = requestBody.getPatientId();
+    UUID policyId = requestBody.getPolicyId();
+    UUID patientId = requestBody.getPatientId();
 
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(policyId);
 
