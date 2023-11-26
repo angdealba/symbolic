@@ -22,12 +22,12 @@ public class BackgroundCheckController {
 
   /* Object used to represent HTTP body requests */
   static class BackgroundCheckBody {
-    UUID id;
+    String id;
     String vaccine;
     String allergy;
     String diagnosis;
 
-    public UUID getId() {
+    public String getId() {
       return id;
     }
 
@@ -51,12 +51,26 @@ public class BackgroundCheckController {
       this.diagnosis = diagnosis;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
       this.id = id;
     }
 
     public void setVaccine(String vac) {
       this.vaccine = vac;
+    }
+  }
+
+  /**
+   * Parses a string input into a UUID object type for use in database lookup operations.
+   *
+   * @param uuidString a string value representing the UUID in the HTTP request.
+   * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
+   */
+  private static UUID parseUuidFromString(String uuidString) {
+    try {
+      return UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      return null;
     }
   }
 
@@ -78,8 +92,14 @@ public class BackgroundCheckController {
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
+    UUID id = parseUuidFromString(body.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Map<String, Boolean> backgroundCheck
-        = backgroundCheckService.getBackgroundCheck(body.getId(), body.getVaccine(),
+        = backgroundCheckService.getBackgroundCheck(id, body.getVaccine(),
         body.getAllergy(), body.getDiagnosis());
 
     if (backgroundCheck == null) {

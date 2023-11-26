@@ -55,16 +55,16 @@ public class PatientController {
    * RequestBody object used to represent Patient-related requests.
    */
   static class PatientRequestBody {
-    UUID id;
+    String id;
     String vaccinations;
     String allergies;
     String accommodations;
 
-    public UUID getId() {
+    public String getId() {
       return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
       this.id = id;
     }
 
@@ -85,14 +85,14 @@ public class PatientController {
    * RequestBody object used to represent Patient-Appointment join requests.
    */
   static class PatientAppointmentBody {
-    UUID patientId;
-    UUID appointmentId;
+    String patientId;
+    String appointmentId;
 
-    public UUID getPatientId() {
+    public String getPatientId() {
       return patientId;
     }
 
-    public UUID getAppointmentId() {
+    public String getAppointmentId() {
       return appointmentId;
     }
   }
@@ -101,14 +101,14 @@ public class PatientController {
    * RequestBody object used to represent Patient-Prescription join requests.
    */
   static class PatientPrescriptionBody {
-    UUID patientId;
-    UUID prescriptionId;
+    String patientId;
+    String prescriptionId;
 
-    public UUID getPatientId() {
+    public String getPatientId() {
       return patientId;
     }
 
-    public UUID getPrescriptionId() {
+    public String getPrescriptionId() {
       return prescriptionId;
     }
   }
@@ -117,15 +117,29 @@ public class PatientController {
    * RequestBody object used to represent Patient-Diagnosis join requests.
    */
   static class PatientDiagnosisBody {
-    UUID patientId;
-    UUID diagnosisId;
+    String patientId;
+    String diagnosisId;
 
-    public UUID getPatientId() {
+    public String getPatientId() {
       return patientId;
     }
 
-    public UUID getDiagnosisId() {
+    public String getDiagnosisId() {
       return diagnosisId;
+    }
+  }
+
+  /**
+   * Parses a string input into a UUID object type for use in database lookup operations.
+   *
+   * @param uuidString a string value representing the UUID in the HTTP request.
+   * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
+   */
+  private static UUID parseUuidFromString(String uuidString) {
+    try {
+      return UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      return null;
     }
   }
 
@@ -153,7 +167,11 @@ public class PatientController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(id);
 
@@ -197,7 +215,11 @@ public class PatientController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(id);
 
@@ -233,7 +255,11 @@ public class PatientController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(id);
 
@@ -345,7 +371,11 @@ public class PatientController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -366,7 +396,11 @@ public class PatientController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID appointmentId = requestBody.getAppointmentId();
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!appointmentRepository.existsById(appointmentId)) {
       String errorMessage = "No appointment found with id " + appointmentId;
@@ -390,8 +424,17 @@ public class PatientController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
-    UUID appointmentId = requestBody.getAppointmentId();
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -440,8 +483,17 @@ public class PatientController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
-    UUID appointmentId = requestBody.getAppointmentId();
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -472,7 +524,11 @@ public class PatientController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -494,7 +550,11 @@ public class PatientController {
       String errorMessage = "Missing 'prescriptionId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID prescriptionId = requestBody.getPrescriptionId();
+    UUID prescriptionId = parseUuidFromString(requestBody.getPrescriptionId());
+    if (prescriptionId == null) {
+      String errorMessage = "'prescriptionId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!prescriptionRepository.existsById(prescriptionId)) {
       String errorMessage = "No prescription found with id " + prescriptionId;
@@ -518,8 +578,17 @@ public class PatientController {
       String errorMessage = "Missing 'prescriptionId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
-    UUID prescriptionId = requestBody.getPrescriptionId();
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID prescriptionId = parseUuidFromString(requestBody.getPrescriptionId());
+    if (prescriptionId == null) {
+      String errorMessage = "'prescriptionId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -568,8 +637,17 @@ public class PatientController {
       String errorMessage = "Missing 'prescriptionId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
-    UUID prescriptionId = requestBody.getPrescriptionId();
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID prescriptionId = parseUuidFromString(requestBody.getPrescriptionId());
+    if (prescriptionId == null) {
+      String errorMessage = "'prescriptionId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -600,7 +678,11 @@ public class PatientController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -621,7 +703,11 @@ public class PatientController {
       String errorMessage = "Missing 'diagnosisId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID diagnosisId = requestBody.getDiagnosisId();
+    UUID diagnosisId = parseUuidFromString(requestBody.getDiagnosisId());
+    if (diagnosisId == null) {
+      String errorMessage = "'diagnosisId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!diagnosisRepository.existsById(diagnosisId)) {
       String errorMessage = "No diagnosis found with id " + diagnosisId;
@@ -644,8 +730,17 @@ public class PatientController {
       String errorMessage = "Missing 'diagnosisId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
-    UUID diagnosisId = requestBody.getDiagnosisId();
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID diagnosisId = parseUuidFromString(requestBody.getDiagnosisId());
+    if (diagnosisId == null) {
+      String errorMessage = "'diagnosisId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
@@ -694,8 +789,17 @@ public class PatientController {
       String errorMessage = "Missing 'diagnosisId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID patientId = requestBody.getPatientId();
-    UUID diagnosisId = requestBody.getDiagnosisId();
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID diagnosisId = parseUuidFromString(requestBody.getDiagnosisId());
+    if (diagnosisId == null) {
+      String errorMessage = "'diagnosisId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Patient> patientData = patientRepository.findById(patientId);
 

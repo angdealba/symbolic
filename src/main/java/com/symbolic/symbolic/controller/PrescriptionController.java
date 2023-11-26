@@ -38,17 +38,17 @@ public class PrescriptionController {
    * RequestBody object used to represent Prescription-related requests.
    */
   static class PrescriptionRequestBody {
-    UUID id;
+    String id;
     Integer dosage;
     Integer dailyUses;
     Integer cost;
     String instructions;
 
-    public UUID getId() {
+    public String getId() {
       return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
       this.id = id;
     }
 
@@ -66,6 +66,20 @@ public class PrescriptionController {
 
     public String getInstructions() {
       return instructions;
+    }
+  }
+
+  /**
+   * Parses a string input into a UUID object type for use in database lookup operations.
+   *
+   * @param uuidString a string value representing the UUID in the HTTP request.
+   * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
+   */
+  private static UUID parseUuidFromString(String uuidString) {
+    try {
+      return UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      return null;
     }
   }
 
@@ -93,7 +107,11 @@ public class PrescriptionController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
@@ -140,7 +158,11 @@ public class PrescriptionController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
@@ -180,7 +202,11 @@ public class PrescriptionController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    UUID id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Prescription> prescriptionData = prescriptionRepository.findById(id);
 
