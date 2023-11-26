@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -16,6 +17,7 @@ import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import lombok.NoArgsConstructor;
 import org.springframework.data.util.Pair;
 
@@ -30,8 +32,8 @@ import org.springframework.data.util.Pair;
 @NoArgsConstructor
 public class MedicalPractitioner {
   @Id
-  @GeneratedValue
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @Column(name = "latitude")
   private Double latitude;
@@ -129,7 +131,7 @@ public class MedicalPractitioner {
     this.yearsExperience = yearsExperience;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 
@@ -192,7 +194,7 @@ public class MedicalPractitioner {
    *
    * @param patientId the id of the patient to be removed.
    */
-  public void removePatientById(Long patientId) {
+  public void removePatientById(UUID patientId) {
     Patient patient = this.patients.stream().filter(p ->
         Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
     if (patient != null) {
@@ -223,7 +225,7 @@ public class MedicalPractitioner {
    *
    * @param appointmentId the id of the appointment to be removed.
    */
-  public void removeAppointmentById(Long appointmentId) {
+  public void removeAppointmentById(UUID appointmentId) {
     Appointment appointment = this.appointments.stream().filter(p ->
         Objects.equals(p.getId(), appointmentId)).findFirst().orElse(null);
     if (appointment != null) {
@@ -246,7 +248,7 @@ public class MedicalPractitioner {
    *
    * @param prescriptionId the id of the prescription to be removed.
    */
-  public void removePrescriptionById(Long prescriptionId) {
+  public void removePrescriptionById(UUID prescriptionId) {
     Prescription prescription = this.prescriptions.stream().filter(p ->
         Objects.equals(p.getId(), prescriptionId)).findFirst().orElse(null);
     if (prescription != null) {
@@ -269,7 +271,7 @@ public class MedicalPractitioner {
    *
    * @param diagnosisId the id of the diagnosis to be removed.
    */
-  public void removeDiagnosisById(Long diagnosisId) {
+  public void removeDiagnosisById(UUID diagnosisId) {
     Diagnosis diagnosis = this.diagnoses.stream().filter(p ->
         Objects.equals(p.getId(), diagnosisId)).findFirst().orElse(null);
     if (diagnosis != null) {

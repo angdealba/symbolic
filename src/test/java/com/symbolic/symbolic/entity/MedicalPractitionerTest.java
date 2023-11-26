@@ -1,6 +1,5 @@
 package com.symbolic.symbolic.entity;
 
-import jdk.jshell.Diag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;

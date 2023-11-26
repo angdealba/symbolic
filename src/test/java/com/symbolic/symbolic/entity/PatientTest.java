@@ -2,7 +2,6 @@ package com.symbolic.symbolic.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.util.Pair;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

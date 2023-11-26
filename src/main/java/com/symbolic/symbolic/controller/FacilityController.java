@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,17 +42,17 @@ public class FacilityController {
   /**
    * RequestBody object used to represent Facility-related requests.
    */
-  class FacilityRequestBody {
-    Long id;
+  static class FacilityRequestBody {
+    String id;
     Double latitude;
     Double longitude;
     String specialization;
 
-    public Long getId() {
+    public String getId() {
       return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
       this.id = id;
     }
 
@@ -71,15 +72,15 @@ public class FacilityController {
   /**
    * RequestBody object used to represent Facility-Patient join requests.
    */
-  class FacilityPatientBody {
-    Long facilityId;
-    Long patientId;
+  static class FacilityPatientBody {
+    String facilityId;
+    String patientId;
 
-    public Long getFacilityId() {
+    public String getFacilityId() {
       return facilityId;
     }
 
-    public Long getPatientId() {
+    public String getPatientId() {
       return patientId;
     }
   }
@@ -87,15 +88,15 @@ public class FacilityController {
   /**
    * RequestBody object used to represent Facility-Practitioner join requests.
    */
-  class FacilityPractitionerBody {
-    Long facilityId;
-    Long practitionerId;
+  static class FacilityPractitionerBody {
+    String facilityId;
+    String practitionerId;
 
-    public Long getFacilityId() {
+    public String getFacilityId() {
       return facilityId;
     }
 
-    public Long getPractitionerId() {
+    public String getPractitionerId() {
       return practitionerId;
     }
   }
@@ -103,16 +104,30 @@ public class FacilityController {
   /**
    * RequestBody object used to represent Facility-Appointment join requests.
    */
-  class FacilityAppointmentBody {
-    Long facilityId;
-    Long appointmentId;
+  static class FacilityAppointmentBody {
+    String facilityId;
+    String appointmentId;
 
-    public Long getFacilityId() {
+    public String getFacilityId() {
       return facilityId;
     }
 
-    public Long getAppointmentId() {
+    public String getAppointmentId() {
       return appointmentId;
+    }
+  }
+
+  /**
+   * Parses a string input into a UUID object type for use in database lookup operations.
+   *
+   * @param uuidString a string value representing the UUID in the HTTP request.
+   * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
+   */
+  private static UUID parseUuidFromString(String uuidString) {
+    try {
+      return UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      return null;
     }
   }
 
@@ -140,7 +155,11 @@ public class FacilityController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(id);
 
@@ -185,7 +204,11 @@ public class FacilityController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(id);
 
@@ -221,7 +244,11 @@ public class FacilityController {
       String errorMessage = "Missing 'id' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long id = requestBody.getId();
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(id);
 
@@ -262,7 +289,7 @@ public class FacilityController {
     List<Facility> facilities = facilityRepository.findAll();
 
     for (Facility facility : facilities) {
-      Long id = facility.getId();
+      UUID id = facility.getId();
 
       Set<Patient> patients = facility.getPatients();
       for (Patient patient : patients) {
@@ -297,7 +324,11 @@ public class FacilityController {
       String errorMessage = "Missing 'facilityId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!facilityRepository.existsById(facilityId)) {
       String errorMessage = "No facility found with id " + facilityId;
@@ -318,7 +349,11 @@ public class FacilityController {
       String errorMessage = "Missing 'facilityId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!facilityRepository.existsById(facilityId)) {
       String errorMessage = "No facility found with id " + facilityId;
@@ -340,7 +375,11 @@ public class FacilityController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long patientId = requestBody.getPatientId();
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
@@ -361,7 +400,11 @@ public class FacilityController {
       String errorMessage = "Missing 'practitionerId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long practitionerId = requestBody.getPractitionerId();
+    UUID practitionerId = parseUuidFromString(requestBody.getPractitionerId());
+    if (practitionerId == null) {
+      String errorMessage = "'practitionerId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!practitionerRepository.existsById(practitionerId)) {
       String errorMessage = "No medical practitioner found with id " + practitionerId;
@@ -384,8 +427,17 @@ public class FacilityController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
-    Long patientId = requestBody.getPatientId();
+
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(facilityId);
 
@@ -422,8 +474,17 @@ public class FacilityController {
       String errorMessage = "Missing 'patientId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
-    Long patientId = requestBody.getPatientId();
+
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(facilityId);
 
@@ -457,8 +518,17 @@ public class FacilityController {
       String errorMessage = "Missing 'practitionerId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
-    Long practitionerId = requestBody.getPractitionerId();
+
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID practitionerId = parseUuidFromString(requestBody.getPractitionerId());
+    if (practitionerId == null) {
+      String errorMessage = "'practitionerId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(facilityId);
 
@@ -507,8 +577,17 @@ public class FacilityController {
       String errorMessage = "Missing 'practitionerId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
-    Long practitionerId = requestBody.getPractitionerId();
+
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID practitionerId = parseUuidFromString(requestBody.getPractitionerId());
+    if (practitionerId == null) {
+      String errorMessage = "'practitionerId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(facilityId);
 
@@ -539,7 +618,11 @@ public class FacilityController {
       String errorMessage = "Missing 'facilityId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!facilityRepository.existsById(facilityId)) {
       String errorMessage = "No facility found with id " + facilityId;
@@ -560,7 +643,11 @@ public class FacilityController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long appointmentId = requestBody.getAppointmentId();
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     if (!appointmentRepository.existsById(appointmentId)) {
       String errorMessage = "No appointment found with id " + appointmentId;
@@ -584,8 +671,17 @@ public class FacilityController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
-    Long appointmentId = requestBody.getAppointmentId();
+
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(facilityId);
 
@@ -634,8 +730,17 @@ public class FacilityController {
       String errorMessage = "Missing 'appointmentId' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
-    Long facilityId = requestBody.getFacilityId();
-    Long appointmentId = requestBody.getAppointmentId();
+
+    UUID facilityId = parseUuidFromString(requestBody.getFacilityId());
+    if (facilityId == null) {
+      String errorMessage = "'facilityId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
 
     Optional<Facility> facilityData = facilityRepository.findById(facilityId);
 
