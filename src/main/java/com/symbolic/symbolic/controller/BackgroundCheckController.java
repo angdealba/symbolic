@@ -1,6 +1,5 @@
 package com.symbolic.symbolic.controller;
 
-import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.service.BackgroundCheckService;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ public class BackgroundCheckController {
   BackgroundCheckService backgroundCheckService;
 
   /* Object used to represent HTTP body requests */
-  class BGCheckBody {
+  class BackgroundCheckBody {
     Long id;
     String vaccine;
     String allergy;
@@ -67,7 +66,7 @@ public class BackgroundCheckController {
   // Run a BG check on the requested id
   @GetMapping("/bgcheck")
   public ResponseEntity<?> checkBackground(
-          @RequestBody BGCheckBody body) {
+          @RequestBody BackgroundCheckBody body) {
 
     if (body.getId() == null) {
       return new ResponseEntity<>("Missing ID", HttpStatus.BAD_REQUEST);
