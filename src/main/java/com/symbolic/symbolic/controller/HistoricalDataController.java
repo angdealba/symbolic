@@ -26,12 +26,12 @@ public class HistoricalDataController {
   HistoricalDataService historicalDataService;
 
   /* Object used to represent HTTP body requests */
-  class HistoricalDataBody{
+  class HistoricalDataBody {
     String condition;
-    List<Double> Location;
+    List<Double> location;
     Date startDate;
     Date endDate;
-    int N;
+    int count;
 
     public String getCondition() {
       return condition;
@@ -41,16 +41,16 @@ public class HistoricalDataController {
       return endDate;
     }
 
-    public Date getStartDate(){
+    public Date getStartDate() {
       return startDate;
     }
 
     public List<Double> getLocation() {
-      return Location;
+      return location;
     }
 
     public int getN() {
-      return N;
+      return count;
     }
 
     public void setCondition(String condition) {
@@ -62,7 +62,7 @@ public class HistoricalDataController {
     }
 
     public void setLocation(List<Double> location) {
-      Location = location;
+      this.location = location;
     }
 
     public void setStartDate(Date startDate) {
@@ -70,7 +70,7 @@ public class HistoricalDataController {
     }
 
     public void setN(int n) {
-      N = n;
+      count = n;
     }
   }
 
@@ -84,7 +84,7 @@ public class HistoricalDataController {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
 
@@ -116,7 +116,7 @@ public class HistoricalDataController {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
     if (location != null) {
@@ -146,7 +146,7 @@ public class HistoricalDataController {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
     if (location != null) {
@@ -179,7 +179,7 @@ public class HistoricalDataController {
     Date startDate = body.getStartDate();
     Date endDate = body.getEndDate();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
     if (location != null) {
@@ -206,11 +206,9 @@ public class HistoricalDataController {
           @RequestBody HistoricalDataBody body
   ) {
     List<Double> location = body.getLocation();
-    Date startDate = body.getStartDate();
-    Date endDate = body.getEndDate();
     int n = body.getN();
 
-    if(n == 0){
+    if (n == 0) {
       n = 3;
     }
 
@@ -221,6 +219,8 @@ public class HistoricalDataController {
       return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
     }
 
+    Date startDate = body.getStartDate();
+    Date endDate = body.getEndDate();
     Map<String, Integer> result = historicalDataService.getTopConditions(
         location, startDate, endDate, n);
     if (result.isEmpty()) {
