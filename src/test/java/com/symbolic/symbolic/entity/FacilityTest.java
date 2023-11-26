@@ -6,10 +6,7 @@ import org.springframework.data.util.Pair;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -91,6 +88,10 @@ public class FacilityTest {
     @Test
     void testSetters() {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        facility.setId(id);
+        assertEquals(facility.getId(), id);
+
         facility.setLatitude(40.71);
         assertEquals(facility.getLatitude(), 40.71);
 
@@ -121,6 +122,10 @@ public class FacilityTest {
 
         facility.removePatientById(toRemove.getId());
         assertFalse(facility.getPatients().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        facility.removePatientById(id);
     }
 
     @Test
@@ -137,6 +142,10 @@ public class FacilityTest {
 
         facility.removePractitionerById(toRemove.getId());
         assertFalse(facility.getPractitioners().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        facility.removePractitionerById(id);
     }
 
     @Test
@@ -154,6 +163,10 @@ public class FacilityTest {
 
         facility.removeAppointmentById(toRemove.getId());
         assertFalse(facility.getAppointments().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        facility.removeAppointmentById(id);
     }
 
     @Test
@@ -166,6 +179,7 @@ public class FacilityTest {
         // Base cases for testing simple equality
         assertEquals(facility, facility);
         assertNotEquals(facility, "Test string");
+        assertNotEquals(facility, null);
 
         // Different objects with same values are equal
         Facility facility2 = new Facility(40.7, 74.0, "Surgery");
@@ -223,5 +237,18 @@ public class FacilityTest {
         Appointment appointment3 = new Appointment(date3, 50);
         facility8.addAppointment(appointment3);
         assertNotEquals(facility, facility8);
+    }
+
+    @Test
+    void testIDEquality() {
+      // Different IDs are not equal
+      UUID id1 = UUID.randomUUID();
+      facility.setId(id1);
+
+      Facility facility2 = new Facility(40.7, 74.0, "Surgery");
+      copyFacilityData(facility2);
+      UUID id2 = UUID.randomUUID();
+      facility2.setId(id2);
+      assertNotEquals(facility, facility2);
     }
 }

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -50,6 +51,10 @@ public class AppointmentTest {
     @Test
     void testSetters() throws ParseException {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        appointment.setId(id);
+        assertEquals(appointment.getId(), id);
+
         appointment.setDateTime(formatter.parse("2023-10-21 2:30"));
         assertEquals(appointment.getDateTime(), formatter.parse("2023-10-21 2:30"));
 
@@ -80,6 +85,7 @@ public class AppointmentTest {
         // Base cases for testing simple equality
         assertEquals(appointment, appointment);
         assertNotEquals(appointment, "Test string");
+        assertNotEquals(appointment, null);
 
         // Different objects with same values are equal
         Date date = formatter.parse("2023-10-20 12:00");
@@ -126,5 +132,21 @@ public class AppointmentTest {
         appointment7.setPractitioner(practitioner);
         appointment7.setFacility(newFacility);
         assertNotEquals(appointment, appointment7);
+    }
+
+    @Test
+    void testIDEquality() throws ParseException {
+      // Different IDs are not equal
+      UUID id1 = UUID.randomUUID();
+      appointment.setId(id1);
+
+      Date date = formatter.parse("2023-10-20 12:00");
+      Appointment appointment2 = new Appointment(date, 100);
+      appointment2.setPatient(patient);
+      appointment2.setPractitioner(practitioner);
+      appointment2.setFacility(facility);
+      UUID id2 = UUID.randomUUID();
+      appointment2.setId(id2);
+      assertNotEquals(appointment, appointment2);
     }
 }

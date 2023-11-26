@@ -5,10 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,6 +124,10 @@ public class PatientTest {
     @Test
     void testSetters() {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        patient.setId(id);
+        assertEquals(patient.getId(), id);
+
         patient.setVaccinations("Flu");
         assertEquals(patient.getVaccinations(), "Flu");
 
@@ -159,6 +160,10 @@ public class PatientTest {
 
         patient.removePractitionerById(toRemove.getId());
         assertFalse(patient.getPractitioners().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        patient.removePractitionerById(id);
     }
 
     @Test
@@ -175,6 +180,10 @@ public class PatientTest {
 
         patient.removeFacilityById(toRemove.getId());
         assertFalse(patient.getFacilities().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        patient.removeFacilityById(id);
     }
 
     @Test
@@ -192,6 +201,10 @@ public class PatientTest {
 
         patient.removeAppointmentById(toRemove.getId());
         assertFalse(patient.getAppointments().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        patient.removeAppointmentById(id);
     }
 
     @Test
@@ -208,6 +221,10 @@ public class PatientTest {
 
         patient.removePrescriptionById(toRemove.getId());
         assertFalse(patient.getPrescriptions().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        patient.removePrescriptionById(id);
     }
 
     @Test
@@ -225,6 +242,10 @@ public class PatientTest {
 
         patient.removeDiagnosisById(toRemove.getId());
         assertFalse(patient.getDiagnoses().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        patient.removeDiagnosisById(id);
     }
 
     @Test
@@ -237,6 +258,7 @@ public class PatientTest {
         // Base cases for testing simple equality
         assertEquals(patient, patient);
         assertNotEquals(patient, "Test string");
+        assertNotEquals(patient, null);
 
         // Different objects with same values are equal
         Patient patient2 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
@@ -317,5 +339,18 @@ public class PatientTest {
         Diagnosis diagnosis3 = new Diagnosis("Common Cold", "None", date3);
         patient10.addDiagnosis(diagnosis3);
         assertNotEquals(patient, patient10);
+    }
+
+    @Test
+    void testIDEquality() {
+      // Different IDs are not equal
+      UUID id1 = UUID.randomUUID();
+      patient.setId(id1);
+
+      Patient patient2 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
+      copyPatientData(patient2);
+      UUID id2 = UUID.randomUUID();
+      patient2.setId(id2);
+      assertNotEquals(patient, patient2);
     }
 }

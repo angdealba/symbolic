@@ -3,6 +3,10 @@ package com.symbolic.symbolic.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
+import java.util.Date;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PrescriptionTest {
@@ -38,6 +42,10 @@ public class PrescriptionTest {
     @Test
     void testSetters() {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        prescription.setId(id);
+        assertEquals(prescription.getId(), id);
+
         prescription.setDosage(2);
         assertEquals(prescription.getDosage(), 2);
 
@@ -70,6 +78,7 @@ public class PrescriptionTest {
         // Base cases for testing simple equality
         assertEquals(prescription, prescription);
         assertNotEquals(prescription, "Test string");
+        assertNotEquals(prescription, null);
 
         // Different objects with same values are equal
         Prescription prescription2 = new Prescription(1, 2, 100, "Test instructions");
@@ -112,5 +121,19 @@ public class PrescriptionTest {
         prescription8.setPatient(patient);
         prescription8.setPractitioner(newPractitioner);
         assertNotEquals(prescription, prescription8);
+    }
+
+    @Test
+    void testIDEquality() {
+      // Different IDs are not equal
+      UUID id1 = UUID.randomUUID();
+      prescription.setId(id1);
+
+      Prescription prescription2 = new Prescription(1, 2, 100, "Test instructions");
+      prescription2.setPatient(patient);
+      prescription2.setPractitioner(practitioner);
+      UUID id2 = UUID.randomUUID();
+      prescription2.setId(id2);
+      assertNotEquals(prescription, prescription2);
     }
 }

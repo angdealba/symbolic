@@ -78,6 +78,10 @@ public class Diagnosis {
     return id;
   }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public String getCondition() {
     return condition;
   }

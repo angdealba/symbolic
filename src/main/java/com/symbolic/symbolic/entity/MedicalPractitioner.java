@@ -135,6 +135,10 @@ public class MedicalPractitioner {
     return id;
   }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public Double getLongitude() {
     return longitude;
   }
