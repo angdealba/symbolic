@@ -26,6 +26,11 @@ public class BackgroundCheckService {
 
   /**
    * Run a complete BG check on the requested id.
+   *
+   * @param id ID string for the patient whose background is being checked
+   * @param requestedVaccination name of the vaccination being checked for
+   * @param requestedAllergy name of the allergy being checked for
+   * @param requestedDiagnosis name of a diagnosis being checked for
    */
   public Map<String, Boolean> getBackgroundCheck(Long id, String requestedVaccination,
                                                  String requestedAllergy,

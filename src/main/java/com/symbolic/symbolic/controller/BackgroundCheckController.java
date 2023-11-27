@@ -1,8 +1,8 @@
 package com.symbolic.symbolic.controller;
 
-import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.service.BackgroundCheckService;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 /* Object used to represent HTTP body requests */
 class BGCheckBody{
-  Long id;
-  String vaccine;
-  String allergy;
-  String diagnosis;
+  private Long id;
+  private String vaccine;
+  private String allergy;
+  private String diagnosis;
 
   public Long getId() {
     return id;
@@ -58,7 +58,6 @@ public class BackgroundCheckController {
   @Autowired
   BackgroundCheckService backgroundCheckService;
 
-
   /**
    * Implements the /bgcheck endpoint for running a health background check.
    */
@@ -71,6 +70,7 @@ public class BackgroundCheckController {
     if(body.getId() == null){
       return new ResponseEntity<>("Missing ID", HttpStatus.BAD_REQUEST);
     }
+
     // Check for (mostly) empty input
     if (body.getVaccine() == null && body.getAllergy() == null && body.getDiagnosis() == null) {
       String errorMessage = "Missing at least one field to validate.";
