@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -14,6 +15,7 @@ import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import lombok.NoArgsConstructor;
 import org.springframework.data.util.Pair;
 
@@ -25,8 +27,8 @@ import org.springframework.data.util.Pair;
 @NoArgsConstructor
 public class Facility {
   @Id
-  @GeneratedValue
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @Column(name = "latitude")
   private Double latitude;
@@ -90,8 +92,12 @@ public class Facility {
     this.specialization = specialization;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
   }
 
   public Double getLongitude() {
@@ -137,7 +143,7 @@ public class Facility {
    *
    * @param patientId the id of the patient to be removed.
    */
-  public void removePatientById(Long patientId) {
+  public void removePatientById(UUID patientId) {
     Patient patient = this.patients.stream().filter(p ->
         Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
     if (patient != null) {
@@ -160,7 +166,7 @@ public class Facility {
    *
    * @param practitionerId the id of the practitioner to be removed.
    */
-  public void removePractitionerById(Long practitionerId) {
+  public void removePractitionerById(UUID practitionerId) {
     MedicalPractitioner practitioner = this.practitioners.stream().filter(p ->
         Objects.equals(p.getId(), practitionerId)).findFirst().orElse(null);
     if (practitioner != null) {
@@ -183,7 +189,7 @@ public class Facility {
    *
    * @param appointmentId the id of the appointment to be removed.
    */
-  public void removeAppointmentById(Long appointmentId) {
+  public void removeAppointmentById(UUID appointmentId) {
     Appointment appointment = this.appointments.stream().filter(p ->
         Objects.equals(p.getId(), appointmentId)).findFirst().orElse(null);
     if (appointment != null) {

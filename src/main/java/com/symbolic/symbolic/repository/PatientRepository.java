@@ -2,6 +2,7 @@ package com.symbolic.symbolic.repository;
 
 import com.symbolic.symbolic.entity.Patient;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,16 +10,16 @@ import org.springframework.stereotype.Repository;
  * Provides a set of search methods from Spring Boot for Patient data.
  */
 @Repository
-public interface PatientRepository extends JpaRepository<Patient, Long> {
-  List<Patient> findPatientsByPractitionersId(Long practitionerId);
+public interface PatientRepository extends JpaRepository<Patient, UUID> {
+  List<Patient> findPatientsByPractitionersId(UUID practitionerId);
 
-  List<Patient> findPatientsByFacilitiesId(Long facilityId);
+  List<Patient> findPatientsByFacilitiesId(UUID facilityId);
 
-  List<Patient> findPatientsByInsurancePolicyId(Long policyId);
+  List<Patient> findPatientsByInsurancePolicyId(UUID policyId);
 
-  Patient findPatientByAppointmentsId(Long appointmentId);
+  Patient findPatientByAppointmentsId(UUID appointmentId);
 
-  Patient findPatientByPrescriptionsId(Long prescriptionId);
+  Patient findPatientByPrescriptionsId(UUID prescriptionId);
 
-  Patient findPatientByDiagnosesId(Long diagnosisId);
+  Patient findPatientByDiagnosesId(UUID diagnosisId);
 }

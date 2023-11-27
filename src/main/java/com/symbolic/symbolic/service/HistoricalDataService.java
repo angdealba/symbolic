@@ -34,8 +34,8 @@ public class HistoricalDataService {
    *
    * @param condition string value for condition name
    * @param startDate Date value for the start of the search period
-   * @param endDate Date value of the end of the search period
-   * @param location List of Strings containing the coordinates of the location
+   * @param endDate   Date value of the end of the search period
+   * @param location  List of Strings containing the coordinates of the location
    * @return a list of diagnoses matching the search terms
    */
   public List<Diagnosis> getHistoricalDataByCondition(String condition, Date startDate,
@@ -57,51 +57,51 @@ public class HistoricalDataService {
    *
    * @param diagnoses an input list of diagnoses
    * @param startDate Date value for the start of the search period
-   * @param endDate Date value of the end of the search period
-   * @param location List of Strings containing the coordinates of the location
+   * @param endDate   Date value of the end of the search period
+   * @param location  List of Strings containing the coordinates of the location
    * @return a list of diagnoses from the original list that match the search params
    */
   public List<Diagnosis> filter(List<Diagnosis> diagnoses, Date startDate,
                                 Date endDate, List<Double> location) {
-      //filter by date
-      diagnoses = diagnoses.stream().filter(diagnosis ->
-              diagnosis.getDate().after(startDate)
-                      && diagnosis.getDate().before(endDate)).collect(Collectors.toList());
+    //filter by date
+    diagnoses = diagnoses.stream().filter(diagnosis ->
+        diagnosis.getDate().after(startDate)
+            && diagnosis.getDate().before(endDate)).collect(Collectors.toList());
 
-      //filter by location
-      List<Diagnosis> finalDiagnoses = diagnoses;
-      if (location != null) {
-          if (!location.isEmpty()) {
-              Double latitudeThreshold = 0.1;
-              Double longitudeThreshold = 0.1;
+    //filter by location
+    List<Diagnosis> finalDiagnoses = diagnoses;
+    if (location != null) {
+      if (!location.isEmpty()) {
+        Double latitudeThreshold = 0.1;
+        Double longitudeThreshold = 0.1;
 
-              Double minLatitude = location.get(0) - latitudeThreshold;
-              Double maxLatitude = location.get(0) + latitudeThreshold;
-              Double minLongitude = location.get(1) - longitudeThreshold;
-              Double maxLongitude = location.get(1) + longitudeThreshold;
+        Double minLatitude = location.get(0) - latitudeThreshold;
+        Double maxLatitude = location.get(0) + latitudeThreshold;
+        Double minLongitude = location.get(1) - longitudeThreshold;
+        Double maxLongitude = location.get(1) + longitudeThreshold;
 
-              List<MedicalPractitioner> practitioners = medicalPractitionerRepository
-                      .findByLatitudeBetweenAndLongitudeBetween(
-                              minLatitude, maxLatitude, minLongitude, maxLongitude
-                      );
+        List<MedicalPractitioner> practitioners = medicalPractitionerRepository
+            .findByLatitudeBetweenAndLongitudeBetween(
+                minLatitude, maxLatitude, minLongitude, maxLongitude
+            );
 
-              List<Diagnosis> filteredDiagnoses = practitioners.stream()
-                      .flatMap(practitioner -> practitioner.getDiagnoses().stream())
-                      .filter(finalDiagnoses::contains)
-                      .toList();
+        List<Diagnosis> filteredDiagnoses = practitioners.stream()
+            .flatMap(practitioner -> practitioner.getDiagnoses().stream())
+            .filter(finalDiagnoses::contains)
+            .toList();
 
-          }
       }
-      return finalDiagnoses;
+    }
+    return finalDiagnoses;
   }
 
   /**
    * Retrieves the N most common conditions over a time range and location.
    *
-   * @param location List of Strings containing the coordinates of the location
+   * @param location  List of Strings containing the coordinates of the location
    * @param startDate Date value for the start of the search period
-   * @param endDate Date value of the end of the search period
-   * @param n integer value for the number of conditions to return
+   * @param endDate   Date value of the end of the search period
+   * @param n         integer value for the number of conditions to return
    * @return a map of condition names to frequencies
    */
   public Map<String, Integer> getTopConditions(List<Double> location, Date startDate,
@@ -117,10 +117,10 @@ public class HistoricalDataService {
 
     //alg from https://stackoverflow.com/questions/109383/sort-a-mapkey-value-by-values
     return counts.entrySet().stream()
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .limit(n)
-            .collect(Collectors.toMap(
-                Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+        .limit(n)
+        .collect(Collectors.toMap(
+            Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
 
   }

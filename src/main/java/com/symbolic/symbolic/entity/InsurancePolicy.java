@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -13,6 +14,7 @@ import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import lombok.NoArgsConstructor;
 
 /**
@@ -23,8 +25,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InsurancePolicy {
   @Id
-  @GeneratedValue
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @Column(name = "premiumCost")
   private Integer premiumCost;
@@ -52,8 +54,12 @@ public class InsurancePolicy {
     this.premiumCost = premiumCost;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
   }
 
   public Integer getPremiumCost() {
@@ -74,7 +80,7 @@ public class InsurancePolicy {
    *
    * @param patientId the id of the patient to be removed.
    */
-  public void removePatientById(Long patientId) {
+  public void removePatientById(UUID patientId) {
     Patient patient = this.patients.stream().filter(p ->
         Objects.equals(p.getId(), patientId)).findFirst().orElse(null);
     if (patient != null) {

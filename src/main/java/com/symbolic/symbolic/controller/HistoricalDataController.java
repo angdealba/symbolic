@@ -7,59 +7,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/* Object used to represent HTTP body requests */
-class HistoricalDataBody{
-  String condition;
-  List<Double> Location;
-  Date startDate;
-  Date endDate;
-  int N;
-
-  public String getCondition() {
-    return condition;
-  }
-
-  public Date getEndDate() {
-    return endDate;
-  }
-
-  public Date getStartDate(){
-    return startDate;
-  }
-
-  public List<Double> getLocation() {
-    return Location;
-  }
-
-  public int getN() {
-    return N;
-  }
-
-  public void setCondition(String condition) {
-    this.condition = condition;
-  }
-
-  public void setEndDate(Date endDate) {
-    this.endDate = endDate;
-  }
-
-  public void setLocation(List<Double> location) {
-    Location = location;
-  }
-
-  public void setStartDate(Date startDate) {
-    this.startDate = startDate;
-  }
-
-  public void setN(int n) {
-    N = n;
-  }
-}
 /**
  * Implements all functionality for the historical data API.
  */
@@ -69,6 +23,55 @@ public class HistoricalDataController {
 
   @Autowired
   HistoricalDataService historicalDataService;
+
+  /* Object used to represent HTTP body requests */
+  static class HistoricalDataBody {
+    String condition;
+    List<Double> location;
+    Date startDate;
+    Date endDate;
+    int count;
+
+    public String getCondition() {
+      return condition;
+    }
+
+    public Date getEndDate() {
+      return endDate;
+    }
+
+    public Date getStartDate() {
+      return startDate;
+    }
+
+    public List<Double> getLocation() {
+      return location;
+    }
+
+    public int getN() {
+      return count;
+    }
+
+    public void setCondition(String condition) {
+      this.condition = condition;
+    }
+
+    public void setEndDate(Date endDate) {
+      this.endDate = endDate;
+    }
+
+    public void setLocation(List<Double> location) {
+      this.location = location;
+    }
+
+    public void setStartDate(Date startDate) {
+      this.startDate = startDate;
+    }
+
+    public void setN(int n) {
+      count = n;
+    }
+  }
 
   /**
    * Retrieves a list of Diagnoses that meet the specified search criteria in the past week.
@@ -80,7 +83,7 @@ public class HistoricalDataController {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
 
@@ -112,7 +115,7 @@ public class HistoricalDataController {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
     if (location != null) {
@@ -142,7 +145,7 @@ public class HistoricalDataController {
     List<Double> location = body.getLocation();
     String condition = body.getCondition();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
     if (location != null) {
@@ -175,7 +178,7 @@ public class HistoricalDataController {
     Date startDate = body.getStartDate();
     Date endDate = body.getEndDate();
 
-    if (condition == null){
+    if (condition == null) {
       return new ResponseEntity<>("Missing Condition Parameter", HttpStatus.BAD_REQUEST);
     }
     if (location != null) {
@@ -202,11 +205,9 @@ public class HistoricalDataController {
           @RequestBody HistoricalDataBody body
   ) {
     List<Double> location = body.getLocation();
-    Date startDate = body.getStartDate();
-    Date endDate = body.getEndDate();
     int n = body.getN();
 
-    if(n == 0){
+    if (n == 0) {
       n = 3;
     }
 
@@ -217,6 +218,8 @@ public class HistoricalDataController {
       return new ResponseEntity<>("Incorrect coordinate information", HttpStatus.BAD_REQUEST);
     }
 
+    Date startDate = body.getStartDate();
+    Date endDate = body.getEndDate();
     Map<String, Integer> result = historicalDataService.getTopConditions(
         location, startDate, endDate, n);
     if (result.isEmpty()) {

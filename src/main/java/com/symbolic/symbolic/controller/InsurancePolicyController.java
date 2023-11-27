@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -30,6 +30,56 @@ public class InsurancePolicyController {
   InsurancePolicyRepository insurancePolicyRepository;
   @Autowired
   PatientRepository patientRepository;
+
+  /**
+   * RequestBody object used to represent InsurancePolicy-related requests.
+   */
+  static class PolicyRequestBody {
+    String id;
+    Integer premiumCost;
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public Integer getPremiumCost() {
+      return premiumCost;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Policy-Patient join requests.
+   */
+  static class PolicyPatientBody {
+    String policyId;
+    String patientId;
+
+    public String getPolicyId() {
+      return policyId;
+    }
+
+    public String getPatientId() {
+      return patientId;
+    }
+  }
+
+  /**
+   * Parses a string input into a UUID object type for use in database lookup operations.
+   *
+   * @param uuidString a string value representing the UUID in the HTTP request.
+   * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
+   */
+  public static UUID parseUuidFromString(String uuidString) {
+    try {
+      return UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
 
   /**
    * Implements GET endpoint /policies for returning all data.
@@ -50,7 +100,17 @@ public class InsurancePolicyController {
    * Implements GET endpoint /policy for returning data matching an id.
    */
   @GetMapping("/policy")
-  public ResponseEntity<?> getPolicyById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getPolicyById(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
     if (policyData.isPresent()) {
@@ -66,8 +126,13 @@ public class InsurancePolicyController {
    * Implements POST endpoint /policy for uploading data.
    */
   @PostMapping("/policy")
-  public ResponseEntity<?> createPolicy(@RequestBody InsurancePolicy policy) {
-    InsurancePolicy newPolicy = new InsurancePolicy(policy.getPremiumCost());
+  public ResponseEntity<?> createPolicy(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getPremiumCost() == null) {
+      String errorMessage = "Missing 'premiumCost' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    InsurancePolicy newPolicy = new InsurancePolicy(requestBody.getPremiumCost());
     insurancePolicyRepository.save(newPolicy);
     return new ResponseEntity<>(newPolicy, HttpStatus.CREATED);
   }
@@ -76,15 +141,27 @@ public class InsurancePolicyController {
    * Implements PUT endpoint /policy for updating data matching an id.
    */
   @PutMapping("/policy")
-  public ResponseEntity<?> updatePolicy(@RequestParam("id") Long id,
-                                        @RequestBody InsurancePolicy policy) {
+  public ResponseEntity<?> updatePolicy(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
     if (policyData.isPresent()) {
       InsurancePolicy oldPolicy = policyData.get();
-      oldPolicy.setPremiumCost(policy.getPremiumCost());
-      insurancePolicyRepository.save(oldPolicy);
 
+      if (requestBody.getPremiumCost() != null) {
+        oldPolicy.setPremiumCost(requestBody.getPremiumCost());
+      }
+
+      insurancePolicyRepository.save(oldPolicy);
       return new ResponseEntity<>(oldPolicy, HttpStatus.OK);
     } else {
       String errorMessage = "No insurance policy found with id " + id;
@@ -96,7 +173,17 @@ public class InsurancePolicyController {
    * Implements DELETE endpoint /policy for removing data matching an id.
    */
   @DeleteMapping("/policy")
-  public ResponseEntity<?> deletePolicy(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deletePolicy(@RequestBody PolicyRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(id);
 
     if (policyData.isPresent()) {
@@ -139,7 +226,17 @@ public class InsurancePolicyController {
    * Implements GET endpoint /policy/patients for returning data matching an id.
    */
   @GetMapping("/policy/patients")
-  public ResponseEntity<?> getAllPatientsByPolicyId(@RequestParam("policyId") Long policyId) {
+  public ResponseEntity<?> getAllPatientsByPolicyId(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPolicyId() == null) {
+      String errorMessage = "Missing 'policyId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID policyId = parseUuidFromString(requestBody.getPolicyId());
+    if (policyId == null) {
+      String errorMessage = "'policyId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!insurancePolicyRepository.existsById(policyId)) {
       String errorMessage = "No insurance policy found with id " + policyId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -153,7 +250,17 @@ public class InsurancePolicyController {
    * Implements GET endpoint /patient/policy for returning data matching an id.
    */
   @GetMapping("/patient/policy")
-  public ResponseEntity<?> getPolicyByPatientId(@RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> getPolicyByPatientId(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -167,8 +274,25 @@ public class InsurancePolicyController {
    * Implements POST endpoint for linking the two data types.
    */
   @PostMapping("/policy/patient")
-  public ResponseEntity<?> addPatientToPolicy(@RequestParam("policyId") Long policyId,
-                                              @RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> addPatientToPolicy(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPolicyId() == null) {
+      String errorMessage = "Missing 'policyId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID policyId = parseUuidFromString(requestBody.getPolicyId());
+    if (policyId == null) {
+      String errorMessage = "'policyId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(policyId);
 
     if (policyData.isPresent()) {
@@ -208,8 +332,25 @@ public class InsurancePolicyController {
    * Implements DELETE endpoint for removing a link between the two data types.
    */
   @DeleteMapping("/policy/patient")
-  public ResponseEntity<?> removePatientFromPolicy(@RequestParam("policyId") Long policyId,
-                                                   @RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> removePatientFromPolicy(@RequestBody PolicyPatientBody requestBody) {
+    if (requestBody.getPolicyId() == null) {
+      String errorMessage = "Missing 'policyId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID policyId = parseUuidFromString(requestBody.getPolicyId());
+    if (policyId == null) {
+      String errorMessage = "'policyId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<InsurancePolicy> policyData = insurancePolicyRepository.findById(policyId);
 
     if (policyData.isPresent()) {

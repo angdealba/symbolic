@@ -10,7 +10,7 @@ If on Windows, open a Command Prompt, run **cd C:\Program Files\MySQL\My SQL Ser
 3. In the MySQL shell, create a new user that will control the test database with the command
 **CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';**
 4. Create the database for the project with the command **CREATE DATABASE medical_db;**
-5. Give the new user permissions to access and modify this database with the command **GRANT ALL ON medical_db.* TO 'testuser'@'localhost';**
+5. Give the new user permissions to access and modify this database with the command **GRANT ALL ON medical_db.\* TO 'testuser'@'localhost';**
 
 Now that the database has been configured, our service can either by
 cloning the repository and opening it in the IntelliJ Idea IDE or from

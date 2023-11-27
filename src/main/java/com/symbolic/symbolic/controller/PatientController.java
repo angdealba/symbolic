@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -52,6 +52,98 @@ public class PatientController {
   InsurancePolicyRepository insurancePolicyRepository;
 
   /**
+   * RequestBody object used to represent Patient-related requests.
+   */
+  static class PatientRequestBody {
+    String id;
+    String vaccinations;
+    String allergies;
+    String accommodations;
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public String getVaccinations() {
+      return vaccinations;
+    }
+
+    public String getAllergies() {
+      return allergies;
+    }
+
+    public String getAccommodations() {
+      return accommodations;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Patient-Appointment join requests.
+   */
+  static class PatientAppointmentBody {
+    String patientId;
+    String appointmentId;
+
+    public String getPatientId() {
+      return patientId;
+    }
+
+    public String getAppointmentId() {
+      return appointmentId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Patient-Prescription join requests.
+   */
+  static class PatientPrescriptionBody {
+    String patientId;
+    String prescriptionId;
+
+    public String getPatientId() {
+      return patientId;
+    }
+
+    public String getPrescriptionId() {
+      return prescriptionId;
+    }
+  }
+
+  /**
+   * RequestBody object used to represent Patient-Diagnosis join requests.
+   */
+  static class PatientDiagnosisBody {
+    String patientId;
+    String diagnosisId;
+
+    public String getPatientId() {
+      return patientId;
+    }
+
+    public String getDiagnosisId() {
+      return diagnosisId;
+    }
+  }
+
+  /**
+   * Parses a string input into a UUID object type for use in database lookup operations.
+   *
+   * @param uuidString a string value representing the UUID in the HTTP request.
+   * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
+   */
+  public static UUID parseUuidFromString(String uuidString) {
+    try {
+      return UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  /**
    * Implements GET endpoint /patients for returning all data.
    */
   @GetMapping("/patients")
@@ -70,7 +162,17 @@ public class PatientController {
    * Implements GET endpoint /patient for returning data matching an id.
    */
   @GetMapping("/patient")
-  public ResponseEntity<?> getPatientById(@RequestParam("id") Long id) {
+  public ResponseEntity<?> getPatientById(@RequestBody PatientRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(id);
 
     if (patientData.isPresent()) {
@@ -86,9 +188,20 @@ public class PatientController {
    * Implements POST endpoint /patient for uploading data.
    */
   @PostMapping("/patient")
-  public ResponseEntity<?> createPatient(@RequestBody Patient patient) {
-    Patient newPatient = new Patient(patient.getVaccinations(),
-        patient.getAllergies(), patient.getAccommodations());
+  public ResponseEntity<?> createPatient(@RequestBody PatientRequestBody requestBody) {
+    if (requestBody.getVaccinations() == null) {
+      String errorMessage = "Missing 'vaccinations' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getAllergies() == null) {
+      String errorMessage = "Missing 'allergies' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getAccommodations() == null) {
+      String errorMessage = "Missing 'accommodations' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    Patient newPatient = new Patient(requestBody.getVaccinations(),
+        requestBody.getAllergies(), requestBody.getAccommodations());
     patientRepository.save(newPatient);
     return new ResponseEntity<>(newPatient, HttpStatus.CREATED);
   }
@@ -97,17 +210,35 @@ public class PatientController {
    * Implements PUT endpoint /patient for updating data matching an id.
    */
   @PutMapping("/patient")
-  public ResponseEntity<?> updatePatient(@RequestParam("id") Long id,
-                                         @RequestBody Patient patient) {
+  public ResponseEntity<?> updatePatient(@RequestBody PatientRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(id);
 
     if (patientData.isPresent()) {
       Patient oldPatient = patientData.get();
-      oldPatient.setVaccinations(patient.getVaccinations());
-      oldPatient.setAllergies(patient.getAllergies());
-      oldPatient.setAccommodations(patient.getAccommodations());
-      patientRepository.save(oldPatient);
 
+      if (requestBody.getVaccinations() != null) {
+        oldPatient.setVaccinations(requestBody.getVaccinations());
+      }
+
+      if (requestBody.getAllergies() != null) {
+        oldPatient.setAllergies(requestBody.getAllergies());
+      }
+
+      if (requestBody.getAccommodations() != null) {
+        oldPatient.setAccommodations(requestBody.getAccommodations());
+      }
+
+      patientRepository.save(oldPatient);
       return new ResponseEntity<>(oldPatient, HttpStatus.OK);
     } else {
       String errorMessage = "No patient found with id " + id;
@@ -119,7 +250,17 @@ public class PatientController {
    * Implements DELETE endpoint /patient for removing data matching an id.
    */
   @DeleteMapping("/patient")
-  public ResponseEntity<?> deletePatient(@RequestParam("id") Long id) {
+  public ResponseEntity<?> deletePatient(@RequestBody PatientRequestBody requestBody) {
+    if (requestBody.getId() == null) {
+      String errorMessage = "Missing 'id' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID id = parseUuidFromString(requestBody.getId());
+    if (id == null) {
+      String errorMessage = "'id' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(id);
 
     if (patientData.isPresent()) {
@@ -145,19 +286,19 @@ public class PatientController {
 
       Set<Appointment> appointments = patient.getAppointments();
       for (Appointment appointment : appointments) {
-        appointment.setPractitioner(null);
+        appointment.setPatient(null);
         appointmentRepository.save(appointment);
       }
 
       Set<Prescription> prescriptions = patient.getPrescriptions();
       for (Prescription prescription : prescriptions) {
-        prescription.setPractitioner(null);
+        prescription.setPatient(null);
         prescriptionRepository.save(prescription);
       }
 
       Set<Diagnosis> diagnoses = patient.getDiagnoses();
       for (Diagnosis diagnosis : diagnoses) {
-        diagnosis.setPractitioner(null);
+        diagnosis.setPatient(null);
         diagnosisRepository.save(diagnosis);
       }
 
@@ -177,7 +318,7 @@ public class PatientController {
     List<Patient> patients = patientRepository.findAll();
 
     for (Patient patient : patients) {
-      Long id = patient.getId();
+      UUID id = patient.getId();
 
       Set<MedicalPractitioner> practitioners = patient.getPractitioners();
       for (MedicalPractitioner practitioner : practitioners) {
@@ -199,19 +340,19 @@ public class PatientController {
 
       Set<Appointment> appointments = patient.getAppointments();
       for (Appointment appointment : appointments) {
-        appointment.setPractitioner(null);
+        appointment.setPatient(null);
         appointmentRepository.save(appointment);
       }
 
       Set<Prescription> prescriptions = patient.getPrescriptions();
       for (Prescription prescription : prescriptions) {
-        prescription.setPractitioner(null);
+        prescription.setPatient(null);
         prescriptionRepository.save(prescription);
       }
 
       Set<Diagnosis> diagnoses = patient.getDiagnoses();
       for (Diagnosis diagnosis : diagnoses) {
-        diagnosis.setPractitioner(null);
+        diagnosis.setPatient(null);
         diagnosisRepository.save(diagnosis);
       }
     }
@@ -225,7 +366,17 @@ public class PatientController {
    */
   @GetMapping("/patient/appointments")
   public ResponseEntity<?> getAllAppointmentsByPatientId(
-      @RequestParam("patientId") Long patientId) {
+      @RequestBody PatientAppointmentBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -240,7 +391,17 @@ public class PatientController {
    */
   @GetMapping("/appointment/patient")
   public ResponseEntity<?> getPatientByAppointmentId(
-      @RequestParam("appointmentId") Long appointmentId) {
+      @RequestBody PatientAppointmentBody requestBody) {
+    if (requestBody.getAppointmentId() == null) {
+      String errorMessage = "Missing 'appointmentId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!appointmentRepository.existsById(appointmentId)) {
       String errorMessage = "No appointment found with id " + appointmentId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -255,8 +416,26 @@ public class PatientController {
    */
   @PostMapping("/patient/appointment")
   public ResponseEntity<?> addAppointmentToPatient(
-      @RequestParam("patientId") Long patientId,
-      @RequestParam("appointmentId") Long appointmentId) {
+      @RequestBody PatientAppointmentBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getAppointmentId() == null) {
+      String errorMessage = "Missing 'appointmentId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
     if (patientData.isPresent()) {
@@ -295,9 +474,27 @@ public class PatientController {
    * Implements DELETE endpoint for removing a link between the two data types.
    */
   @DeleteMapping("/patient/appointment")
-  public ResponseEntity<?> removeAppointmentFromPractitioner(
-      @RequestParam("patientId") Long patientId,
-      @RequestParam("appointmentId") Long appointmentId) {
+  public ResponseEntity<?> removeAppointmentFromPatient(
+      @RequestBody PatientAppointmentBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getAppointmentId() == null) {
+      String errorMessage = "Missing 'appointmentId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID appointmentId = parseUuidFromString(requestBody.getAppointmentId());
+    if (appointmentId == null) {
+      String errorMessage = "'appointmentId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
     if (patientData.isPresent()) {
@@ -322,7 +519,17 @@ public class PatientController {
    */
   @GetMapping("/patient/prescriptions")
   public ResponseEntity<?> getAllPrescriptionsByPatientId(
-      @RequestParam("patientId") Long patientId) {
+      @RequestBody PatientPrescriptionBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -338,7 +545,17 @@ public class PatientController {
    */
   @GetMapping("/prescription/patient")
   public ResponseEntity<?> getPatientByPrescriptionId(
-      @RequestParam("prescriptionId") Long prescriptionId) {
+      @RequestBody PatientPrescriptionBody requestBody) {
+    if (requestBody.getPrescriptionId() == null) {
+      String errorMessage = "Missing 'prescriptionId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID prescriptionId = parseUuidFromString(requestBody.getPrescriptionId());
+    if (prescriptionId == null) {
+      String errorMessage = "'prescriptionId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!prescriptionRepository.existsById(prescriptionId)) {
       String errorMessage = "No prescription found with id " + prescriptionId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -353,8 +570,26 @@ public class PatientController {
    */
   @PostMapping("/patient/prescription")
   public ResponseEntity<?> addPrescriptionToPatient(
-      @RequestParam("patientId") Long patientId,
-      @RequestParam("prescriptionId") Long prescriptionId) {
+      @RequestBody PatientPrescriptionBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPrescriptionId() == null) {
+      String errorMessage = "Missing 'prescriptionId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID prescriptionId = parseUuidFromString(requestBody.getPrescriptionId());
+    if (prescriptionId == null) {
+      String errorMessage = "'prescriptionId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
     if (patientData.isPresent()) {
@@ -393,9 +628,27 @@ public class PatientController {
    * Implements DELETE endpoint for removing a link between the two data types.
    */
   @DeleteMapping("/patient/prescription")
-  public ResponseEntity<?> removePrescriptionFromPractitioner(
-      @RequestParam("patientId") Long patientId,
-      @RequestParam("prescriptionId") Long prescriptionId) {
+  public ResponseEntity<?> removePrescriptionFromPatient(
+      @RequestBody PatientPrescriptionBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPrescriptionId() == null) {
+      String errorMessage = "Missing 'prescriptionId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID prescriptionId = parseUuidFromString(requestBody.getPrescriptionId());
+    if (prescriptionId == null) {
+      String errorMessage = "'prescriptionId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
     if (patientData.isPresent()) {
@@ -419,7 +672,18 @@ public class PatientController {
    * Implements GET endpoint for returning data matching an id.
    */
   @GetMapping("/patient/diagnoses")
-  public ResponseEntity<?> getAllDiagnosesByPatientId(@RequestParam("patientId") Long patientId) {
+  public ResponseEntity<?> getAllDiagnosesByPatientId(
+      @RequestBody PatientDiagnosisBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!patientRepository.existsById(patientId)) {
       String errorMessage = "No patient found with id " + patientId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -433,7 +697,18 @@ public class PatientController {
    * Implements GET endpoint for returning data matching an id.
    */
   @GetMapping("/diagnosis/patient")
-  public ResponseEntity<?> getPatientByDiagnosisId(@RequestParam("diagnosisId") Long diagnosisId) {
+  public ResponseEntity<?> getPatientByDiagnosisId(
+      @RequestBody PatientDiagnosisBody requestBody) {
+    if (requestBody.getDiagnosisId() == null) {
+      String errorMessage = "Missing 'diagnosisId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID diagnosisId = parseUuidFromString(requestBody.getDiagnosisId());
+    if (diagnosisId == null) {
+      String errorMessage = "'diagnosisId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     if (!diagnosisRepository.existsById(diagnosisId)) {
       String errorMessage = "No diagnosis found with id " + diagnosisId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
@@ -447,8 +722,26 @@ public class PatientController {
    * Implements POST endpoint for linking the two data types.
    */
   @PostMapping("/patient/diagnosis")
-  public ResponseEntity<?> addDiagnosisToPatient(@RequestParam("patientId") Long patientId,
-                                                 @RequestParam("diagnosisId") Long diagnosisId) {
+  public ResponseEntity<?> addDiagnosisToPatient(@RequestBody PatientDiagnosisBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDiagnosisId() == null) {
+      String errorMessage = "Missing 'diagnosisId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID diagnosisId = parseUuidFromString(requestBody.getDiagnosisId());
+    if (diagnosisId == null) {
+      String errorMessage = "'diagnosisId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
     if (patientData.isPresent()) {
@@ -487,9 +780,27 @@ public class PatientController {
    * Implements DELETE endpoint for removing a link between the two data types.
    */
   @DeleteMapping("/patient/diagnosis")
-  public ResponseEntity<?> removeDiagnosisFromPractitioner(
-      @RequestParam("patientId") Long patientId,
-      @RequestParam("diagnosisId") Long diagnosisId) {
+  public ResponseEntity<?> removeDiagnosisFromPatient(
+      @RequestBody PatientDiagnosisBody requestBody) {
+    if (requestBody.getPatientId() == null) {
+      String errorMessage = "Missing 'patientId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDiagnosisId() == null) {
+      String errorMessage = "Missing 'diagnosisId' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    UUID patientId = parseUuidFromString(requestBody.getPatientId());
+    if (patientId == null) {
+      String errorMessage = "'patientId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    UUID diagnosisId = parseUuidFromString(requestBody.getDiagnosisId());
+    if (diagnosisId == null) {
+      String errorMessage = "'diagnosisId' field must contain a valid UUID value";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
     Optional<Patient> patientData = patientRepository.findById(patientId);
 
     if (patientData.isPresent()) {

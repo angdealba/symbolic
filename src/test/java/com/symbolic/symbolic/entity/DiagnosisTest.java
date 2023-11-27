@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,6 +44,10 @@ public class DiagnosisTest {
     @Test
     void testSetters() throws ParseException {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        diagnosis.setId(id);
+        assertEquals(diagnosis.getId(), id);
+
         diagnosis.setCondition("Influenza");
         assertEquals(diagnosis.getCondition(), "Influenza");
 
@@ -72,6 +77,7 @@ public class DiagnosisTest {
         // Base cases for testing simple equality
         assertEquals(diagnosis, diagnosis);
         assertNotEquals(diagnosis, "Test string");
+        assertNotEquals(diagnosis, null);
 
         // Different objects with same values are equal
         Date date = formatter.parse("2023-10-20");
@@ -110,5 +116,20 @@ public class DiagnosisTest {
         diagnosis7.setPatient(patient);
         diagnosis7.setPractitioner(newPractitioner);
         assertNotEquals(diagnosis, diagnosis7);
+    }
+
+    @Test
+    void testIDEquality() throws ParseException {
+      // Different IDs are not equal
+      UUID id1 = UUID.randomUUID();
+      diagnosis.setId(id1);
+
+      Date date = formatter.parse("2023-10-20");
+      Diagnosis diagnosis2 = new Diagnosis("COVID-19", "Antiviral Medication", date);
+      diagnosis2.setPatient(patient);
+      diagnosis2.setPractitioner(practitioner);
+      UUID id2 = UUID.randomUUID();
+      diagnosis2.setId(id2);
+      assertNotEquals(diagnosis, diagnosis2);
     }
 }

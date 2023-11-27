@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class BackgroundCheckService {
    * @param requestedAllergy name of the allergy being checked for
    * @param requestedDiagnosis name of a diagnosis being checked for
    */
-  public Map<String, Boolean> getBackgroundCheck(Long id, String requestedVaccination,
+  public Map<String, Boolean> getBackgroundCheck(UUID id, String requestedVaccination,
                                                  String requestedAllergy,
                                                  String requestedDiagnosis) {
     // This implementation ignores irrelevant entries in `requirements`

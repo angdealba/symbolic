@@ -1,16 +1,12 @@
 package com.symbolic.symbolic.entity;
 
-import jdk.jshell.Diag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -119,6 +115,10 @@ public class MedicalPractitionerTest {
     @Test
     void testSetters() {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        practitioner.setId(id);
+        assertEquals(practitioner.getId(), id);
+
         practitioner.setLatitude(40.71);
         assertEquals(practitioner.getLatitude(), 40.71);
 
@@ -163,6 +163,10 @@ public class MedicalPractitionerTest {
 
         practitioner.removePatientById(toRemove.getId());
         assertFalse(practitioner.getPatients().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        practitioner.removePatientById(id);
     }
 
     @Test
@@ -180,6 +184,10 @@ public class MedicalPractitionerTest {
 
         practitioner.removeAppointmentById(toRemove.getId());
         assertFalse(practitioner.getAppointments().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        practitioner.removeAppointmentById(id);
     }
 
     @Test
@@ -196,6 +204,10 @@ public class MedicalPractitionerTest {
 
         practitioner.removePrescriptionById(toRemove.getId());
         assertFalse(practitioner.getPrescriptions().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        practitioner.removePrescriptionById(id);
     }
 
     @Test
@@ -213,6 +225,10 @@ public class MedicalPractitionerTest {
 
         practitioner.removeDiagnosisById(toRemove.getId());
         assertFalse(practitioner.getDiagnoses().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        practitioner.removeDiagnosisById(id);
     }
 
     @Test
@@ -225,6 +241,7 @@ public class MedicalPractitionerTest {
         // Base cases for testing simple equality
         assertEquals(practitioner, practitioner);
         assertNotEquals(practitioner, "Test string");
+        assertNotEquals(practitioner, null);
 
         // Different objects with same values are equal
         MedicalPractitioner practitioner2 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
@@ -304,5 +321,18 @@ public class MedicalPractitionerTest {
         Diagnosis diagnosis3 = new Diagnosis("Common Cold", "None", date3);
         practitioner11.addDiagnosis(diagnosis3);
         assertNotEquals(practitioner, practitioner11);
+    }
+
+    @Test
+    void testIDEquality() {
+      // Different IDs are not equal
+      UUID id1 = UUID.randomUUID();
+      practitioner.setId(id1);
+
+      MedicalPractitioner practitioner2 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+      copyPractitionerData(practitioner2);
+      UUID id2 = UUID.randomUUID();
+      practitioner2.setId(id2);
+      assertNotEquals(practitioner, practitioner2);
     }
 }

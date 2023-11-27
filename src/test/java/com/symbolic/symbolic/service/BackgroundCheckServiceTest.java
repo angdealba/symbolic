@@ -43,7 +43,7 @@ public class BackgroundCheckServiceTest {
         diag_list.add(diagnosis);
 
         // Mock input
-        long request_id = 1234;
+        UUID request_id = UUID.randomUUID();
         String request_vaccinations = "measles";
         String request_allergies = "peanut";
         String request_diagnosis = "covid";
