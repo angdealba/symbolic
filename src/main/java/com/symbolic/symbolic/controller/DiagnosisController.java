@@ -75,7 +75,7 @@ public class DiagnosisController {
    * @param uuidString a string value representing the UUID in the HTTP request.
    * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
    */
-  private static UUID parseUuidFromString(String uuidString) {
+  public static UUID parseUuidFromString(String uuidString) {
     try {
       return UUID.fromString(uuidString);
     } catch (IllegalArgumentException e) {

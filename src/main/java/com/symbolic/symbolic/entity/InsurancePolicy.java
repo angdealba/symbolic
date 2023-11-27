@@ -58,6 +58,10 @@ public class InsurancePolicy {
     return id;
   }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public Integer getPremiumCost() {
     return premiumCost;
   }

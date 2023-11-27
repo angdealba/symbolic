@@ -3,8 +3,10 @@ package com.symbolic.symbolic.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,6 +43,10 @@ public class InsurancePolicyTest {
     @Test
     void testSetters() {
         // Test each setter for the different fields
+        UUID id = UUID.randomUUID();
+        policy.setId(id);
+        assertEquals(policy.getId(), id);
+
         policy.setPremiumCost(200);
         assertEquals(policy.getPremiumCost(), 200);
     }
@@ -60,6 +66,10 @@ public class InsurancePolicyTest {
         // Test that the patients set no longer contains a patient after running the removal command
         policy.removePatientById(toRemove.getId());
         assertFalse(policy.getPatients().contains(toRemove));
+
+        // Null removal does not crash
+        UUID id = UUID.randomUUID();
+        policy.removePatientById(id);
     }
 
     @Test
@@ -80,6 +90,7 @@ public class InsurancePolicyTest {
 
         assertEquals(policy1, policy1);
         assertNotEquals(policy1, "Test string");
+        assertNotEquals(policy1, null);
 
         // Different objects with same values are equal
         InsurancePolicy policy2 = new InsurancePolicy(100);
@@ -101,4 +112,20 @@ public class InsurancePolicyTest {
 
         assertNotEquals(policy1, policy4);
     }
+
+  @Test
+  void testIDEquality() {
+    // Different IDs are not equal
+    UUID id1 = UUID.randomUUID();
+    policy.setId(id1);
+
+    Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
+    Patient patient2 = new Patient("Flu", "Tree Nut", "None");
+    InsurancePolicy policy2 = new InsurancePolicy(100);
+    policy2.addPatient(patient1);
+    policy2.addPatient(patient2);
+    UUID id2 = UUID.randomUUID();
+    policy2.setId(id2);
+    assertNotEquals(policy, policy2);
+  }
 }

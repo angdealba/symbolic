@@ -161,7 +161,7 @@ public class MedicalPractitionerController {
    * @param uuidString a string value representing the UUID in the HTTP request.
    * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
    */
-  private static UUID parseUuidFromString(String uuidString) {
+  public static UUID parseUuidFromString(String uuidString) {
     try {
       return UUID.fromString(uuidString);
     } catch (IllegalArgumentException e) {
@@ -283,7 +283,7 @@ public class MedicalPractitionerController {
       practitionerRepository.save(oldPractitioner);
       return new ResponseEntity<>(oldPractitioner, HttpStatus.OK);
     } else {
-      String errorMessage = "No practitioner found with id " + id;
+      String errorMessage = "No medical practitioner found with id " + id;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -310,7 +310,7 @@ public class MedicalPractitionerController {
 
       Set<Patient> patients = practitioner.getPatients();
       for (Patient patient : patients) {
-        patient.removeFacilityById(id);
+        patient.removePractitionerById(id);
         patientRepository.save(patient);
       }
 
@@ -341,7 +341,7 @@ public class MedicalPractitionerController {
       practitionerRepository.deleteById(id);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } else {
-      String errorMessage = "No practitioner found with id " + id;
+      String errorMessage = "No medical practitioner found with id " + id;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -358,7 +358,7 @@ public class MedicalPractitionerController {
 
       Set<Patient> patients = practitioner.getPatients();
       for (Patient patient : patients) {
-        patient.removeFacilityById(id);
+        patient.removePractitionerById(id);
         patientRepository.save(patient);
       }
 
@@ -508,7 +508,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -553,7 +553,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -575,7 +575,7 @@ public class MedicalPractitionerController {
     }
 
     if (!practitionerRepository.existsById(practitionerId)) {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
@@ -666,7 +666,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -711,7 +711,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -733,7 +733,7 @@ public class MedicalPractitionerController {
     }
 
     if (!practitionerRepository.existsById(practitionerId)) {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
@@ -824,7 +824,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -869,7 +869,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -891,7 +891,7 @@ public class MedicalPractitionerController {
     }
 
     if (!practitionerRepository.existsById(practitionerId)) {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
@@ -981,7 +981,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }
@@ -1026,7 +1026,7 @@ public class MedicalPractitionerController {
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
       }
     } else {
-      String errorMessage = "No practitioner found with id " + practitionerId;
+      String errorMessage = "No medical practitioner found with id " + practitionerId;
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
   }

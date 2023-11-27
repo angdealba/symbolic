@@ -130,6 +130,10 @@ public class Patient {
     return id;
   }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public String getVaccinations() {
     return vaccinations;
   }

@@ -77,6 +77,10 @@ public class Prescription {
     return id;
   }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public Integer getDosage() {
     return dosage;
   }
