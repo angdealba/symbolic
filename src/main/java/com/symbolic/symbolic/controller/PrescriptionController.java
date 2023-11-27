@@ -75,7 +75,7 @@ public class PrescriptionController {
    * @param uuidString a string value representing the UUID in the HTTP request.
    * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
    */
-  private static UUID parseUuidFromString(String uuidString) {
+  public static UUID parseUuidFromString(String uuidString) {
     try {
       return UUID.fromString(uuidString);
     } catch (IllegalArgumentException e) {
@@ -215,13 +215,13 @@ public class PrescriptionController {
 
       Patient patient = prescription.getPatient();
       if (patient != null) {
-        patient.removeDiagnosisById(id);
+        patient.removePrescriptionById(id);
         patientRepository.save(patient);
       }
 
       MedicalPractitioner practitioner = prescription.getPractitioner();
       if (practitioner != null) {
-        practitioner.removeDiagnosisById(id);
+        practitioner.removePrescriptionById(id);
         practitionerRepository.save(practitioner);
       }
 
