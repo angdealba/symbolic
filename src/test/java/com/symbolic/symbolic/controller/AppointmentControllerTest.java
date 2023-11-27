@@ -82,8 +82,7 @@ public class AppointmentControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
-
-    // Test when prescriptions are returned
+    // Test when appointments are returned
     appointments.add(appointment1);
     appointments.add(appointment2);
 

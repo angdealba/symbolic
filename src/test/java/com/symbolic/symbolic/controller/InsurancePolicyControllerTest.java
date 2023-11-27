@@ -69,13 +69,12 @@ public class InsurancePolicyControllerTest {
     List<InsurancePolicy> policies = new ArrayList<>();
     when(insurancePolicyRepository.findAll()).thenReturn(policies);
 
-    // Test when no appointments exist
+    // Test when no policies exist
     mockMvc.perform(get("/api/policies")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
-
-    // Test when prescriptions are returned
+    // Test when policies are returned
     policies.add(policy1);
     policies.add(policy2);
 
