@@ -290,8 +290,8 @@ public class DiagnosisControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
-    assertFalse(patient.getPrescriptions().contains(diagnosis1));
-    assertFalse(practitioner.getPrescriptions().contains(diagnosis1));
+    assertFalse(patient.getDiagnoses().contains(diagnosis1));
+    assertFalse(practitioner.getDiagnoses().contains(diagnosis1));
   }
 
   @Test
@@ -319,5 +319,7 @@ public class DiagnosisControllerTest {
     mockMvc.perform(delete("/api/diagnoses")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
+    assertFalse(patient.getDiagnoses().contains(diagnosis1));
+    assertFalse(practitioner.getDiagnoses().contains(diagnosis1));
   }
 }

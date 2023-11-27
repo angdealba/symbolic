@@ -294,5 +294,7 @@ public class PrescriptionControllerTest {
     mockMvc.perform(delete("/api/prescriptions")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
+    assertFalse(patient.getPrescriptions().contains(prescription1));
+    assertFalse(practitioner.getPrescriptions().contains(prescription1));
   }
 }

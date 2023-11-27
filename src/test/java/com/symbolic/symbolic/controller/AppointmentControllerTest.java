@@ -294,7 +294,6 @@ public class AppointmentControllerTest {
     Date date2 = formatter.parse("2023-11-21 13:30");
     Appointment appointment2 = new Appointment(date2, 50);
     List<Appointment> appointments = new ArrayList<>();
-    when(appointmentRepository.findAll()).thenReturn(appointments);
     appointments.add(appointment1);
     appointments.add(appointment2);
     when(appointmentRepository.findAll()).thenReturn(appointments);
@@ -315,5 +314,8 @@ public class AppointmentControllerTest {
     mockMvc.perform(delete("/api/appointments")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
+    assertFalse(patient.getAppointments().contains(appointment1));
+    assertFalse(practitioner.getAppointments().contains(appointment1));
+    assertFalse(facility.getAppointments().contains(appointment1));
   }
 }
