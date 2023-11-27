@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 /* Object used to represent HTTP body requests */
 class BGCheckBody{
   private Long id;
-  private String vaccine;
+  private String vaccination;
   private String allergy;
   private String diagnosis;
 
@@ -28,8 +28,8 @@ class BGCheckBody{
     return diagnosis;
   }
 
-  public String getVaccine() {
-    return vaccine;
+  public String getVaccination() {
+    return vaccination;
   }
 
   public void setAllergy(String allergy) {
@@ -45,7 +45,7 @@ class BGCheckBody{
   }
 
   public void setVaccine(String vac) {
-    this.vaccine = vac;
+    this.vaccination = vac;
   }
 }
 
@@ -72,16 +72,16 @@ public class BackgroundCheckController {
     }
 
     // Check for (mostly) empty input
-    if (body.getVaccine() == null && body.getAllergy() == null && body.getDiagnosis() == null) {
+    if (body.getVaccination() == null && body.getAllergy() == null && body.getDiagnosis() == null) {
       String errorMessage = "Missing at least one field to validate.";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     Map<String, Boolean> backgroundCheck
-        = backgroundCheckService.getBackgroundCheck(body.getId(), body.getVaccine(), body.getAllergy(), body.getDiagnosis());
+        = backgroundCheckService.getBackgroundCheck(body.getId(), body.getVaccination(), body.getAllergy(), body.getDiagnosis());
 
     if (backgroundCheck == null) {
-      String errorMessage = "Patient not found.";
+      String errorMessage = "Requested patient not found.";
       return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
