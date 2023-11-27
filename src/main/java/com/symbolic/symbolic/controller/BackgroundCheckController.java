@@ -81,8 +81,8 @@ public class BackgroundCheckController {
         = backgroundCheckService.getBackgroundCheck(body.getId(), body.getVaccine(), body.getAllergy(), body.getDiagnosis());
 
     if (backgroundCheck == null) {
-      String errorMessage = "Empty patient table.";
-      return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+      String errorMessage = "Patient not found.";
+      return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
     return new ResponseEntity<>(backgroundCheck, HttpStatus.OK);
