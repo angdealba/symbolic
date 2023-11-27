@@ -130,7 +130,7 @@ public class FacilityControllerTest {
 
   @Test
   public void testCreateFacility() throws Exception {
-    // Create valid policy
+    // Create valid facility
     mockMvc.perform(post("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"latitude\": \"40.7\", " +
@@ -219,7 +219,7 @@ public class FacilityControllerTest {
     facility1.setId(id);
     when(facilityRepository.findById(id)).thenReturn(Optional.of(facility1));
 
-    // Test deleting a policy with a valid id
+    // Test deleting a facility with a valid id
     mockMvc.perform(delete("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"id\": \"" + id + "\"}"))
@@ -273,13 +273,12 @@ public class FacilityControllerTest {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
     List<Facility> facilities = new ArrayList<>();
-    when(facilityRepository.findAll()).thenReturn(facilities);
 
     facilities.add(facility1);
     facilities.add(facility2);
     when(facilityRepository.findAll()).thenReturn(facilities);
 
-    // Test deleting all diagnoses
+    // Test deleting all facilities
     mockMvc.perform(delete("/api/facilities")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
@@ -349,7 +348,7 @@ public class FacilityControllerTest {
     when(facilityRepository.existsById(id)).thenReturn(true);
     when(practitionerRepository.findMedicalPractitionerByFacilityId(id)).thenReturn(practitioners);
 
-    // Test retrieving patients
+    // Test retrieving practitioners
     mockMvc.perform(get("/api/facility/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"facilityId\": \"" + id + "\"}"))
@@ -388,7 +387,7 @@ public class FacilityControllerTest {
     when(facilityRepository.existsById(id)).thenReturn(true);
     when(appointmentRepository.findAppointmentsByFacilityId(id)).thenReturn(appointments);
 
-    // Test retrieving patients
+    // Test retrieving appointments
     mockMvc.perform(get("/api/facility/appointments")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"facilityId\": \"" + id + "\"}"))

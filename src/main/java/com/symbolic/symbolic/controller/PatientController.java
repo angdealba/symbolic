@@ -135,7 +135,7 @@ public class PatientController {
    * @param uuidString a string value representing the UUID in the HTTP request.
    * @return A valid UUID object if the string can be converted successfully, or null if it cannot.
    */
-  private static UUID parseUuidFromString(String uuidString) {
+  public static UUID parseUuidFromString(String uuidString) {
     try {
       return UUID.fromString(uuidString);
     } catch (IllegalArgumentException e) {
@@ -286,19 +286,19 @@ public class PatientController {
 
       Set<Appointment> appointments = patient.getAppointments();
       for (Appointment appointment : appointments) {
-        appointment.setPractitioner(null);
+        appointment.setPatient(null);
         appointmentRepository.save(appointment);
       }
 
       Set<Prescription> prescriptions = patient.getPrescriptions();
       for (Prescription prescription : prescriptions) {
-        prescription.setPractitioner(null);
+        prescription.setPatient(null);
         prescriptionRepository.save(prescription);
       }
 
       Set<Diagnosis> diagnoses = patient.getDiagnoses();
       for (Diagnosis diagnosis : diagnoses) {
-        diagnosis.setPractitioner(null);
+        diagnosis.setPatient(null);
         diagnosisRepository.save(diagnosis);
       }
 
@@ -340,19 +340,19 @@ public class PatientController {
 
       Set<Appointment> appointments = patient.getAppointments();
       for (Appointment appointment : appointments) {
-        appointment.setPractitioner(null);
+        appointment.setPatient(null);
         appointmentRepository.save(appointment);
       }
 
       Set<Prescription> prescriptions = patient.getPrescriptions();
       for (Prescription prescription : prescriptions) {
-        prescription.setPractitioner(null);
+        prescription.setPatient(null);
         prescriptionRepository.save(prescription);
       }
 
       Set<Diagnosis> diagnoses = patient.getDiagnoses();
       for (Diagnosis diagnosis : diagnoses) {
-        diagnosis.setPractitioner(null);
+        diagnosis.setPatient(null);
         diagnosisRepository.save(diagnosis);
       }
     }
