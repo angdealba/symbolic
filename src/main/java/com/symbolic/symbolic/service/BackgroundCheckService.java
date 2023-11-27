@@ -27,6 +27,11 @@ public class BackgroundCheckService {
 
   /**
    * Run a complete BG check on the requested id.
+   *
+   * @param id ID string for the patient whose background is being checked
+   * @param requestedVaccination name of the vaccination being checked for
+   * @param requestedAllergy name of the allergy being checked for
+   * @param requestedDiagnosis name of a diagnosis being checked for
    */
   public Map<String, Boolean> getBackgroundCheck(UUID id, String requestedVaccination,
                                                  String requestedAllergy,
@@ -51,7 +56,8 @@ public class BackgroundCheckService {
     if (requestedVaccination != null) {
       String vaccinations = patient.getVaccinations();
 
-      if (vaccinations.toLowerCase().contains(requestedVaccination.toLowerCase())) {
+      if (vaccinations != null &&
+              vaccinations.toLowerCase().contains(requestedVaccination.toLowerCase())) {
         validVaccine = true;
       }
     }
@@ -59,8 +65,10 @@ public class BackgroundCheckService {
     // String requestedAllergy = requirements.get("allergy");
     if (requestedAllergy != null) {
       String allergies = patient.getAllergies();
+
       // Get and check records
-      if (allergies.toLowerCase().contains(requestedAllergy.toLowerCase())) {
+      if (allergies != null &&
+              allergies.toLowerCase().contains(requestedAllergy.toLowerCase())) {
         validAllergy = true;
       }
     }

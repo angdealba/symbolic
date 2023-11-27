@@ -20,12 +20,12 @@ public class BackgroundCheckController {
   @Autowired
   BackgroundCheckService backgroundCheckService;
 
-  /* Object used to represent HTTP body requests */
-  static class BackgroundCheckBody {
-    String id;
-    String vaccine;
-    String allergy;
-    String diagnosis;
+/* Object used to represent HTTP body requests */
+class BGCheckBody{
+  private String id;
+  private String vaccination;
+  private String allergy;
+  private String diagnosis;
 
     public String getId() {
       return id;
@@ -39,8 +39,8 @@ public class BackgroundCheckController {
       return diagnosis;
     }
 
-    public String getVaccine() {
-      return vaccine;
+    public String getVaccination() {
+      return vaccination;
     }
 
     public void setAllergy(String allergy) {
@@ -56,9 +56,8 @@ public class BackgroundCheckController {
     }
 
     public void setVaccine(String vac) {
-      this.vaccine = vac;
+      this.vaccination = vac;
     }
-  }
 
   /**
    * Parses a string input into a UUID object type for use in database lookup operations.
@@ -86,8 +85,9 @@ public class BackgroundCheckController {
     if (body.getId() == null) {
       return new ResponseEntity<>("Missing ID", HttpStatus.BAD_REQUEST);
     }
+
     // Check for (mostly) empty input
-    if (body.getVaccine() == null && body.getAllergy() == null && body.getDiagnosis() == null) {
+    if (body.getVaccination() == null && body.getAllergy() == null && body.getDiagnosis() == null) {
       String errorMessage = "Missing at least one field to validate.";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
@@ -99,12 +99,12 @@ public class BackgroundCheckController {
     }
 
     Map<String, Boolean> backgroundCheck
-        = backgroundCheckService.getBackgroundCheck(id, body.getVaccine(),
-        body.getAllergy(), body.getDiagnosis());
+        = backgroundCheckService.getBackgroundCheck(id, body.getVaccination(),
+                                                    body.getAllergy(), body.getDiagnosis());
 
     if (backgroundCheck == null) {
-      String errorMessage = "Empty patient table.";
-      return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+      String errorMessage = "Requested patient not found.";
+      return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
     return new ResponseEntity<>(backgroundCheck, HttpStatus.OK);
