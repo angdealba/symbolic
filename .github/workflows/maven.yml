@@ -58,15 +58,6 @@ jobs:
         coverage_results_path: target/site/jacoco/jacoco.xml
         # GITHUB_TOKEN to authenticate against API calls to attach report to Workflow Run.
         github_token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Postman API Tests with Newman
-      # You may pin to the exact commit or the version.
-      # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
-      uses: matt-ball/newman-action@v2.0.0
-      with:
-        # Collection to use
-        collection: postman/collections/BaseRequestTests.postman_collection.json
-        # Environment to use
-        environment: postman/environments/CIEnvironment.postman_environment.json
     - name: Push SpotBugs report
       # You may pin to the exact commit or the version.
       # uses: jwgmeligmeyling/spotbugs-github-action@b8e2c3523acb34c87f14e18cbcd2d87db8c8584e
@@ -94,7 +85,47 @@ jobs:
         # title: # optional, default is Checkstyle report
         # Personal access token (PAT) used to fetch the repository. The PAT is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the PAT. We recommend using a service account with the least permissions necessary. Also when generating a new PAT, select the least scopes necessary. [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
         token: ${{ secrets.GITHUB_TOKEN }}
-          
+
+  run_live_tests:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.1
+        env:
+          MYSQL_DATABASE: medical_db
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: password
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Set up MySQL Database
+      run: |
+        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';"
+        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "DROP DATABASE IF EXISTS medical_db;"
+        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE DATABASE medical_db;"
+        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
+    - name: Run Symbolic Application
+      run: mvn -B package --file pom.xml spring-boot:run
+    - name: Postman API Tests with Newman
+      # You may pin to the exact commit or the version.
+      # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
+      uses: matt-ball/newman-action@v2.0.0
+      with:
+        # Collection to use
+        collection: postman/collections/BaseRequestTests.postman_collection.json
+        # Environment to use
+        environment: postman/environments/CIEnvironment.postman_environment.json
+      
           
           
 
