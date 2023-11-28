@@ -230,6 +230,12 @@ public class MedicalPractitionerController {
     } else if (requestBody.getYearsExperience() == null) {
       String errorMessage = "Missing 'yearsExperience' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getConsultationCost() < 0) {
+      String errorMessage = "'consultationCost' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getYearsExperience() < 0) {
+      String errorMessage = "'yearsExperience' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     MedicalPractitioner newPractitioner = new MedicalPractitioner(
@@ -273,11 +279,21 @@ public class MedicalPractitionerController {
       }
 
       if (requestBody.getConsultationCost() != null) {
-        oldPractitioner.setConsultationCost(requestBody.getConsultationCost());
+        if (requestBody.getConsultationCost() < 0) {
+          String errorMessage = "'consultationCost' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldPractitioner.setConsultationCost(requestBody.getConsultationCost());
+        }
       }
 
       if (requestBody.getYearsExperience() != null) {
-        oldPractitioner.setYearsExperience(requestBody.getYearsExperience());
+        if (requestBody.getYearsExperience() < 0) {
+          String errorMessage = "'yearsExperience' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldPractitioner.setYearsExperience(requestBody.getYearsExperience());
+        }
       }
 
       practitionerRepository.save(oldPractitioner);

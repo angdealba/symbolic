@@ -169,6 +169,37 @@ public class PrescriptionControllerTest {
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'cost' field in request body", result3.getResponse().getContentAsString());
+
+    // Test negative inputs
+    MvcResult result5 = mockMvc.perform(post("/api/prescription")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"dosage\": \"2\", " +
+                "\"dailyUses\": \"3\", " +
+                "\"cost\": \"-1\", " +
+                "\"instructions\": \"New instructions\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'cost' field must be a non-negative integer", result5.getResponse().getContentAsString());
+
+    MvcResult result6 = mockMvc.perform(post("/api/prescription")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"dosage\": \"-1\", " +
+                "\"dailyUses\": \"3\", " +
+                "\"cost\": \"10\", " +
+                "\"instructions\": \"New instructions\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'dosage' field must be a non-negative integer", result6.getResponse().getContentAsString());
+
+    MvcResult result7 = mockMvc.perform(post("/api/prescription")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"dosage\": \"2\", " +
+                "\"dailyUses\": \"-1\", " +
+                "\"cost\": \"10\", " +
+                "\"instructions\": \"New instructions\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'dailyUses' field must be a non-negative integer", result7.getResponse().getContentAsString());
   }
 
   @Test
@@ -218,6 +249,40 @@ public class PrescriptionControllerTest {
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No prescription found with id " + id2, result3.getResponse().getContentAsString());
+
+    // Test negative inputs
+    MvcResult result5 = mockMvc.perform(put("/api/prescription")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"dosage\": \"2\", " +
+                "\"dailyUses\": \"3\", " +
+                "\"cost\": \"-1\", " +
+                "\"instructions\": \"New instructions\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'cost' field must be a non-negative integer", result5.getResponse().getContentAsString());
+
+    MvcResult result6 = mockMvc.perform(put("/api/prescription")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"dosage\": \"-1\", " +
+                "\"dailyUses\": \"3\", " +
+                "\"cost\": \"10\", " +
+                "\"instructions\": \"New instructions\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'dosage' field must be a non-negative integer", result6.getResponse().getContentAsString());
+
+    MvcResult result7 = mockMvc.perform(put("/api/prescription")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"dosage\": \"2\", " +
+                "\"dailyUses\": \"-1\", " +
+                "\"cost\": \"10\", " +
+                "\"instructions\": \"New instructions\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'dailyUses' field must be a non-negative integer", result7.getResponse().getContentAsString());
   }
 
   @Test

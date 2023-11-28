@@ -137,6 +137,14 @@ public class InsurancePolicyControllerTest {
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'premiumCost' field in request body", result1.getResponse().getContentAsString());
+
+    // Test negative inputs
+    MvcResult result2 = mockMvc.perform(post("/api/policy")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"premiumCost\": \"-1\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'premiumCost' field must be a non-negative integer", result2.getResponse().getContentAsString());
   }
 
   @Test
@@ -183,6 +191,15 @@ public class InsurancePolicyControllerTest {
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No insurance policy found with id " + id2, result3.getResponse().getContentAsString());
+
+    // Test negative inputs
+    MvcResult result4 = mockMvc.perform(put("/api/policy")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"premiumCost\": \"-1\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'premiumCost' field must be a non-negative integer", result4.getResponse().getContentAsString());
   }
 
   @Test
