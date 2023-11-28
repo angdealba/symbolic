@@ -198,6 +198,29 @@ public class MedicalPractitionerControllerTest {
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'yearsExperience' field in request body", result5.getResponse().getContentAsString());
+
+    // Test negative inputs
+    MvcResult result6 = mockMvc.perform(post("/api/practitioner")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"latitude\": \"40.71\", " +
+                "\"longitude\": \"74.01\", " +
+                "\"specialization\": \"Optometry\", " +
+                "\"consultationCost\": \"-1\", " +
+                "\"yearsExperience\": \"15\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'consultationCost' field must be a non-negative integer", result6.getResponse().getContentAsString());
+
+    MvcResult result7 = mockMvc.perform(post("/api/practitioner")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"latitude\": \"40.71\", " +
+                "\"longitude\": \"74.01\", " +
+                "\"specialization\": \"Optometry\", " +
+                "\"consultationCost\": \"100\", " +
+                "\"yearsExperience\": \"-1\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'yearsExperience' field must be a non-negative integer", result7.getResponse().getContentAsString());
   }
 
   @Test
@@ -240,7 +263,7 @@ public class MedicalPractitionerControllerTest {
         .andReturn();
     assertEquals("'id' field must contain a valid UUID value", result2.getResponse().getContentAsString());
 
-    // Test retrieving with a UUID that is not in the database
+    // Test updating with a UUID that is not in the database
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
@@ -248,6 +271,31 @@ public class MedicalPractitionerControllerTest {
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No medical practitioner found with id " + id2, result3.getResponse().getContentAsString());
+
+    // Test negative inputs
+    MvcResult result4 = mockMvc.perform(put("/api/practitioner")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"latitude\": \"40.71\", " +
+                "\"longitude\": \"74.01\", " +
+                "\"specialization\": \"Optometry\", " +
+                "\"consultationCost\": \"-1\", " +
+                "\"yearsExperience\": \"15\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'consultationCost' field must be a non-negative integer", result4.getResponse().getContentAsString());
+
+    MvcResult result5 = mockMvc.perform(put("/api/practitioner")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"latitude\": \"40.71\", " +
+                "\"longitude\": \"74.01\", " +
+                "\"specialization\": \"Optometry\", " +
+                "\"consultationCost\": \"100\", " +
+                "\"yearsExperience\": \"-1\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'yearsExperience' field must be a non-negative integer", result5.getResponse().getContentAsString());
   }
 
   @Test

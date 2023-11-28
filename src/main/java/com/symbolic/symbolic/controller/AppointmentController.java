@@ -134,6 +134,9 @@ public class AppointmentController {
     } else if (requestBody.getCost() == null) {
       String errorMessage = "Missing 'cost' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getCost() < 0) {
+      String errorMessage = "'cost' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     // Parse the date and return an error message if it is not in the yyyy-MM-dd HH:mm format
@@ -185,7 +188,12 @@ public class AppointmentController {
       }
 
       if (requestBody.getCost() != null) {
-        oldAppointment.setCost(requestBody.getCost());
+        if (requestBody.getCost() < 0) {
+          String errorMessage = "'cost' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldAppointment.setCost(requestBody.getCost());
+        }
       }
 
       appointmentRepository.save(oldAppointment);

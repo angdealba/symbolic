@@ -108,28 +108,52 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+        
     - name: Set up MySQL Database
       run: |
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "DROP DATABASE IF EXISTS medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE DATABASE medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
+    # INstall Node on the runner
+    - name: Install Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "16.x"
+
+    # Install the newman command line utility and also install the html extra reporter
+    - name: Install newman
+      run: |
+        npm install -g newman
+        npm install -g newman-reporter-htmlextra
+
+    - name: Create results directory
+      run: mkdir -p testResults
+    
     - name: Run Symbolic Application
       run: |
         mvn -B package --file pom.xml spring-boot:run &
         for attempt in {1..120}; do sleep 1; if curl --output /dev/null --silent --head --fail "127.0.0.1:8080/api/patients"; then echo ready; break; fi; echo waiting on launch...; done
-    - name: Postman API Tests with Newman
-      # You may pin to the exact commit or the version.
-      # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
-      uses: matt-ball/newman-action@v2.0.0
+    # Run the POSTMAN collection
+    - name: Run Postman collection
+      run: |
+        newman run postman/collections/BaseRequestTests.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme  > testResults/runreport1.html
+
+    # Upload the contents of Test Results directory to workspace
+    - name: Upload the Postman run results
+      uses: actions/upload-artifact@v2
       with:
-        # Collection to use
-        collection: postman/collections/BaseRequestTests.postman_collection.json
-        # Environment to use
-        environment: postman/environments/CIEnvironment.postman_environment.json
-      
-          
-          
+        name: PostmanAPITests
+        path: testResults
+    # - name: Postman API Tests with Newman
+    #   # You may pin to the exact commit or the version.
+    #   # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
+    #   uses: matt-ball/newman-action@v2.0.0
+    #   with:
+    #     # Collection to use
+    #     collection: postman/collections/BaseRequestTests.postman_collection.json
+    #     # Environment to use
+    #     environment: postman/environments/CIEnvironment.postman_environment.json
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     # - name: Update dependency graph

@@ -138,6 +138,15 @@ public class PrescriptionController {
     } else if (requestBody.getCost() == null) {
       String errorMessage = "Missing 'cost' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDosage() < 0) {
+      String errorMessage = "'dosage' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getDailyUses() < 0) {
+      String errorMessage = "'dailyUses' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getCost() < 0) {
+      String errorMessage = "'cost' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     Prescription newPrescription = new Prescription(
@@ -170,15 +179,30 @@ public class PrescriptionController {
       Prescription oldPrescription = prescriptionData.get();
 
       if (requestBody.getDosage() != null) {
-        oldPrescription.setDosage(requestBody.getDosage());
+        if (requestBody.getDosage() < 0) {
+          String errorMessage = "'dosage' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldPrescription.setDosage(requestBody.getDosage());
+        }
       }
 
       if (requestBody.getDailyUses() != null) {
-        oldPrescription.setDailyUses(requestBody.getDailyUses());
+        if (requestBody.getDailyUses() < 0) {
+          String errorMessage = "'dailyUses' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldPrescription.setDailyUses(requestBody.getDailyUses());
+        }
       }
 
       if (requestBody.getCost() != null) {
-        oldPrescription.setCost(requestBody.getCost());
+        if (requestBody.getCost() < 0) {
+          String errorMessage = "'cost' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldPrescription.setCost(requestBody.getCost());
+        }
       }
 
       if (requestBody.getInstructions() != null) {

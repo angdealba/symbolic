@@ -171,6 +171,15 @@ public class AppointmentControllerTest {
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'dateTime' field value must be in the format yyyy-MM-dd HH:mm", result4.getResponse().getContentAsString());
+
+    // Test negative cost
+    MvcResult result5 = mockMvc.perform(post("/api/appointment")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"dateTime\": \"2023-10-20 12:00\", " +
+                "\"cost\": \"-1\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'cost' field must be a non-negative integer", result5.getResponse().getContentAsString());
   }
 
   @Test
@@ -229,6 +238,16 @@ public class AppointmentControllerTest {
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'dateTime' field value must be in the format yyyy-MM-dd HH:mm", result4.getResponse().getContentAsString());
+
+    // Test negative cost
+    MvcResult result5 = mockMvc.perform(put("/api/appointment")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"id\": \"" + id + "\", " +
+                "\"dateTime\": \"2023-10-20 12:00\", " +
+                "\"cost\": \"-1\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("'cost' field must be a non-negative integer", result5.getResponse().getContentAsString());
   }
 
   @Test

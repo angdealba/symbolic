@@ -130,6 +130,9 @@ public class InsurancePolicyController {
     if (requestBody.getPremiumCost() == null) {
       String errorMessage = "Missing 'premiumCost' field in request body";
       return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (requestBody.getPremiumCost() < 0) {
+      String errorMessage = "'premiumCost' field must be a non-negative integer";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
     }
 
     InsurancePolicy newPolicy = new InsurancePolicy(requestBody.getPremiumCost());
@@ -158,7 +161,12 @@ public class InsurancePolicyController {
       InsurancePolicy oldPolicy = policyData.get();
 
       if (requestBody.getPremiumCost() != null) {
-        oldPolicy.setPremiumCost(requestBody.getPremiumCost());
+        if (requestBody.getPremiumCost() < 0) {
+          String errorMessage = "'premiumCost' field must be a non-negative integer";
+          return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        } else {
+          oldPolicy.setPremiumCost(requestBody.getPremiumCost());
+        }
       }
 
       insurancePolicyRepository.save(oldPolicy);
