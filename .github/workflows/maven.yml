@@ -126,18 +126,21 @@ jobs:
       run: |
         npm install -g newman
         npm install -g newman-reporter-htmlextra
+
+    - name: Create results directory
+      run: mkdir -p testResults
     
     - name: Run Symbolic Application
       run: |
         mvn -B package --file pom.xml spring-boot:run &
         for attempt in {1..120}; do sleep 1; if curl --output /dev/null --silent --head --fail "127.0.0.1:8080/api/patients"; then echo ready; break; fi; echo waiting on launch...; done
     # Run the POSTMAN collection
-    - name: Run POSTMAN collection
+    - name: Run Postman collection
       run: |
         newman run postman/collections/BaseRequestTests.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme  > testResults/runreport1.html
 
     # Upload the contents of Test Results directory to workspace
-    - name: Output the run Details
+    - name: Upload the Postman run results
       uses: actions/upload-artifact@v2
       with:
         name: PostmanAPITests
