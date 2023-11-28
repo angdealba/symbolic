@@ -117,9 +117,9 @@ jobs:
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
     # INstall Node on the runner
     - name: Install Node
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
-        node-version: "12.x"
+        node-version: "16.x"
 
     # Install the newman command line utility and also install the html extra reporter
     - name: Install newman
