@@ -115,7 +115,9 @@ jobs:
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE DATABASE medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
     - name: Run Symbolic Application
-      run: mvn -B package --file pom.xml spring-boot:run
+      run: |
+        mvn -B package --file pom.xml spring-boot:run &
+        for attempt in {1..120}; do sleep 1; if curl --output /dev/null --silent --head --fail "127.0.0.1:8080/api/patients"; then echo ready; break; fi; echo waiting on launch...; done
     - name: Postman API Tests with Newman
       # You may pin to the exact commit or the version.
       # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
