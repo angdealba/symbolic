@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -71,6 +72,7 @@ public class PrescriptionControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAllPrescriptions() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     Prescription prescription2 = new Prescription(2, 3, 50, "Different instructions");
@@ -93,6 +95,7 @@ public class PrescriptionControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPrescriptionById() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     UUID id = UUID.randomUUID();
@@ -132,6 +135,7 @@ public class PrescriptionControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreatePrescription() throws Exception {
     // Create valid prescription
     mockMvc.perform(post("/api/prescription")
@@ -203,6 +207,7 @@ public class PrescriptionControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdatePrescription() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     UUID id = UUID.randomUUID();
@@ -286,6 +291,7 @@ public class PrescriptionControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeletePrescription() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     UUID id = UUID.randomUUID();
@@ -337,6 +343,7 @@ public class PrescriptionControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllPrescriptions() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     Prescription prescription2 = new Prescription(2, 3, 50, "Different instructions");

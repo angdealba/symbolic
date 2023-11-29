@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -63,6 +64,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAllPolicies() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     InsurancePolicy policy2 = new InsurancePolicy(50);
@@ -84,6 +86,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPolicyById() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     UUID id = UUID.randomUUID();
@@ -123,6 +126,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreatePolicy() throws Exception {
     // Create valid policy
     mockMvc.perform(post("/api/policy")
@@ -148,6 +152,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdatePolicy() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     UUID id = UUID.randomUUID();
@@ -203,6 +208,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeletePolicy() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     UUID id = UUID.randomUUID();
@@ -251,6 +257,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllPolicies() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     InsurancePolicy policy2 = new InsurancePolicy(50);
@@ -275,6 +282,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPatientsByPolicyId() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Patient patient2 = new Patient("Flu", "Tree Nut", "None");
@@ -312,6 +320,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPolicyByPatientId() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     UUID id = UUID.randomUUID();
@@ -345,6 +354,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPatientPolicy() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     InsurancePolicy policy1 = new InsurancePolicy(100);
@@ -422,6 +432,7 @@ public class InsurancePolicyControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPatientPolicy() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     InsurancePolicy policy1 = new InsurancePolicy(100);

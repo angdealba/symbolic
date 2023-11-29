@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -134,6 +135,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint /facilities for returning all data.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/facilities")
   public ResponseEntity<?> getAllFacilities() {
     List<Facility> facilities = new ArrayList<>();
@@ -149,6 +151,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint /facility for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/facility")
   public ResponseEntity<?> getFacilityById(@RequestBody FacilityRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -175,6 +178,7 @@ public class FacilityController {
   /**
    * Implements POST endpoint /facility for uploading data.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/facility")
   public ResponseEntity<?> createFacility(@RequestBody FacilityRequestBody requestBody) {
     if (requestBody.getLatitude() == null) {
@@ -198,6 +202,7 @@ public class FacilityController {
   /**
    * Implements PUT endpoint /facility for updating data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @PutMapping("/facility")
   public ResponseEntity<?> updateFacility(@RequestBody FacilityRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -238,6 +243,7 @@ public class FacilityController {
   /**
    * Implements DELETE endpoint /facility for removing data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/facility")
   public ResponseEntity<?> deleteFacility(@RequestBody FacilityRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -284,6 +290,7 @@ public class FacilityController {
   /**
    * Implements DELETE endpoint /facilities for removing all data.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/facilities")
   public ResponseEntity<?> deleteAllFacilities() {
     List<Facility> facilities = facilityRepository.findAll();
@@ -317,6 +324,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint /facility/patients for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/facility/patients")
   public ResponseEntity<?> getAllPatientsByFacilityId(
       @RequestBody FacilityPatientBody requestBody) {
@@ -342,6 +350,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint /facility/practitioners for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/facility/practitioners")
   public ResponseEntity<?> getAllPractitionersByFacilityId(
       @RequestBody FacilityPractitionerBody requestBody) {
@@ -368,6 +377,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint /patient/facilties for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/patient/facilities")
   public ResponseEntity<?> getAllFacilitiesByPatientId(
       @RequestBody FacilityPatientBody requestBody) {
@@ -393,6 +403,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint /practitioner/facility for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/practitioner/facility")
   public ResponseEntity<?> getFacilityByPractitionerId(
       @RequestBody FacilityPractitionerBody requestBody) {
@@ -418,6 +429,7 @@ public class FacilityController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/facility/patient")
   public ResponseEntity<?> addPatientToFacility(@RequestBody FacilityPatientBody requestBody) {
     if (requestBody.getFacilityId() == null) {
@@ -465,6 +477,7 @@ public class FacilityController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/facility/patient")
   public ResponseEntity<?> removePatientFromFacility(@RequestBody FacilityPatientBody requestBody) {
     if (requestBody.getFacilityId() == null) {
@@ -508,6 +521,7 @@ public class FacilityController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/facility/practitioner")
   public ResponseEntity<?> addPractitionerToFacility(
       @RequestBody FacilityPractitionerBody requestBody) {
@@ -567,6 +581,7 @@ public class FacilityController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/facility/practitioner")
   public ResponseEntity<?> removePractitionerFromFacility(
       @RequestBody FacilityPractitionerBody requestBody) {
@@ -611,6 +626,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/facility/appointments")
   public ResponseEntity<?> getAllAppointmentsByFacilityId(
       @RequestBody FacilityAppointmentBody requestBody) {
@@ -636,6 +652,7 @@ public class FacilityController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/appointment/facility")
   public ResponseEntity<?> getFacilityByAppointmentId(
       @RequestBody FacilityAppointmentBody requestBody) {
@@ -720,6 +737,7 @@ public class FacilityController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/facility/appointment")
   public ResponseEntity<?> removeAppointmentFromFacility(
       @RequestBody FacilityAppointmentBody requestBody) {

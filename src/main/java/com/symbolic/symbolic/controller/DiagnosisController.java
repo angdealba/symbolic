@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -86,6 +87,7 @@ public class DiagnosisController {
   /**
    * Implements GET endpoint /diagnoses for returning all data.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/diagnoses")
   public ResponseEntity<?> getAllDiagnoses() {
     List<Diagnosis> diagnoses = new ArrayList<>();
@@ -101,6 +103,7 @@ public class DiagnosisController {
   /**
    * Implements GET endpoint /diagnosis for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/diagnosis")
   public ResponseEntity<?> getDiagnosisById(@RequestBody DiagnosisRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -127,6 +130,7 @@ public class DiagnosisController {
   /**
    * Implements POST endpoint /diagnosis for uploading data.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/diagnosis")
   public ResponseEntity<?> createDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
     if (requestBody.getCondition() == null) {
@@ -160,6 +164,7 @@ public class DiagnosisController {
   /**
    * Implements PUT endpoint /diagnosis for updating data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @PutMapping("/diagnosis")
   public ResponseEntity<?> updateDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -206,6 +211,7 @@ public class DiagnosisController {
   /**
    * Implements DELETE endpoint /diagnosis for removing data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/diagnosis")
   public ResponseEntity<?> deleteDiagnosis(@RequestBody DiagnosisRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -246,6 +252,7 @@ public class DiagnosisController {
   /**
    * Implements DELETE endpoint /diagnoses for removing all data.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/diagnoses")
   public ResponseEntity<?> deleteAllDiagnoses() {
     List<Diagnosis> diagnoses = diagnosisRepository.findAll();

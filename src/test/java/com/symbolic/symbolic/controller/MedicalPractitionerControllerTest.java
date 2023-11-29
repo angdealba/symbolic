@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -77,6 +78,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetAllPractitioners() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
@@ -98,6 +100,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetPractitionerById() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     UUID id = UUID.randomUUID();
@@ -137,6 +140,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreatePractitioner() throws Exception {
     // Create valid practitioner
     mockMvc.perform(post("/api/practitioner")
@@ -224,6 +228,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdatePractitioner() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     UUID id = UUID.randomUUID();
@@ -299,6 +304,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeletePractitioner() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     UUID id = UUID.randomUUID();
@@ -363,6 +369,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllPractitioners() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
@@ -403,6 +410,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPatientsByPractitionerId() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Patient patient2 = new Patient("Flu", "Tree Nut", "None");
@@ -440,6 +448,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAppointmentsByPractitionerId() throws Exception {
     Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -479,6 +488,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPrescriptionsByPractitionerId() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     Prescription prescription2 = new Prescription(2, 1, 50, "More test instructions");
@@ -516,6 +526,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetDiagnosesByPatientId() throws Exception {
     Date date1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
@@ -555,6 +566,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionersByPatientId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
@@ -590,6 +602,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionerByAppointmentId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     UUID id = UUID.randomUUID();
@@ -623,6 +636,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionerByPrescriptionId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     UUID id = UUID.randomUUID();
@@ -656,6 +670,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionerByDiagnosisId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     UUID id = UUID.randomUUID();
@@ -689,6 +704,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPatientPractitioner() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
@@ -768,6 +784,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinAppointmentPractitioner() throws Exception {
     Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -846,6 +863,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPrescriptionPractitioner() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
@@ -923,6 +941,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinDiagnosisPractitioner() throws Exception {
     Date date1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
@@ -1001,6 +1020,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPatientPractitioner() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
@@ -1070,6 +1090,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinAppointmentPractitioner() throws Exception {
     Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -1140,6 +1161,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPrescriptionPractitioner() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
@@ -1209,6 +1231,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinDiagnosisPractitioner() throws Exception {
     Date date1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
@@ -1279,6 +1302,7 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testSearch() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Surgery", 100, 20);
