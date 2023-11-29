@@ -1,5 +1,8 @@
 package com.symbolic.symbolic.entity;
 
+/**
+ * An enum type defining the different client roles for the service.
+ */
 public enum Role {
   ADMIN,
   TELEHEALTH_APP,

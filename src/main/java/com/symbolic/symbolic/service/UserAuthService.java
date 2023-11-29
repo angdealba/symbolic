@@ -13,51 +13,59 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Custom Authentication service that handles the interaction between user operations and the DB.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserAuthService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final JwtService jwtService;
+  private final AuthenticationManager authenticationManager;
 
-//    public UserAuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
-//        this.userRepository = userRepository;
-//        this.passwordEncoder = passwordEncoder;
-//        this.jwtService = jwtService;
-//        this.authenticationManager = authenticationManager;
-//    }
+  /**
+   * Service command for handling a User registration event by saving it to the database.
+   *
+   * @param client the new user to be added to the database
+   * @return a custom response object containing a message and status code
+   */
+  public UserRegistrationResponse register(User client) {
+    var clientDetails = User.builder()
+        .name(client.getName())
+        .password(passwordEncoder.encode(client.getPassword()))
+        .role(Role.VACCINATION_RECORD_APP)
+        .description(client.getDescription())
+        .build();
+    userRepository.save(clientDetails);
 
-    public UserRegistrationResponse register(User client) {
-        var clientDetails = User.builder()
-                .name(client.getName())
-                .password(passwordEncoder.encode(client.getPassword()))
-                .role(Role.VACCINATION_RECORD_APP)
-                .description(client.getDescription())
-                .build();
-        userRepository.save(clientDetails);
+    return UserRegistrationResponse.builder()
+        .message("Registration staged successfully")
+        .statusCode("0")
+        .build();
 
-        return UserRegistrationResponse.builder()
-                .message("Registration staged successfully")
-                .statusCode("0")
-                .build();
+  }
 
-    }
+  /**
+   * Service command for handling an authentication event by retrieving it from the database.
+   *
+   * @param userAuthRequest the authentication details to be checked
+   * @return a JSON web token for the authenticated user
+   */
+  public UserAuthResponse authenticate(UserAuthRequest userAuthRequest) {
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            userAuthRequest.getName(),
+            userAuthRequest.getPassword()
+        )
+    );
 
-    public UserAuthResponse authenticate(UserAuthRequest userAuthRequest) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        userAuthRequest.getName(),
-                        userAuthRequest.getPassword()
-                )
-        );
+    var user = userRepository.findByName(userAuthRequest.getName())
+        .orElseThrow();
 
-        var user = userRepository.findByName(userAuthRequest.getName())
-                .orElseThrow();
-
-        var jwtToken = jwtService.generateToken(user);
-        return UserAuthResponse.builder()
-                .token(jwtToken)
-                .build();
-    }
+    var jwtToken = jwtService.generateToken(user);
+    return UserAuthResponse.builder()
+        .token(jwtToken)
+        .build();
+  }
 }

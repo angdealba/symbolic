@@ -56,8 +56,8 @@ public class BackgroundCheckService {
     if (requestedVaccination != null) {
       String vaccinations = patient.getVaccinations();
 
-      if (vaccinations != null &&
-              vaccinations.toLowerCase().contains(requestedVaccination.toLowerCase())) {
+      if (vaccinations != null
+          && vaccinations.toLowerCase().contains(requestedVaccination.toLowerCase())) {
         validVaccine = true;
       }
     }
@@ -67,8 +67,8 @@ public class BackgroundCheckService {
       String allergies = patient.getAllergies();
 
       // Get and check records
-      if (allergies != null &&
-              allergies.toLowerCase().contains(requestedAllergy.toLowerCase())) {
+      if (allergies != null
+          && allergies.toLowerCase().contains(requestedAllergy.toLowerCase())) {
         validAllergy = true;
       }
     }

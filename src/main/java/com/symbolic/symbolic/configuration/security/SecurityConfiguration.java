@@ -35,7 +35,8 @@ public class SecurityConfiguration {
             .anyRequest().authenticated()
         );
     httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-    httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    httpSecurity.addFilterBefore(jwtAuthenticationFilter,
+        UsernamePasswordAuthenticationFilter.class);
     return httpSecurity.build();
   }
 }

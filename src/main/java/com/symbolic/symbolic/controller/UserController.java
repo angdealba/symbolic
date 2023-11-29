@@ -23,6 +23,12 @@ public class UserController {
   @Autowired
   private UserAuthService userAuthService;
 
+  /**
+   * Controller command for handling a User registration event by saving it to the database.
+   *
+   * @param registerRequest a User object that will be registered with the service
+   * @return an HTTP response entity containing an error message or custom response object
+   */
   @PostMapping("/register")
   public ResponseEntity<?> register(
       @RequestBody User registerRequest
@@ -38,6 +44,12 @@ public class UserController {
     }
   }
 
+  /**
+   * Controller command for handling an authentication event by retrieving it from the database.
+   *
+   * @param userAuthRequest the authentication details to be checked
+   * @return an HTTP response entity containing an error message or a JSON web token for the user
+   */
   @PostMapping("/authenticate")
   public ResponseEntity<?> authenticate(
       @RequestBody UserAuthRequest userAuthRequest

@@ -1,10 +1,8 @@
 package com.symbolic.symbolic.controller;
 
 import com.symbolic.symbolic.service.BackgroundCheckService;
-
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
