@@ -418,7 +418,7 @@ public class MedicalPractitionerController {
    * Implements GET endpoint /practitioners/search for returning practitioners
    * within a radius of the location.
    */
-  @Secured("ROLE_ADMIN")
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/practitioners/search")
   public ResponseEntity<?> search(@RequestBody PractitionerRequestBody requestBody) {
     if (requestBody.getLatitude() == null) {

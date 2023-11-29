@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -73,6 +74,7 @@ public class DiagnosisControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAllDiagnoses() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
@@ -97,6 +99,7 @@ public class DiagnosisControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetDiagnosisById() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
@@ -137,6 +140,7 @@ public class DiagnosisControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreateDiagnosis() throws Exception {
     // Create valid diagnosis
     mockMvc.perform(post("/api/diagnosis")
@@ -183,6 +187,7 @@ public class DiagnosisControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdateDiagnosis() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
@@ -243,6 +248,7 @@ public class DiagnosisControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteDiagnosis() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
@@ -295,6 +301,7 @@ public class DiagnosisControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllDiagnoses() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
