@@ -133,7 +133,7 @@ jobs:
     - name: Run Symbolic Application
       run: |
         mvn -B package --file pom.xml spring-boot:run &
-        for attempt in {1..120}; do sleep 1; if curl -Xpost -H "Content-Type: application/json" -d "{}" --output /dev/null --silent --head --fail "127.0.0.1:8080/api/client/authenticate"; then echo ready; break; fi; echo waiting on launch...; done
+        for attempt in {1..120}; do sleep 1; if curl --location 'http://127.0.0.1:8080/api/client/authenticate' --header 'Content-Type: application/json' --data '{"name": "admin"}' --output /dev/null --silent; then echo ready; break; fi; echo waiting on launch...; done
     # # Run the POSTMAN collection
     # - name: Run Postman collection
     #   run: |
@@ -147,7 +147,7 @@ jobs:
     #     path: testResults
     - name: Configure DB Test User
       run: |
-        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "USE medical_db; INSERT INTO user \n values (13, NULL, 'admin', '$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO', 'ADMIN');"
+        mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "USE medical_db; INSERT INTO user \n values (1, NULL, 'admin', '\$2a\$10\$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO', 'ADMIN');"
     
     - name: Postman API Tests with Newman
       # You may pin to the exact commit or the version.
