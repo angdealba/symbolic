@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.symbolic.client.ClientController">
+   <children>
+      
+<!--      <TextField layoutX="168.0" layoutY="119.0" />-->
+<!--      <Label layoutX="168.0" layoutY="102.0" prefHeight="17.0" prefWidth="90.0" text="Customer's ID" />-->
+<!--      <BorderPane layoutX="158.0" layoutY="94.0" prefHeight="200.0" prefWidth="200.0" />-->
+
+<!--      <Label layoutX="168.0" layoutY="180.0" prefHeight="17.0" prefWidth="90.0" text="Required Vaccinations" />-->
+
+<!--      <Label layoutX="168.0" layoutY="180.0" prefHeight="17.0" prefWidth="90.0" text="Required Allergies" />-->
+
+<!--      <Label layoutX="168.0" layoutY="180.0" prefHeight="17.0" prefWidth="90.0" text="Required Diagnoses" />-->
+
+<!--      <Label layoutX="168.0" layoutY="180.0" prefHeight="17.0" prefWidth="90.0" text="Required Vaccinations" />-->
+
+<!--      <Label layoutX="168.0" layoutY="180.0" prefHeight="17.0" prefWidth="90.0" text="Required Vaccinations" />-->
+
+<!--      <Label layoutX="168.0" layoutY="180.0" prefHeight="17.0" prefWidth="90.0" text="Required Vaccinations" />-->
+
+   </children>
+   <top>
+      <TextFlow prefHeight="75.0" prefWidth="600.0" textAlignment="CENTER" BorderPane.alignment="CENTER">
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-translate-y: 20;" text="Symbolic Background Checker" wrappingWidth="403.13671875">
+               <font>
+                  <Font name="Cascadia Code Regular" size="28.0" />
+               </font>
+            </Text>
+         </children>
+      </TextFlow>
+   </top>
+   <center>
+      <GridPane alignment="CENTER" maxHeight="-Infinity" BorderPane.alignment="TOP_CENTER">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Subject ID" GridPane.halignment="RIGHT">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Text>
+            <TextField GridPane.columnIndex="1" fx:id="subjectId"/>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Potential Allergy" GridPane.halignment="RIGHT" GridPane.rowIndex="3">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Text>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Required Vaccination" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Text>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Potential Diagnoses of Concern" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Text>
+            <ChoiceBox prefWidth="150.0" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" fx:id="vaccinationBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="No Entry" />
+                        <String fx:value="MMR" />
+                        <String fx:value="Flu" />
+                        <String fx:value="COVID-19" />
+                        <String fx:value="HPV" />
+                    </FXCollections>
+                </items>
+            </ChoiceBox>
+            <ChoiceBox prefWidth="150.0" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" fx:id="allergyBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="No Entry" />
+                        <String fx:value="Peanuts" />
+                        <String fx:value="Tree Nuts" />
+                        <String fx:value="Dogs" />
+                        <String fx:value="Cats" />
+                        <String fx:value="Pollen" />
+                        <String fx:value="Stone Fruits" />
+                        <String fx:value="Sunlight" />
+                    </FXCollections>
+                </items>
+            </ChoiceBox>
+            <ChoiceBox prefWidth="150.0" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" fx:id="diagnosisBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="No Entry" />
+                        <String fx:value="Measles" />
+                        <String fx:value="Mumps" />
+                        <String fx:value="Rubella" />
+                        <String fx:value="Mononucleosis" />
+                        <String fx:value="Flu" />
+                        <String fx:value="COVID-19" />
+                        <String fx:value="HPV" />
+                    </FXCollections>
+                </items>
+            </ChoiceBox>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Background Check Results" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Text>
+            <TextFlow prefHeight="200.0" prefWidth="200.0" textAlignment="RIGHT" GridPane.rowIndex="7">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Vaccination: " />
+                  <Label text="[ ? ]" fx:id="vaccinationResultLabel" />
+               </children>
+               <GridPane.margin>
+                  <Insets top="10.0" />
+               </GridPane.margin>
+            </TextFlow>
+            <TextFlow prefHeight="200.0" prefWidth="200.0" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="7">
+               <GridPane.margin>
+                  <Insets top="10.0" />
+               </GridPane.margin>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Allergy: " />
+                  <Label text="[ ? ]" fx:id="allergyResultLabel" />
+               </children>
+            </TextFlow>
+            <TextFlow prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <GridPane.margin>
+                  <Insets top="10.0" />
+               </GridPane.margin>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Diagnoses: " />
+                  <Label text="[ ? ]" fx:id="diagnosisResultLabel" />
+               </children>
+            </TextFlow>
+         </children>
+      </GridPane>
+   </center>
+   <bottom>
+      <Button mnemonicParsing="false" onAction="#submitButtonPressed" text="Submit" translateY="-20.0" BorderPane.alignment="CENTER" />
+   </bottom>
+</BorderPane>
