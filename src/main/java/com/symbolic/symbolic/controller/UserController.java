@@ -7,6 +7,7 @@ import com.symbolic.symbolic.entity.User;
 import com.symbolic.symbolic.service.UserAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,20 +20,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/client")
 public class UserController {
-    @Autowired
-    private  UserAuthService userAuthService;
+  @Autowired
+  private UserAuthService userAuthService;
 
-    @PostMapping("/register")
-    public ResponseEntity<UserRegistrationResponse> register(
-            @RequestBody User registerRequest
-    ) {
-        return ResponseEntity.ok(userAuthService.register(registerRequest));
+  @PostMapping("/register")
+  public ResponseEntity<?> register(
+      @RequestBody User registerRequest
+  ) {
+    if (registerRequest.getName() == null) {
+      String errorMessage = "Missing 'name' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (registerRequest.getPassword() == null) {
+      String errorMessage = "Missing 'password' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else {
+      return ResponseEntity.ok(userAuthService.register(registerRequest));
     }
+  }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<UserAuthResponse>   authenticate(
-            @RequestBody UserAuthRequest userAuthRequest
-    ) {
-        return ResponseEntity.ok(userAuthService.authenticate(userAuthRequest));
+  @PostMapping("/authenticate")
+  public ResponseEntity<?> authenticate(
+      @RequestBody UserAuthRequest userAuthRequest
+  ) {
+    if (userAuthRequest.getName() == null) {
+      String errorMessage = "Missing 'name' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else if (userAuthRequest.getPassword() == null) {
+      String errorMessage = "Missing 'password' field in request body";
+      return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    } else {
+      return ResponseEntity.ok(userAuthService.authenticate(userAuthRequest));
     }
+  }
 }
