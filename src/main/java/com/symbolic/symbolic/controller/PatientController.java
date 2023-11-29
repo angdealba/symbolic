@@ -22,6 +22,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -146,6 +147,7 @@ public class PatientController {
   /**
    * Implements GET endpoint /patients for returning all data.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/patients")
   public ResponseEntity<?> getAllPatients() {
     List<Patient> patients = new ArrayList<Patient>();
@@ -161,6 +163,7 @@ public class PatientController {
   /**
    * Implements GET endpoint /patient for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/patient")
   public ResponseEntity<?> getPatientById(@RequestBody PatientRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -187,6 +190,7 @@ public class PatientController {
   /**
    * Implements POST endpoint /patient for uploading data.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/patient")
   public ResponseEntity<?> createPatient(@RequestBody PatientRequestBody requestBody) {
     if (requestBody.getVaccinations() == null) {
@@ -209,6 +213,7 @@ public class PatientController {
   /**
    * Implements PUT endpoint /patient for updating data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @PutMapping("/patient")
   public ResponseEntity<?> updatePatient(@RequestBody PatientRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -249,6 +254,7 @@ public class PatientController {
   /**
    * Implements DELETE endpoint /patient for removing data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/patient")
   public ResponseEntity<?> deletePatient(@RequestBody PatientRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -313,6 +319,7 @@ public class PatientController {
   /**
    * Implements DELETE endpoint /patients for removing all data.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/patients")
   public ResponseEntity<?> deleteAllPatients() {
     List<Patient> patients = patientRepository.findAll();
@@ -364,6 +371,7 @@ public class PatientController {
   /**
    * Implements GET endpoint /patient/appointments for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/patient/appointments")
   public ResponseEntity<?> getAllAppointmentsByPatientId(
       @RequestBody PatientAppointmentBody requestBody) {
@@ -389,6 +397,7 @@ public class PatientController {
   /**
    * Implements GET endpoint /appointment/patient for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/appointment/patient")
   public ResponseEntity<?> getPatientByAppointmentId(
       @RequestBody PatientAppointmentBody requestBody) {
@@ -414,6 +423,7 @@ public class PatientController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/patient/appointment")
   public ResponseEntity<?> addAppointmentToPatient(
       @RequestBody PatientAppointmentBody requestBody) {
@@ -473,6 +483,7 @@ public class PatientController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/patient/appointment")
   public ResponseEntity<?> removeAppointmentFromPatient(
       @RequestBody PatientAppointmentBody requestBody) {
@@ -517,6 +528,7 @@ public class PatientController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/patient/prescriptions")
   public ResponseEntity<?> getAllPrescriptionsByPatientId(
       @RequestBody PatientPrescriptionBody requestBody) {
@@ -543,6 +555,7 @@ public class PatientController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/prescription/patient")
   public ResponseEntity<?> getPatientByPrescriptionId(
       @RequestBody PatientPrescriptionBody requestBody) {
@@ -568,6 +581,7 @@ public class PatientController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/patient/prescription")
   public ResponseEntity<?> addPrescriptionToPatient(
       @RequestBody PatientPrescriptionBody requestBody) {
@@ -627,6 +641,7 @@ public class PatientController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/patient/prescription")
   public ResponseEntity<?> removePrescriptionFromPatient(
       @RequestBody PatientPrescriptionBody requestBody) {
@@ -671,6 +686,7 @@ public class PatientController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/patient/diagnoses")
   public ResponseEntity<?> getAllDiagnosesByPatientId(
       @RequestBody PatientDiagnosisBody requestBody) {
@@ -696,6 +712,7 @@ public class PatientController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/diagnosis/patient")
   public ResponseEntity<?> getPatientByDiagnosisId(
       @RequestBody PatientDiagnosisBody requestBody) {
@@ -721,6 +738,7 @@ public class PatientController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/patient/diagnosis")
   public ResponseEntity<?> addDiagnosisToPatient(@RequestBody PatientDiagnosisBody requestBody) {
     if (requestBody.getPatientId() == null) {
@@ -779,6 +797,7 @@ public class PatientController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/patient/diagnosis")
   public ResponseEntity<?> removeDiagnosisFromPatient(
       @RequestBody PatientDiagnosisBody requestBody) {

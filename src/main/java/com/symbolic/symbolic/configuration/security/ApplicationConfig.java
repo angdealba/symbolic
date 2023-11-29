@@ -13,36 +13,41 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * Configuration class used to define the custom AuthenticationProvider for the application.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-//    public ApplicationConfig(UserRepository userRepository) {
-//        this.userRepository = userRepository;
-//    }
+  @Bean
+  public UserDetailsService userDetailsService() {
+    return username -> userRepository.findByName(username)
+        .orElseThrow(() -> new UsernameNotFoundException("User with " + username + " not found"));
+  }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User with " + username + " not found"));
-    }
+  /**
+   * Main method used to return the custom AuthenticationProvider for the application.
+   *
+   * @return custom AuthenticationProvider
+   */
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService());
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
+  }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+      throws Exception {
+    return configuration.getAuthenticationManager();
+  }
 }

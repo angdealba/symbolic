@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -69,6 +70,7 @@ public class AppointmentControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAllAppointments() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -92,6 +94,7 @@ public class AppointmentControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAppointmentById() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -132,6 +135,7 @@ public class AppointmentControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreateAppointment() throws Exception {
     // Create valid appointment
     mockMvc.perform(post("/api/appointment")
@@ -183,6 +187,7 @@ public class AppointmentControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdateAppointment() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -251,6 +256,7 @@ public class AppointmentControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAppointment() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -306,6 +312,7 @@ public class AppointmentControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllAppointments() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);

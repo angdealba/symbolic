@@ -7,6 +7,53 @@
 	},
 	"item": [
 		{
+			"name": "Authorization",
+			"item": [
+				{
+					"name": "Authenticate Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"admin\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}:8080/api/client/authenticate",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"client",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Patient",
 			"item": [
 				{
@@ -61,9 +108,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -109,9 +153,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -157,9 +198,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -205,9 +243,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -254,9 +289,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -740,6 +772,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -797,9 +859,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -845,9 +904,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -893,9 +949,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -941,9 +994,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -990,9 +1040,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1039,9 +1086,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1088,9 +1132,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1666,6 +1707,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -1723,9 +1794,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1771,9 +1839,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1819,9 +1884,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1867,9 +1929,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -1916,9 +1975,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2402,6 +2458,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -2459,9 +2545,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2507,9 +2590,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2555,9 +2635,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2603,9 +2680,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2652,9 +2726,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2701,9 +2772,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2750,9 +2818,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -3328,6 +3393,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -3385,9 +3480,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -3433,9 +3525,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -3481,9 +3570,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -3529,9 +3615,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -3578,9 +3661,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -3627,9 +3707,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4159,6 +4236,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -4216,9 +4323,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4264,9 +4368,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4312,9 +4413,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4360,9 +4458,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4409,9 +4504,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4458,9 +4550,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4507,9 +4596,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -4556,9 +4642,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -5180,6 +5263,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -5237,9 +5350,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -5285,9 +5395,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -5333,9 +5440,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -5381,9 +5485,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -5430,9 +5531,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -5479,9 +5577,6 @@
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -6011,6 +6106,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -6032,6 +6157,16 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -6766,6 +6901,36 @@
 						}
 					},
 					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		},
@@ -9025,6 +9190,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -11282,6 +11477,36 @@
 						}
 					},
 					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		},
@@ -14302,6 +14527,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -14601,6 +14856,36 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		}
 	],
@@ -14715,6 +15000,10 @@
 		},
 		{
 			"key": "prescriptionId4",
+			"value": ""
+		},
+		{
+			"key": "token",
 			"value": ""
 		}
 	]

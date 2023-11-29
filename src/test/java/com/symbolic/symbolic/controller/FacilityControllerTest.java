@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -69,6 +70,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetAllFacilities() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
@@ -90,6 +92,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetFacilityById() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     UUID id = UUID.randomUUID();
@@ -129,6 +132,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreateFacility() throws Exception {
     // Create valid facility
     mockMvc.perform(post("/api/facility")
@@ -165,6 +169,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdateFacility() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     UUID id = UUID.randomUUID();
@@ -213,6 +218,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteFacility() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     UUID id = UUID.randomUUID();
@@ -269,6 +275,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllFacilities() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
@@ -301,6 +308,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPatientsByFacilityId() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Patient patient2 = new Patient("Flu", "Tree Nut", "None");
@@ -338,6 +346,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetPractitionersByFacilityId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
@@ -375,6 +384,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAppointmentsByFacilityId() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -414,6 +424,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetFacilitiesByPatientId() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
@@ -450,6 +461,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetFacilityByPractitionerId() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     UUID id = UUID.randomUUID();
@@ -483,6 +495,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetFacilityByAppointmentId() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     UUID id = UUID.randomUUID();
@@ -516,6 +529,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPatientFacility() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
@@ -595,6 +609,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPractitionerFacility() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
@@ -672,6 +687,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinAppointmentFacility() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
@@ -750,6 +766,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPatientFacility() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
@@ -819,6 +836,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPractitionerFacility() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
@@ -888,6 +906,7 @@ public class FacilityControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinAppointmentFacility() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
