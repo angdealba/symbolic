@@ -32,7 +32,7 @@ public class UserAuthService {
         var clientDetails = User.builder()
                 .name(client.getName())
                 .password(passwordEncoder.encode(client.getPassword()))
-                .role(Role.ADMIN)
+                .role(Role.VACCINATION_RECORD_APP)
                 .description(client.getDescription())
                 .build();
         userRepository.save(clientDetails);

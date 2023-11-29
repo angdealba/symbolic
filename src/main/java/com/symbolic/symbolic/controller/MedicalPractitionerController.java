@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -172,6 +173,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint /practitioners for returning all data.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/practitioners")
   public ResponseEntity<?> getAllPractitioners() {
     List<MedicalPractitioner> practitioners = new ArrayList<>();
@@ -187,6 +189,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint /practitioner for returning data matching an id.
    */
+  @Secured({"ROLE_ADMIN", "ROLE_VACCINATION_RECORD_APP"})
   @GetMapping("/practitioner")
   public ResponseEntity<?> getPractitionerById(@RequestBody PractitionerRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -213,6 +216,7 @@ public class MedicalPractitionerController {
   /**
    * Implements POST endpoint /practitioner for uploading data.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/practitioner")
   public ResponseEntity<?> createPractitioner(@RequestBody PractitionerRequestBody requestBody) {
     if (requestBody.getLatitude() == null) {
@@ -249,6 +253,7 @@ public class MedicalPractitionerController {
   /**
    * Implements PUT endpoint /practitioner for updating data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @PutMapping("/practitioner")
   public ResponseEntity<?> updatePractitioner(@RequestBody PractitionerRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -307,6 +312,7 @@ public class MedicalPractitionerController {
   /**
    * Implements DELETE endpoint /practitioner for removing data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/practitioner")
   public ResponseEntity<?> deletePractitioner(@RequestBody PractitionerRequestBody requestBody) {
     if (requestBody.getId() == null) {
@@ -365,6 +371,7 @@ public class MedicalPractitionerController {
   /**
    * Implements DELETE endpoint /practitioners for removing all data.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/practitioners")
   public ResponseEntity<?> deleteAllPractitioners() {
     List<MedicalPractitioner> practitioners = practitionerRepository.findAll();
@@ -411,6 +418,7 @@ public class MedicalPractitionerController {
    * Implements GET endpoint /practitioners/search for returning practitioners
    * within a radius of the location.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/practitioners/search")
   public ResponseEntity<?> search(@RequestBody PractitionerRequestBody requestBody) {
     if (requestBody.getLatitude() == null) {
@@ -432,6 +440,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint /practitioner/patients for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/practitioner/patients")
   public ResponseEntity<?> getAllPatientsByPractitionerId(
       @RequestBody PractitionerPatientBody requestBody) {
@@ -457,6 +466,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint /patient/practitioners for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/patient/practitioners")
   public ResponseEntity<?> getAllPractitionersByPatientId(
       @RequestBody PractitionerPatientBody requestBody) {
@@ -483,6 +493,7 @@ public class MedicalPractitionerController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/practitioner/patient")
   public ResponseEntity<?> addPatientToPractitioner(
       @RequestBody PractitionerPatientBody requestBody) {
@@ -532,6 +543,7 @@ public class MedicalPractitionerController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/practitioner/patient")
   public ResponseEntity<?> removePatientFromPractitioner(
       @RequestBody PractitionerPatientBody requestBody) {
@@ -577,6 +589,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/practitioner/appointments")
   public ResponseEntity<?> getAllAppointmentsByPractitionerId(
       @RequestBody PractitionerAppointmentBody requestBody) {
@@ -603,6 +616,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/appointment/practitioner")
   public ResponseEntity<?> getPractitionerByAppointmentId(
       @RequestBody PractitionerAppointmentBody requestBody) {
@@ -629,6 +643,7 @@ public class MedicalPractitionerController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/practitioner/appointment")
   public ResponseEntity<?> addAppointmentToPractitioner(
       @RequestBody PractitionerAppointmentBody requestBody) {
@@ -690,6 +705,7 @@ public class MedicalPractitionerController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/practitioner/appointment")
   public ResponseEntity<?> removeAppointmentFromPractitioner(
       @RequestBody PractitionerAppointmentBody requestBody) {
@@ -735,6 +751,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/practitioner/prescriptions")
   public ResponseEntity<?> getAllPrescriptionsByPractitionerId(
       @RequestBody PractitionerPrescriptionBody requestBody) {
@@ -761,6 +778,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/prescription/practitioner")
   public ResponseEntity<?> getPractitionerByPrescriptionId(
       @RequestBody PractitionerPrescriptionBody requestBody) {
@@ -787,6 +805,7 @@ public class MedicalPractitionerController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/practitioner/prescription")
   public ResponseEntity<?> addPrescriptionToPractitioner(
       @RequestBody PractitionerPrescriptionBody requestBody) {
@@ -848,6 +867,7 @@ public class MedicalPractitionerController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/practitioner/prescription")
   public ResponseEntity<?> removePrescriptionFromPractitioner(
       @RequestBody PractitionerPrescriptionBody requestBody) {
@@ -893,6 +913,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/practitioner/diagnoses")
   public ResponseEntity<?> getAllDiagnosesByPractitionerId(
       @RequestBody PractitionerDiagnosisBody requestBody) {
@@ -918,6 +939,7 @@ public class MedicalPractitionerController {
   /**
    * Implements GET endpoint for returning data matching an id.
    */
+  @Secured("ROLE_ADMIN")
   @GetMapping("/diagnosis/practitioner")
   public ResponseEntity<?> getPractitionerByDiagnosisId(
       @RequestBody PractitionerDiagnosisBody requestBody) {
@@ -944,6 +966,7 @@ public class MedicalPractitionerController {
   /**
    * Implements POST endpoint for linking the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping("/practitioner/diagnosis")
   public ResponseEntity<?> addDiagnosisToPractitioner(
       @RequestBody PractitionerDiagnosisBody requestBody) {
@@ -1005,6 +1028,7 @@ public class MedicalPractitionerController {
   /**
    * Implements DELETE endpoint for removing a link between the two data types.
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/practitioner/diagnosis")
   public ResponseEntity<?> removeDiagnosisFromPractitioner(
       @RequestBody PractitionerDiagnosisBody requestBody) {
