@@ -23,7 +23,7 @@ public class StageInitializer implements ApplicationListener<StageReadyEvent> {
             FXMLLoader fxmlLoader = new FXMLLoader(chartResource.getURL());
             Parent parent = fxmlLoader.load();
             Stage stage = event.getStage();
-            stage.setScene(new Scene(parent, 800, 600));
+            stage.setScene(new Scene(parent, 600, 400));
             stage.setTitle(applicationTitle);
             stage.show();
         } catch (IOException e) {
