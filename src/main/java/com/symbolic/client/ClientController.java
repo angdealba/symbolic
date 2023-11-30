@@ -6,8 +6,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -19,7 +23,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Properties;
@@ -49,7 +52,7 @@ public class ClientController {
   /**
    * Custom User authentication request consisting of a username and password.
    */
-  public static class AuthenticationRequest {
+  static class AuthenticationRequest {
     private String name;
     private String password;
 
@@ -62,11 +65,49 @@ public class ClientController {
   /**
    * Custom response from User authentication requests consisting of a JSON web token string.
    */
-  public static class AuthenticationResponse {
+  static class AuthenticationResponse {
     private String token;
 
     public String getToken() {
       return token;
+    }
+  }
+
+  /**
+   * Custom request object used to represent requests to the /bgcheck service.
+   * */
+  static class BackgroundCheckBody {
+    private String id;
+    private String vaccination;
+    private String allergy;
+    private String diagnosis;
+
+    public BackgroundCheckBody(String id, String vaccination, String allergy, String diagnosis) {
+      this.id = id;
+      this.vaccination = vaccination;
+      this.allergy = allergy;
+      this.diagnosis = diagnosis;
+    }
+  }
+
+  /**
+   * Custom request object used to represent responses from the /bgcheck service.
+   * */
+  static class BackgroundCheckResponse {
+    private boolean vaccination;
+    private boolean allergy;
+    private boolean diagnosis;
+
+    public boolean matchesVaccination() {
+      return vaccination;
+    }
+
+    public boolean matchesAllergy() {
+      return allergy;
+    }
+
+    public boolean matchesDiagnosis() {
+      return diagnosis;
     }
   }
 
@@ -105,7 +146,7 @@ public class ClientController {
         clientProps.load(new FileInputStream(configPath));
       }
     } catch (IOException e) {
-      System.out.println("Reached a critical error initializing the ClientController");
+      System.err.println("Reached a critical error initializing the ClientController");
       throw new RuntimeException(e);
     }
   }
@@ -118,7 +159,7 @@ public class ClientController {
     try {
       handleRegistration();
     } catch (Exception e) {
-      System.out.println("There was an error registering the user.");
+      System.err.println("There was an error registering the user.");
       throw new RuntimeException(e);
     }
   }
@@ -134,17 +175,17 @@ public class ClientController {
       String name = clientProps.getProperty("clientName");
       String password = clientProps.getProperty("clientPassword");
 
+      // Perform the POST request to /api/client/register
       AuthenticationRequest authRequest = new AuthenticationRequest(name, password);
       Gson gson = new Gson();
       CloseableHttpClient client = HttpClientBuilder.create().build();
       HttpPost postRequest = new HttpPost(uri);
       StringEntity postBody = new StringEntity(gson.toJson(authRequest));
       postRequest.setEntity(postBody);
-      postRequest.setHeader("Content-Type", "application/json");
+      postRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
       HttpResponse response = client.execute(postRequest);
 
       if (response.getStatusLine().getStatusCode() == 200) {
-        System.out.println("Successfully registered client " + name);
         clientProps.setProperty("hasRegistered", "true");
         clientProps.store(new FileOutputStream(configPath), null);
       } else {
@@ -161,22 +202,20 @@ public class ClientController {
       String name = clientProps.getProperty("clientName");
       String password = clientProps.getProperty("clientPassword");
 
+      // Perform the POST request to /api/client/authenticate
       AuthenticationRequest authRequest = new AuthenticationRequest(name, password);
       Gson gson = new Gson();
       CloseableHttpClient client = HttpClientBuilder.create().build();
       HttpPost postRequest = new HttpPost(uri);
       StringEntity postBody = new StringEntity(gson.toJson(authRequest));
       postRequest.setEntity(postBody);
-      postRequest.setHeader("Content-Type", "application/json");
+      postRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
       HttpResponse response = client.execute(postRequest);
-      System.out.println(response.getStatusLine());
 
       if (response.getStatusLine().getStatusCode() == 200) {
-        System.out.println("Successfully authenticated client " + name);
         String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
         AuthenticationResponse authResponse = gson.fromJson(responseString, AuthenticationResponse.class);
         token = authResponse.getToken();
-        System.out.println(token);
       } else {
         throw new IOException("There was an error authenticating the client " + name);
       }
@@ -190,12 +229,12 @@ public class ClientController {
       try {
         handleAuthentication();
       } catch (IOException e) {
-        System.out.println("The client was unable to authenticate with the background check service.");
+        System.err.println("The client was unable to authenticate with the background check service.");
         return;
       }
     }
 
-    boolean[] results;
+    BackgroundCheckResponse results;
 
     try {
       // Get information to populate label fields
@@ -213,57 +252,52 @@ public class ClientController {
     }
 
     // Update fields
-    if (results[0]) {
-      vaccinationResultLabel.setText("[ PASS! ]");
+    if (results.matchesVaccination()) {
+      vaccinationResultLabel.setText("[ POSITIVE ]");
     } else {
-      vaccinationResultLabel.setText("[ FAIL! ]");
+      vaccinationResultLabel.setText("[ NEGATIVE ]");
     }
 
-    if (!results[1]) {
-      allergyResultLabel.setText("[ PASS! ]");
+    if (results.matchesAllergy()) {
+      allergyResultLabel.setText("[ POSITIVE ]");
     } else {
-      allergyResultLabel.setText("[ FAIL! ]");
+      allergyResultLabel.setText("[ NEGATIVE ]");
     }
 
-    if (!results[2]) {
-      diagnosisResultLabel.setText("[ PASS! ]");
+    if (results.matchesDiagnosis()) {
+      diagnosisResultLabel.setText("[ POSITIVE ]");
     } else {
-      diagnosisResultLabel.setText("[ FAIL! ]");
+      diagnosisResultLabel.setText("[ NEGATIVE ]");
     }
   }
 
   private final HttpClient httpClient = HttpClient.newBuilder().build();
 
-  private boolean[] submitRequest(String subjectId, String vaccination, String allergy, String diagnosis)
+  private BackgroundCheckResponse submitRequest(String subjectId, String vaccination,
+                                                String allergy, String diagnosis)
       throws URISyntaxException, IOException, InterruptedException {
 
     // URI/URL for the service bgcheck API endpoint
-    String uri = "http://localhost:8080/api/bgcheck";   // Is there a better way than hardcode?
+    String uri = "http://localhost:8080/api/bgcheck";
 
-    // Hopefully not malformed JSON object string
-    String requestBody = String.format("{\"id\": \"%s,\" \"vaccination\": \"%s\", \"allergy\": \"%s\", \"diagnosis\": \"%s\"}",
-        subjectId, vaccination, allergy, diagnosis);
-
-    HttpRequest request = HttpRequest.newBuilder(new URI(uri))
-        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-        .timeout(Duration.of(2, SECONDS))
+    // Perform the GET request to /api/bgcheck
+    BackgroundCheckBody requestBody = new BackgroundCheckBody(subjectId, vaccination, allergy, diagnosis);
+    Gson gson = new Gson();
+    CloseableHttpClient client = HttpClientBuilder.create().build();
+    StringEntity getBody = new StringEntity(gson.toJson(requestBody));
+    HttpUriRequest getRequest = RequestBuilder.get(uri)
+        .setEntity(getBody)
+        .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+        .setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
         .build();
+    HttpResponse response = client.execute(getRequest);
 
-//    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//    // Parse response
-//    HttpHeaders responseHeaders = response.headers();
-//    String responseBody = response.body();
-//    vaccinationResultLabel.setText(response.toString());
-//
-    boolean[] result = new boolean[3];
-//
-//    String[] responseSplit = responseBody.split(",");
-//    result[0] = responseSplit[1].toLowerCase().contains("true");
-//    result[1] = responseSplit[2].toLowerCase().contains("true");
-//    result[2] = responseSplit[3].toLowerCase().contains("true");
-
-//    return result;
-    return result;
+    if (response.getStatusLine().getStatusCode() == 200) {
+      String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+      BackgroundCheckResponse bgCheckResponse = gson.fromJson(responseString, BackgroundCheckResponse.class);
+      return bgCheckResponse;
+    } else {
+      throw new IOException("There was an error performing the background check.");
+    }
   }
 }
