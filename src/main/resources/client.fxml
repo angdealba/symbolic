@@ -73,7 +73,7 @@
                <GridPane.margin>
                   <Insets right="10.0" />
                </GridPane.margin></Text>
-            <ChoiceBox prefWidth="150.0" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" fx:id="vaccinationBox">
+            <ComboBox prefWidth="150.0" editable="true" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" fx:id="vaccinationBox">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <String fx:value="No Entry" />
@@ -83,11 +83,12 @@
                         <String fx:value="HPV" />
                     </FXCollections>
                 </items>
-            </ChoiceBox>
-            <ChoiceBox prefWidth="150.0" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" fx:id="allergyBox">
+            </ComboBox>
+            <ComboBox prefWidth="150.0" editable="true" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" fx:id="allergyBox">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <String fx:value="No Entry" />
+                        <String fx:value="Dairy" />
                         <String fx:value="Peanuts" />
                         <String fx:value="Tree Nuts" />
                         <String fx:value="Dogs" />
@@ -97,8 +98,8 @@
                         <String fx:value="Sunlight" />
                     </FXCollections>
                 </items>
-            </ChoiceBox>
-            <ChoiceBox prefWidth="150.0" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" fx:id="diagnosisBox">
+            </ComboBox>
+            <ComboBox prefWidth="150.0" editable="true" value="No Entry" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" fx:id="diagnosisBox">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <String fx:value="No Entry" />
@@ -111,7 +112,7 @@
                         <String fx:value="HPV" />
                     </FXCollections>
                 </items>
-            </ChoiceBox>
+            </ComboBox>
             <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Background Check Results" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6">
                <font>
                   <Font size="14.0" />

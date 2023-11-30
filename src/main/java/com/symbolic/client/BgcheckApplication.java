@@ -6,33 +6,37 @@ import javafx.stage.Stage;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
+
+/**
+ * Java FX application that launches the custom functionality defined in ClientApplication.
+ */
 public class BgcheckApplication extends Application {
 
-    static class StageReadyEvent extends ApplicationEvent {
-        public StageReadyEvent(Stage stage) {
-            super(stage);
-        }
-
-        public Stage getStage() {
-            return ((Stage) getSource());
-        }
+  static class StageReadyEvent extends ApplicationEvent {
+    public StageReadyEvent(Stage stage) {
+      super(stage);
     }
 
-    private ConfigurableApplicationContext applicationContext;
-
-    @Override
-    public void init() {
-        applicationContext = new SpringApplicationBuilder(ClientApplication.class).run();
+    public Stage getStage() {
+      return ((Stage) getSource());
     }
+  }
 
-    @Override
-    public void start(Stage stage) {
-        applicationContext.publishEvent(new StageReadyEvent(stage));
-    }
+  private ConfigurableApplicationContext applicationContext;
 
-    @Override
-    public void stop() {
-        applicationContext.close();
-        Platform.exit();
-    }
+  @Override
+  public void init() {
+    applicationContext = new SpringApplicationBuilder(ClientApplication.class).run();
+  }
+
+  @Override
+  public void start(Stage stage) {
+    applicationContext.publishEvent(new StageReadyEvent(stage));
+  }
+
+  @Override
+  public void stop() {
+    applicationContext.close();
+    Platform.exit();
+  }
 }
