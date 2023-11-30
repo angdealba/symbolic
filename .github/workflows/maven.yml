@@ -136,7 +136,7 @@ jobs:
     
     - name: Run Symbolic Application
       run: |
-        mvn -B package --file pom.xml spring-boot:run -Dstart-class=com.symbolic.symbolic.SymbolicApplication &
+        mvn -B package --file pom.xml spring-boot:run -Dstart-class=com.symbolic.symbolic.SymbolicApplication -Dgroups="UnitTest" &
         for attempt in {1..120}; do sleep 1; if curl --location 'http://127.0.0.1:8080/api/client/authenticate' --header 'Content-Type: application/json' --data '{"name": "admin"}' --output /dev/null --silent; then echo ready; break; fi; echo waiting on launch...; done
     # # Run the POSTMAN collection
     # - name: Run Postman collection
