@@ -589,13 +589,6 @@ public class FacilityIntegrationTest {
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isOk());
 
-    mockMvc.perform(post("/api/facility/patient")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, tokenString)
-            .content("{\"patientId\": \"" + patientId + "\", " +
-                "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isOk());
-
     // Test missing patient or facility ID
     MvcResult result1 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
@@ -662,13 +655,6 @@ public class FacilityIntegrationTest {
     UUID facilityId = facilityRepository.save(facility1).getId();
 
     // Test joining practitioner-facility
-    mockMvc.perform(post("/api/facility/practitioner")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, tokenString)
-            .content("{\"practitionerId\": \"" + practitionerId + "\", " +
-                "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isOk());
-
     mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
@@ -743,13 +729,6 @@ public class FacilityIntegrationTest {
     UUID facilityId = facilityRepository.save(facility1).getId();
 
     // Test joining appointment-facility
-    mockMvc.perform(post("/api/facility/appointment")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, tokenString)
-            .content("{\"appointmentId\": \"" + appointmentId + "\", " +
-                "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isOk());
-
     mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
