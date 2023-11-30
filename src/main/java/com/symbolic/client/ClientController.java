@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.apache.http.HttpHeaders;
@@ -43,11 +44,11 @@ public class ClientController {
   private TextField subjectId;
 
   @FXML
-  private ChoiceBox<String> vaccinationBox;
+  private ComboBox<String> vaccinationBox;
   @FXML
-  private ChoiceBox<String> allergyBox;
+  private ComboBox<String> allergyBox;
   @FXML
-  private ChoiceBox<String> diagnosisBox;
+  private ComboBox<String> diagnosisBox;
 
   /**
    * Custom User authentication request consisting of a username and password.
