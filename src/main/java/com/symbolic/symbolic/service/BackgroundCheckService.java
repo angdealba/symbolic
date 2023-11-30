@@ -61,8 +61,8 @@ public class BackgroundCheckService {
         // Note: Delimiter is guaranteed to be ","
         String[] vaccinationStrings =  vaccinations.split(",");
 
-        for (String vaccination: vaccinationStrings) {
-          if (requestedVaccination.equalsIgnoreCase(vaccination)) {
+        for (String vaccination : vaccinationStrings) {
+          if (requestedVaccination.trim().equalsIgnoreCase(vaccination.trim())) {
             validVaccine = true;
             break;
           }
@@ -80,7 +80,7 @@ public class BackgroundCheckService {
         String[] allergyStrings =  allergies.split(",");
 
         for (String allergy: allergyStrings) {
-          if (requestedAllergy.equalsIgnoreCase(allergy)) {
+          if (requestedAllergy.trim().equalsIgnoreCase(allergy.trim())) {
             validAllergy = true;
             break;
           }
@@ -93,7 +93,7 @@ public class BackgroundCheckService {
       List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
 
       for (Diagnosis diagnosis : diagnoses) {
-        if (diagnosis.getCondition().equalsIgnoreCase(requestedDiagnosis)) {
+        if (diagnosis.getCondition().equalsIgnoreCase(requestedDiagnosis.trim())) {
           validDiagnosis = true;
           break;
         }
