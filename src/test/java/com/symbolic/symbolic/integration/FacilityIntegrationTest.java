@@ -1,115 +1,138 @@
-package com.symbolic.symbolic.controller;
+package com.symbolic.symbolic.integration;
 
 import com.symbolic.symbolic.entity.*;
 import com.symbolic.symbolic.repository.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Provides internal integration testing between the FacilityController and 4 Repositories
+ * and Entity types, along with the authentication code and the joins between Facility-Patient,
+ * Facility-Practitioner, and Facility-Appointment data.
+ * Provides external integration testing between the Repositories and the database implementation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Tag("UnitTest")
-public class FacilityControllerTest {
+@Tag("IntegrationTest")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class FacilityIntegrationTest {
   @Autowired
   private MockMvc mockMvc;
-  @MockBean
+  @Autowired
+  private WebApplicationContext context;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
   FacilityRepository facilityRepository;
-  @MockBean
+  @Autowired
   MedicalPractitionerRepository practitionerRepository;
-  @MockBean
+  @Autowired
   PatientRepository patientRepository;
-  @MockBean
+  @Autowired
   AppointmentRepository appointmentRepository;
-  @InjectMocks
-  FacilityController facilityController;
-
-  AutoCloseable openMocks;
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-  @BeforeEach
-  public void setUp() {
-    openMocks = MockitoAnnotations.openMocks(this);
+  private String tokenString;
+
+  @Test
+  @BeforeAll
+  public void setupAuthentication() throws Exception {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
+
+    MvcResult result = mockMvc.perform(post("/api/client/authenticate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\":  \"admin\", \"password\":  \"password\"}"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    System.out.println(result.getResponse().getContentAsString());
+    String responseValue = result.getResponse().getContentAsString();
+    tokenString = "Bearer " + responseValue.substring(10, responseValue.length() - 2);
   }
 
   @AfterEach
-  public void tearDown() throws Exception {
-    openMocks.close();
+  public void tearDownDBs() {
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "facility_appointments");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "facility_patients");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "facility_practitioners");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "appointments");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioners");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "patients");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "facilities");
   }
 
   @Test
-  public void testUUIDParser() {
-    // Test valid ID
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    assertEquals(id, FacilityController.parseUuidFromString(idString));
-
-    // Test invalid IDs
-    assertNull(FacilityController.parseUuidFromString("test"));
-    assertNull(FacilityController.parseUuidFromString("2"));
-  }
-
-  @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetAllFacilities() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
-    List<Facility> facilities = new ArrayList<>();
-    when(facilityRepository.findAll()).thenReturn(facilities);
 
     // Test when no facilities exist
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "facilities");
     mockMvc.perform(get("/api/facilities")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test when facilities are returned
-    facilities.add(facility1);
-    facilities.add(facility2);
+    facilityRepository.save(facility1);
+    facilityRepository.save(facility2);
 
     mockMvc.perform(get("/api/facilities")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetFacilityById() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID id = UUID.randomUUID();
-    facility1.setId(id);
-    when(facilityRepository.findById(id)).thenReturn(Optional.of(facility1));
+    UUID id = facilityRepository.save(facility1).getId();
 
     // Test retrieving a facility with a valid id
     mockMvc.perform(get("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test retrieving with no ID
     MvcResult result1 = mockMvc.perform(get("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -118,6 +141,7 @@ public class FacilityControllerTest {
     // Test retrieving with an invalid ID
     MvcResult result2 = mockMvc.perform(get("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -127,6 +151,7 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(get("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -134,11 +159,11 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreateFacility() throws Exception {
     // Create valid facility
     mockMvc.perform(post("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"longitude\": \"74.0\", " +
                 "\"specialization\": \"Surgery\"}"))
@@ -147,6 +172,7 @@ public class FacilityControllerTest {
     // Creating facilities with missing fields
     MvcResult result1 = mockMvc.perform(post("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"longitude\": \"74.0\", " +
                 "\"specialization\": \"Surgery\"}"))
         .andExpect(status().isBadRequest())
@@ -155,6 +181,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"specialization\": \"Surgery\"}"))
         .andExpect(status().isBadRequest())
@@ -163,6 +190,7 @@ public class FacilityControllerTest {
 
     MvcResult result3 = mockMvc.perform(post("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"longitude\": \"74.0\"}"))
         .andExpect(status().isBadRequest())
@@ -171,16 +199,14 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdateFacility() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID id = UUID.randomUUID();
-    facility1.setId(id);
-    when(facilityRepository.findById(id)).thenReturn(Optional.of(facility1));
+    UUID id = facilityRepository.save(facility1).getId();
 
     // Test updating a facility with a valid id
     mockMvc.perform(put("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"latitude\": \"40.71\", " +
                 "\"longitude\": \"74.01\", " +
@@ -190,12 +216,14 @@ public class FacilityControllerTest {
     // Test updating with no fields does not raise error
     mockMvc.perform(put("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test updating with no ID
     MvcResult result1 = mockMvc.perform(put("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -204,6 +232,7 @@ public class FacilityControllerTest {
     // Test updating with an invalid ID
     MvcResult result2 = mockMvc.perform(put("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -213,6 +242,7 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(put("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -220,22 +250,21 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteFacility() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID id = UUID.randomUUID();
-    facility1.setId(id);
-    when(facilityRepository.findById(id)).thenReturn(Optional.of(facility1));
+    UUID id = facilityRepository.save(facility1).getId();
 
     // Test deleting a facility with a valid id
     mockMvc.perform(delete("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
 
     // Test deleting with no ID
     MvcResult result1 = mockMvc.perform(delete("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -244,6 +273,7 @@ public class FacilityControllerTest {
     // Test deleting with an invalid ID
     MvcResult result2 = mockMvc.perform(delete("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -253,6 +283,7 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(delete("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -263,12 +294,19 @@ public class FacilityControllerTest {
     MedicalPractitioner practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment = new Appointment(date1, 100);
-    facility1.addPatient(patient);
-    facility1.addPractitioner(practitioner);
-    facility1.addAppointment(appointment);
+    UUID patientId = patientRepository.save(patient).getId();
+    id = facilityRepository.save(facility1).getId();
+
+    mockMvc.perform(post("/api/facility/patient")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"patientId\": \"" + patientId + "\", " +
+                "\"facilityId\": \"" + id + "\"}"))
+        .andExpect(status().isOk());
 
     mockMvc.perform(delete("/api/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
     assertFalse(patient.getFacilities().contains(facility1));
@@ -277,19 +315,16 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllFacilities() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
-    List<Facility> facilities = new ArrayList<>();
-
-    facilities.add(facility1);
-    facilities.add(facility2);
-    when(facilityRepository.findAll()).thenReturn(facilities);
+    facilityRepository.save(facility1);
+    facilityRepository.save(facility2);
 
     // Test deleting all facilities
     mockMvc.perform(delete("/api/facilities")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test deleting associated fields
@@ -297,12 +332,19 @@ public class FacilityControllerTest {
     MedicalPractitioner practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment = new Appointment(date1, 100);
-    facility1.addPatient(patient);
-    facility1.addPractitioner(practitioner);
-    facility1.addAppointment(appointment);
+    UUID patientId = patientRepository.save(patient).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
+
+    mockMvc.perform(post("/api/facility/patient")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"patientId\": \"" + patientId + "\", " +
+                "\"facilityId\": \"" + facilityId + "\"}"))
+        .andExpect(status().isOk());
 
     mockMvc.perform(delete("/api/facilities")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
     assertFalse(patient.getFacilities().contains(facility1));
     assertNull(practitioner.getFacility());
@@ -310,32 +352,32 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPatientsByFacilityId() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Patient patient2 = new Patient("Flu", "Tree Nut", "None");
-    List<Patient> patients = new ArrayList<>();
-    patients.add(patient1);
-    patients.add(patient2);
-    UUID id = UUID.randomUUID();
-    when(facilityRepository.existsById(id)).thenReturn(true);
-    when(patientRepository.findPatientsByFacilitiesId(id)).thenReturn(patients);
+    Facility facility1 = new Facility(40.7, 74.0, "Surgery");
+    facility1.addPatient(patient1);
+    facility1.addPatient(patient2);
+    UUID id = facilityRepository.save(facility1).getId();
 
     // Test retrieving patients
     mockMvc.perform(get("/api/facility/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/facility/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/facility/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -343,37 +385,38 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/facility/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetPractitionersByFacilityId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
-    List<MedicalPractitioner> practitioners = new ArrayList<>();
-    practitioners.add(practitioner1);
-    practitioners.add(practitioner2);
-    UUID id = UUID.randomUUID();
-    when(facilityRepository.existsById(id)).thenReturn(true);
-    when(practitionerRepository.findMedicalPractitionerByFacilityId(id)).thenReturn(practitioners);
+    Facility facility1 = new Facility(40.7, 74.0, "Surgery");
+    facility1.addPractitioner(practitioner1);
+    facility1.addPractitioner(practitioner2);
+    UUID id = facilityRepository.save(facility1).getId();
 
     // Test retrieving practitioners
     mockMvc.perform(get("/api/facility/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/facility/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/facility/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -381,39 +424,40 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/facility/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAppointmentsByFacilityId() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     Date date2 = formatter.parse("2023-10-21 2:30");
     Appointment appointment2 = new Appointment(date2, 200);
-    List<Appointment> appointments = new ArrayList<>();
-    appointments.add(appointment1);
-    appointments.add(appointment2);
-    UUID id = UUID.randomUUID();
-    when(facilityRepository.existsById(id)).thenReturn(true);
-    when(appointmentRepository.findAppointmentsByFacilityId(id)).thenReturn(appointments);
+    Facility facility1 = new Facility(40.7, 74.0, "Surgery");
+    facility1.addAppointment(appointment1);
+    facility1.addAppointment(appointment2);
+    UUID id = facilityRepository.save(facility1).getId();
 
     // Test retrieving appointments
     mockMvc.perform(get("/api/facility/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/facility/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/facility/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -421,36 +465,36 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/facility/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetFacilitiesByPatientId() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
     Facility facility2 = new Facility(40.71, 74.01, "Optometry");
-    List<Facility> facilities = new ArrayList<>();
-
-    UUID id = UUID.randomUUID();
-    when(patientRepository.existsById(id)).thenReturn(true);
-    when(facilityRepository.findFacilitiesByPatientsId(id)).thenReturn(facilities);
+    Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
+    UUID id = patientRepository.save(patient1).getId();
 
     // Test retrieving facilities
     mockMvc.perform(get("/api/patient/facilities")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/patient/facilities")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/patient/facilities")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -458,33 +502,35 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/patient/facilities")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetFacilityByPractitionerId() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID id = UUID.randomUUID();
-    when(practitionerRepository.existsById(id)).thenReturn(true);
-    when(facilityRepository.findFacilityByPractitionersId(id)).thenReturn(facility1);
+    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test retrieving facilities
     mockMvc.perform(get("/api/practitioner/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/practitioner/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/practitioner/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -492,33 +538,36 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/practitioner/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetFacilityByAppointmentId() throws Exception {
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID id = UUID.randomUUID();
-    when(appointmentRepository.existsById(id)).thenReturn(true);
-    when(facilityRepository.findFacilityByAppointmentsId(id)).thenReturn(facility1);
+    Date date1 = formatter.parse("2023-10-20 12:00");
+    Appointment appointment1 = new Appointment(date1, 100);
+    UUID id = appointmentRepository.save(appointment1).getId();
 
     // Test retrieving facilities
     mockMvc.perform(get("/api/appointment/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/appointment/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/appointment/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -526,34 +575,22 @@ public class FacilityControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/appointment/facility")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPatientFacility() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID patientId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
-
-    when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient1));
-    when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility1));
+    UUID patientId = patientRepository.save(patient1).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
 
     // Test joining patient-facility
     mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"patientId\": \"" + patientId + "\", " +
-                "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old facility
-    List<Facility> facilities = new ArrayList<>();
-    facilities.add(facility1);
-    when(facilityRepository.findFacilitiesByPatientsId(patientId)).thenReturn(facilities);
-    mockMvc.perform(post("/api/facility/patient")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isOk());
@@ -561,6 +598,7 @@ public class FacilityControllerTest {
     // Test missing patient or facility ID
     MvcResult result1 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -568,6 +606,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -576,6 +615,7 @@ public class FacilityControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"2\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -584,6 +624,7 @@ public class FacilityControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"facilityId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -594,6 +635,7 @@ public class FacilityControllerTest {
     UUID facilityId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"facilityId\": \"" + facilityId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -603,6 +645,7 @@ public class FacilityControllerTest {
     UUID patientId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId2 + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNotFound())
@@ -611,27 +654,16 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPractitionerFacility() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID practitionerId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
-
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
-    when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility1));
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
 
     // Test joining practitioner-facility
     mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"practitionerId\": \"" + practitionerId + "\", " +
-                "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old facility
-    when(facilityRepository.findFacilityByPractitionersId(practitionerId)).thenReturn(facility1);
-    mockMvc.perform(post("/api/facility/practitioner")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isOk());
@@ -639,6 +671,7 @@ public class FacilityControllerTest {
     // Test missing practitioner or facility ID
     MvcResult result1 = mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -646,6 +679,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -654,6 +688,7 @@ public class FacilityControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"2\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -662,6 +697,7 @@ public class FacilityControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\", " +
                 "\"facilityId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -672,6 +708,7 @@ public class FacilityControllerTest {
     UUID facilityId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\", " +
                 "\"facilityId\": \"" + facilityId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -681,6 +718,7 @@ public class FacilityControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId2 + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNotFound())
@@ -689,28 +727,17 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinAppointmentFacility() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID appointmentId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
-
-    when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment1));
-    when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility1));
+    UUID appointmentId = appointmentRepository.save(appointment1).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
 
     // Test joining appointment-facility
     mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"appointmentId\": \"" + appointmentId + "\", " +
-                "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old facility
-    when(facilityRepository.findFacilityByAppointmentsId(appointmentId)).thenReturn(facility1);
-    mockMvc.perform(post("/api/facility/appointment")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isOk());
@@ -718,6 +745,7 @@ public class FacilityControllerTest {
     // Test missing appointment or facility ID
     MvcResult result1 = mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -725,6 +753,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -733,6 +762,7 @@ public class FacilityControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"2\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -741,6 +771,7 @@ public class FacilityControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"facilityId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -751,6 +782,7 @@ public class FacilityControllerTest {
     UUID facilityId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"facilityId\": \"" + facilityId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -760,6 +792,7 @@ public class FacilityControllerTest {
     UUID appointmentId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId2 + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNotFound())
@@ -768,26 +801,24 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPatientFacility() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID patientId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
+    UUID patientId = patientRepository.save(patient1).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
 
-    when(patientRepository.existsById(patientId)).thenReturn(true);
-    when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility1));
-
-    // Test removing patient-facility
-    mockMvc.perform(delete("/api/facility/patient")
+    // Test joining patient-facility
+    mockMvc.perform(post("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
     // Test missing patient or facility ID
     MvcResult result1 = mockMvc.perform(delete("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -795,6 +826,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -803,6 +835,7 @@ public class FacilityControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"2\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -811,6 +844,7 @@ public class FacilityControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"facilityId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -821,6 +855,7 @@ public class FacilityControllerTest {
     UUID facilityId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"facilityId\": \"" + facilityId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -830,6 +865,7 @@ public class FacilityControllerTest {
     UUID patientId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/facility/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId2 + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNotFound())
@@ -838,19 +874,24 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPractitionerFacility() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID practitionerId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
 
-    when(practitionerRepository.existsById(practitionerId)).thenReturn(true);
-    when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility1));
+    // Test joining practitioner-facility
+    mockMvc.perform(post("/api/facility/practitioner")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"practitionerId\": \"" + practitionerId + "\", " +
+                "\"facilityId\": \"" + facilityId + "\"}"))
+        .andExpect(status().isOk());
 
     // Test removing practitioner-facility
     mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNoContent());
@@ -858,6 +899,7 @@ public class FacilityControllerTest {
     // Test missing practitioner or facility ID
     MvcResult result1 = mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -865,6 +907,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -873,6 +916,7 @@ public class FacilityControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"2\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -881,6 +925,7 @@ public class FacilityControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\", " +
                 "\"facilityId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -891,6 +936,7 @@ public class FacilityControllerTest {
     UUID facilityId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\", " +
                 "\"facilityId\": \"" + facilityId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -900,6 +946,7 @@ public class FacilityControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/facility/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId2 + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNotFound())
@@ -908,20 +955,25 @@ public class FacilityControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinAppointmentFacility() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     Facility facility1 = new Facility(40.7, 74.0, "Surgery");
-    UUID appointmentId = UUID.randomUUID();
-    UUID facilityId = UUID.randomUUID();
+    UUID appointmentId = appointmentRepository.save(appointment1).getId();
+    UUID facilityId = facilityRepository.save(facility1).getId();
 
-    when(appointmentRepository.existsById(appointmentId)).thenReturn(true);
-    when(facilityRepository.findById(facilityId)).thenReturn(Optional.of(facility1));
+    // Test joining appointment-facility
+    mockMvc.perform(post("/api/facility/appointment")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"appointmentId\": \"" + appointmentId + "\", " +
+                "\"facilityId\": \"" + facilityId + "\"}"))
+        .andExpect(status().isOk());
 
     // Test removing appointment-facility
     mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNoContent());
@@ -929,6 +981,7 @@ public class FacilityControllerTest {
     // Test missing appointment or facility ID
     MvcResult result1 = mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -936,6 +989,7 @@ public class FacilityControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -944,6 +998,7 @@ public class FacilityControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"2\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -952,6 +1007,7 @@ public class FacilityControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"facilityId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -962,6 +1018,7 @@ public class FacilityControllerTest {
     UUID facilityId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"facilityId\": \"" + facilityId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -971,6 +1028,7 @@ public class FacilityControllerTest {
     UUID appointmentId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/facility/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId2 + "\", " +
                 "\"facilityId\": \"" + facilityId + "\"}"))
         .andExpect(status().isNotFound())

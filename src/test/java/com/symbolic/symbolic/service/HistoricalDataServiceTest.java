@@ -6,6 +6,7 @@ import com.symbolic.symbolic.entity.Patient;
 import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+@Tag("UnitTest")
 public class HistoricalDataServiceTest {
 
     @InjectMocks

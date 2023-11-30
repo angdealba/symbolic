@@ -4,6 +4,7 @@ import com.symbolic.symbolic.entity.Facility;
 import com.symbolic.symbolic.repository.FacilityRepository;
 import com.symbolic.symbolic.service.FacilityService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,6 +16,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+@Tag("UnitTest")
 public class FacilityServiceTest {
 
     @InjectMocks

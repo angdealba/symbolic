@@ -1,119 +1,133 @@
-package com.symbolic.symbolic.controller;
+package com.symbolic.symbolic.integration;
 
 import com.symbolic.symbolic.entity.*;
 import com.symbolic.symbolic.repository.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import com.symbolic.symbolic.controller.AppointmentController;
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Headers;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Provides internal integration testing between the AppointmentController and 4 Repositories
+ * and Entity types, along with the authentication code.
+ * Provides external integration testing between the Repositories and the database implementation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Tag("UnitTest")
-public class AppointmentControllerTest {
+@Tag("IntegrationTest")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class AppointmentIntegrationTest {
   @Autowired
   private MockMvc mockMvc;
-  @MockBean
+  @Autowired
+  private WebApplicationContext context;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
   AppointmentRepository appointmentRepository;
-  @MockBean
+  @Autowired
   PatientRepository patientRepository;
-  @MockBean
+  @Autowired
   MedicalPractitionerRepository practitionerRepository;
-  @MockBean
+  @Autowired
   FacilityRepository facilityRepository;
-  @InjectMocks
-  AppointmentController appointmentController;
-
-  AutoCloseable openMocks;
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-  @BeforeEach
-  public void setUp() {
-    openMocks = MockitoAnnotations.openMocks(this);
-  }
+  private String tokenString;
 
-  @AfterEach
-  public void tearDown() throws Exception {
-    openMocks.close();
+  @Test
+  @BeforeAll
+  public void setupAuthentication() throws Exception {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
+
+    MvcResult result = mockMvc.perform(post("/api/client/authenticate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\":  \"admin\", \"password\":  \"password\"}"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    System.out.println(result.getResponse().getContentAsString());
+    String responseValue = result.getResponse().getContentAsString();
+    tokenString = "Bearer " + responseValue.substring(10, responseValue.length() - 2);
   }
 
   @Test
-  public void testUUIDParser() {
-    // Test valid ID
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    assertEquals(id, AppointmentController.parseUuidFromString(idString));
+  public void testGetAppointments() throws Exception {
+    // Test when no appointments exist
+    mockMvc.perform(get("/api/appointments")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
+        .andExpect(status().isNoContent());
 
-    // Test invalid IDs
-    assertNull(AppointmentController.parseUuidFromString("test"));
-    assertNull(AppointmentController.parseUuidFromString("2"));
-  }
-
-  @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
-  public void testGetAllAppointments() throws Exception {
+    // Test when appointments are returned
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     Date date2 = formatter.parse("2023-11-21 13:30");
     Appointment appointment2 = new Appointment(date2, 50);
-    List<Appointment> appointments = new ArrayList<>();
-    when(appointmentRepository.findAll()).thenReturn(appointments);
-
-    // Test when no appointments exist
-    mockMvc.perform(get("/api/appointments")
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNoContent());
-
-    // Test when appointments are returned
-    appointments.add(appointment1);
-    appointments.add(appointment2);
+    appointmentRepository.save(appointment1);
+    appointmentRepository.save(appointment2);
 
     mockMvc.perform(get("/api/appointments")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAppointmentById() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
-    UUID id = UUID.randomUUID();
-    appointment1.setId(id);
-    when(appointmentRepository.findById(id)).thenReturn(Optional.of(appointment1));
+    UUID id = appointmentRepository.save(appointment1).getId();
 
     // Test retrieving a appointment with a valid id
     mockMvc.perform(get("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id + "\"}"))
+            .content("{\"id\": \"" + id + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
 
     // Test retrieving with no ID
     MvcResult result1 = mockMvc.perform(get("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
+            .content("{}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'id' field in request body", result1.getResponse().getContentAsString());
@@ -121,7 +135,8 @@ public class AppointmentControllerTest {
     // Test retrieving with an invalid ID
     MvcResult result2 = mockMvc.perform(get("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\":  \"test\"}"))
+            .content("{\"id\":  \"test\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'id' field must contain a valid UUID value", result2.getResponse().getContentAsString());
@@ -130,33 +145,36 @@ public class AppointmentControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(get("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id2 + "\"}"))
+            .content("{\"id\": \"" + id2 + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No appointment found with id " + id2, result3.getResponse().getContentAsString());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreateAppointment() throws Exception {
     // Create valid appointment
     mockMvc.perform(post("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"dateTime\": \"2023-10-20 12:00\", " +
-                "\"cost\": \"100\"}"))
+                "\"cost\": \"100\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isCreated());
 
     // Creating appointments with missing fields
     MvcResult result1 = mockMvc.perform(post("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"cost\": \"100\"}"))
+            .content("{\"cost\": \"100\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'dateTime' field in request body", result1.getResponse().getContentAsString());
 
     MvcResult result2 = mockMvc.perform(post("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"dateTime\": \"2023-10-20 12:00\"}"))
+            .content("{\"dateTime\": \"2023-10-20 12:00\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'cost' field in request body", result2.getResponse().getContentAsString());
@@ -165,7 +183,8 @@ public class AppointmentControllerTest {
     MvcResult result3 = mockMvc.perform(post("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"dateTime\": \"2023-10-20\", " +
-                "\"cost\": \"100\"}"))
+                "\"cost\": \"100\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'dateTime' field value must be in the format yyyy-MM-dd HH:mm", result3.getResponse().getContentAsString());
@@ -173,7 +192,8 @@ public class AppointmentControllerTest {
     MvcResult result4 = mockMvc.perform(post("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"dateTime\": \"2023-10-20 1a:00\", " +
-                "\"cost\": \"100\"}"))
+                "\"cost\": \"100\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'dateTime' field value must be in the format yyyy-MM-dd HH:mm", result4.getResponse().getContentAsString());
@@ -182,39 +202,40 @@ public class AppointmentControllerTest {
     MvcResult result5 = mockMvc.perform(post("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"dateTime\": \"2023-10-20 12:00\", " +
-                "\"cost\": \"-1\"}"))
+                "\"cost\": \"-1\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'cost' field must be a non-negative integer", result5.getResponse().getContentAsString());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdateAppointment() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
-    UUID id = UUID.randomUUID();
-    appointment1.setId(id);
-    when(appointmentRepository.findById(id)).thenReturn(Optional.of(appointment1));
+    UUID id = appointmentRepository.save(appointment1).getId();
 
     // Test updating a appointment with a valid id
     mockMvc.perform(put("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dateTime\": \"2023-11-21 13:30\", " +
-                "\"cost\": \"50\"}"))
+                "\"cost\": \"50\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
 
     // Test updating with no fields does not raise error
     mockMvc.perform(put("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id + "\"}"))
+            .content("{\"id\": \"" + id + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
 
     // Test updating with no ID
     MvcResult result1 = mockMvc.perform(put("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
+            .content("{}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'id' field in request body", result1.getResponse().getContentAsString());
@@ -222,7 +243,8 @@ public class AppointmentControllerTest {
     // Test updating with an invalid ID
     MvcResult result2 = mockMvc.perform(put("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\":  \"test\"}"))
+            .content("{\"id\":  \"test\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'id' field must contain a valid UUID value", result2.getResponse().getContentAsString());
@@ -231,7 +253,8 @@ public class AppointmentControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(put("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id2 + "\"}"))
+            .content("{\"id\": \"" + id2 + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No appointment found with id " + id2, result3.getResponse().getContentAsString());
@@ -241,7 +264,8 @@ public class AppointmentControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dateTime\": \"2023-11-21 1a:30\", " +
-                "\"cost\": \"50\"}"))
+                "\"cost\": \"50\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'dateTime' field value must be in the format yyyy-MM-dd HH:mm", result4.getResponse().getContentAsString());
@@ -251,31 +275,31 @@ public class AppointmentControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dateTime\": \"2023-10-20 12:00\", " +
-                "\"cost\": \"-1\"}"))
+                "\"cost\": \"-1\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'cost' field must be a non-negative integer", result5.getResponse().getContentAsString());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAppointment() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
-    UUID id = UUID.randomUUID();
-    appointment1.setId(id);
-    when(appointmentRepository.findById(id)).thenReturn(Optional.of(appointment1));
+    UUID id = appointmentRepository.save(appointment1).getId();
 
     // Test deleting a appointment with a valid id
     mockMvc.perform(delete("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id + "\"}"))
+            .content("{\"id\": \"" + id + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test deleting with no ID
     MvcResult result1 = mockMvc.perform(delete("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
+            .content("{}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("Missing 'id' field in request body", result1.getResponse().getContentAsString());
@@ -283,7 +307,8 @@ public class AppointmentControllerTest {
     // Test deleting with an invalid ID
     MvcResult result2 = mockMvc.perform(delete("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\":  \"test\"}"))
+            .content("{\"id\":  \"test\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isBadRequest())
         .andReturn();
     assertEquals("'id' field must contain a valid UUID value", result2.getResponse().getContentAsString());
@@ -292,7 +317,8 @@ public class AppointmentControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(delete("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id2 + "\"}"))
+            .content("{\"id\": \"" + id2 + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No appointment found with id " + id2, result3.getResponse().getContentAsString());
@@ -304,30 +330,36 @@ public class AppointmentControllerTest {
     appointment1.setPatient(patient);
     appointment1.setPractitioner(practitioner);
     appointment1.setFacility(facility);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    facilityRepository.save(facility);
+    id = appointmentRepository.save(appointment1).getId();
+
     mockMvc.perform(delete("/api/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"id\": \"" + id + "\"}"))
+            .content("{\"id\": \"" + id + "\"}")
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
+
     assertFalse(patient.getAppointments().contains(appointment1));
     assertFalse(practitioner.getAppointments().contains(appointment1));
     assertFalse(facility.getAppointments().contains(appointment1));
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllAppointments() throws Exception {
     Date date1 = formatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     Date date2 = formatter.parse("2023-11-21 13:30");
     Appointment appointment2 = new Appointment(date2, 50);
-    List<Appointment> appointments = new ArrayList<>();
-    appointments.add(appointment1);
-    appointments.add(appointment2);
-    when(appointmentRepository.findAll()).thenReturn(appointments);
+
+    appointmentRepository.save(appointment1);
+    appointmentRepository.save(appointment2);
 
     // Test deleting all diagnoses
     mockMvc.perform(delete("/api/appointments")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test deleting patient, practitioner, and facility fields
@@ -337,9 +369,14 @@ public class AppointmentControllerTest {
     appointment1.setPatient(patient);
     appointment1.setPractitioner(practitioner);
     appointment1.setFacility(facility);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    facilityRepository.save(facility);
+    appointmentRepository.save(appointment1);
 
     mockMvc.perform(delete("/api/appointments")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
     assertFalse(patient.getAppointments().contains(appointment1));
     assertFalse(practitioner.getAppointments().contains(appointment1));

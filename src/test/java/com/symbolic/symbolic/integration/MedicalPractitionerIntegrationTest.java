@@ -1,123 +1,202 @@
-package com.symbolic.symbolic.controller;
+package com.symbolic.symbolic.integration;
 
 import com.symbolic.symbolic.entity.*;
 import com.symbolic.symbolic.repository.*;
 import com.symbolic.symbolic.service.MedicalPractitionerService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Provides internal integration testing between the MedicalPractitionerController and 6 Repositories
+ * and Entity types, along with the authentication code and the joins between Patient-Appointment,
+ * Patient-Prescription, and Patient-Diagnosis data.  Also provides internal integration testing
+ * between the MedicalPractitionerController and MedicalPractitionerService.
+ * Provides external integration testing between the Repositories and the database implementation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Tag("UnitTest")
-public class MedicalPractitionerControllerTest {
+@Tag("IntegrationTest")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class MedicalPractitionerIntegrationTest {
   @Autowired
   private MockMvc mockMvc;
-  @MockBean
+  @Autowired
+  private WebApplicationContext context;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
   MedicalPractitionerRepository practitionerRepository;
-  @MockBean
+  @Autowired
   PatientRepository patientRepository;
-  @MockBean
+  @Autowired
   FacilityRepository facilityRepository;
-  @MockBean
+  @Autowired
   AppointmentRepository appointmentRepository;
-  @MockBean
+  @Autowired
   PrescriptionRepository prescriptionRepository;
-  @MockBean
+  @Autowired
   DiagnosisRepository diagnosisRepository;
-  @InjectMocks
-  MedicalPractitionerController practitionerController;
-  @InjectMocks
+  @Autowired
   MedicalPractitionerService medicalPractitionerService;
-
-  AutoCloseable openMocks;
-
   private SimpleDateFormat appointmentFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   private SimpleDateFormat diagnosisFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
-  @BeforeEach
-  public void setUp() {
-    openMocks = MockitoAnnotations.openMocks(this);
+  private String tokenString;
+
+  @Test
+  @BeforeAll
+  public void setupAuthentication() throws Exception {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
+
+    MvcResult result = mockMvc.perform(post("/api/client/authenticate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\":  \"admin\", \"password\":  \"password\"}"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    System.out.println(result.getResponse().getContentAsString());
+    String responseValue = result.getResponse().getContentAsString();
+    tokenString = "Bearer " + responseValue.substring(10, responseValue.length() - 2);
   }
 
   @AfterEach
-  public void tearDown() throws Exception {
-    openMocks.close();
+  @AfterAll
+  public void tearDownDBs() {
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioner_appointments");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioner_diagnoses");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioner_prescriptions");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioner_patients");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "appointments");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "diagnoses");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "prescriptions");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "patients");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioners");
+  }
+
+  /**
+   * Internal integration test between MedicalPractitionerController and MedicalPractitionerService.
+   */
+  @Test
+  public void testSearch() throws Exception {
+    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+    MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Surgery", 100, 20);
+    practitionerRepository.save(practitioner1);
+    practitionerRepository.save(practitioner2);
+
+    // Test valid return
+    mockMvc.perform(get("/api/practitioners/search")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"latitude\": \"40.7\", " +
+                "\"longitude\": \"74.0\", " +
+                "\"specialization\": \"Surgery\", " +
+                "\"consultationCost\": \"100\", " +
+                "\"yearsExperience\": \"10\"}"))
+        .andExpect(status().isOk());
+
+    // Test valid return with nullable parameters
+    mockMvc.perform(get("/api/practitioners/search")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"latitude\": \"40.7\", " +
+                "\"longitude\": \"74.0\"}"))
+        .andExpect(status().isOk());
+
+    // Test missing latitude and longitude fields
+    MvcResult result1 = mockMvc.perform(get("/api/practitioners/search")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"longitude\": \"74.0\", " +
+                "\"specialization\": \"Surgery\", " +
+                "\"consultationCost\": \"100\", " +
+                "\"yearsExperience\": \"10\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("Missing 'latitude' field in request body", result1.getResponse().getContentAsString());
+
+    MvcResult result2 = mockMvc.perform(get("/api/practitioners/search")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"latitude\": \"40.7\", " +
+                "\"specialization\": \"Surgery\", " +
+                "\"consultationCost\": \"100\", " +
+                "\"yearsExperience\": \"10\"}"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+    assertEquals("Missing 'longitude' field in request body", result2.getResponse().getContentAsString());
   }
 
   @Test
-  public void testUUIDParser() {
-    // Test valid ID
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    assertEquals(id, MedicalPractitionerController.parseUuidFromString(idString));
-
-    // Test invalid IDs
-    assertNull(MedicalPractitionerController.parseUuidFromString("test"));
-    assertNull(MedicalPractitionerController.parseUuidFromString("2"));
-  }
-
-  @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetAllPractitioners() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
-    List<MedicalPractitioner> practitioners = new ArrayList<>();
-    when(practitionerRepository.findAll()).thenReturn(practitioners);
 
     // Test when no practitioners exist
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "practitioners");
     mockMvc.perform(get("/api/practitioners")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test when practitioners are returned
-    practitioners.add(practitioner1);
-    practitioners.add(practitioner2);
+    practitionerRepository.save(practitioner1);
+    practitionerRepository.save(practitioner2);
 
     mockMvc.perform(get("/api/practitioners")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetPractitionerById() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID id = UUID.randomUUID();
-    practitioner1.setId(id);
-    when(practitionerRepository.findById(id)).thenReturn(Optional.of(practitioner1));
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test retrieving a practitioner with a valid id
     mockMvc.perform(get("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test retrieving with no ID
     MvcResult result1 = mockMvc.perform(get("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -126,6 +205,7 @@ public class MedicalPractitionerControllerTest {
     // Test retrieving with an invalid ID
     MvcResult result2 = mockMvc.perform(get("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -135,6 +215,7 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(get("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -142,11 +223,11 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreatePractitioner() throws Exception {
     // Create valid practitioner
     mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"longitude\": \"74.0\", " +
                 "\"specialization\": \"Surgery\", " +
@@ -157,6 +238,7 @@ public class MedicalPractitionerControllerTest {
     // Creating practitioners with missing fields
     MvcResult result1 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"longitude\": \"74.0\", " +
                 "\"specialization\": \"Surgery\", " +
                 "\"consultationCost\": \"50\", " +
@@ -167,6 +249,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"specialization\": \"Surgery\", " +
                 "\"consultationCost\": \"50\", " +
@@ -177,6 +260,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result3 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"longitude\": \"74.0\", " +
                 "\"consultationCost\": \"50\", " +
@@ -187,6 +271,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"longitude\": \"74.0\", " +
                 "\"specialization\": \"Surgery\", " +
@@ -197,6 +282,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result5 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.7\", " +
                 "\"longitude\": \"74.0\", " +
                 "\"specialization\": \"Surgery\", " +
@@ -208,6 +294,7 @@ public class MedicalPractitionerControllerTest {
     // Test negative inputs
     MvcResult result6 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.71\", " +
                 "\"longitude\": \"74.01\", " +
                 "\"specialization\": \"Optometry\", " +
@@ -219,6 +306,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result7 = mockMvc.perform(post("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"latitude\": \"40.71\", " +
                 "\"longitude\": \"74.01\", " +
                 "\"specialization\": \"Optometry\", " +
@@ -230,16 +318,14 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdatePractitioner() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID id = UUID.randomUUID();
-    practitioner1.setId(id);
-    when(practitionerRepository.findById(id)).thenReturn(Optional.of(practitioner1));
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test updating a practitioner with a valid id
     mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"latitude\": \"40.71\", " +
                 "\"longitude\": \"74.01\", " +
@@ -251,12 +337,14 @@ public class MedicalPractitionerControllerTest {
     // Test updating with no fields does not raise error
     mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test updating with no ID
     MvcResult result1 = mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -265,6 +353,7 @@ public class MedicalPractitionerControllerTest {
     // Test updating with an invalid ID
     MvcResult result2 = mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -274,6 +363,7 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -282,6 +372,7 @@ public class MedicalPractitionerControllerTest {
     // Test negative inputs
     MvcResult result4 = mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"latitude\": \"40.71\", " +
                 "\"longitude\": \"74.01\", " +
@@ -294,6 +385,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result5 = mockMvc.perform(put("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"latitude\": \"40.71\", " +
                 "\"longitude\": \"74.01\", " +
@@ -306,22 +398,21 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeletePractitioner() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID id = UUID.randomUUID();
-    practitioner1.setId(id);
-    when(practitionerRepository.findById(id)).thenReturn(Optional.of(practitioner1));
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test deleting a practitioner with a valid id
     mockMvc.perform(delete("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
 
     // Test deleting with no ID
     MvcResult result1 = mockMvc.perform(delete("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -330,6 +421,7 @@ public class MedicalPractitionerControllerTest {
     // Test deleting with an invalid ID
     MvcResult result2 = mockMvc.perform(delete("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -339,6 +431,7 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(delete("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -352,15 +445,20 @@ public class MedicalPractitionerControllerTest {
     Prescription prescription = new Prescription(1, 2, 100, "Test instructions");
     Date diaDate1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis = new Diagnosis("COVID-19", "Antiviral Medication", diaDate1);
+    UUID patientId = patientRepository.save(patient).getId();
+    id = practitionerRepository.save(practitioner1).getId();
 
-    practitioner1.addPatient(patient);
-    practitioner1.setFacility(facility);
-    practitioner1.addAppointment(appointment);
-    practitioner1.addPrescription(prescription);
-    practitioner1.addDiagnosis(diagnosis);
+    // Test joining patient-practitioner
+    mockMvc.perform(post("/api/practitioner/patient")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"patientId\": \"" + patientId + "\", " +
+                "\"practitionerId\": \"" + id + "\"}"))
+        .andExpect(status().isOk());
 
     mockMvc.perform(delete("/api/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
     assertFalse(patient.getPractitioners().contains(practitioner1));
@@ -371,19 +469,16 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllPractitioners() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
-    List<MedicalPractitioner> practitioners = new ArrayList<>();
-
-    practitioners.add(practitioner1);
-    practitioners.add(practitioner2);
-    when(practitionerRepository.findAll()).thenReturn(practitioners);
+    practitionerRepository.save(practitioner1);
+    practitionerRepository.save(practitioner2);
 
     // Test deleting all practitioners
     mockMvc.perform(delete("/api/practitioners")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test deleting associated fields
@@ -394,15 +489,20 @@ public class MedicalPractitionerControllerTest {
     Prescription prescription = new Prescription(1, 2, 100, "Test instructions");
     Date diaDate1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis = new Diagnosis("COVID-19", "Antiviral Medication", diaDate1);
+    UUID patientId = patientRepository.save(patient).getId();
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
-    practitioner1.addPatient(patient);
-    practitioner1.setFacility(facility);
-    practitioner1.addAppointment(appointment);
-    practitioner1.addPrescription(prescription);
-    practitioner1.addDiagnosis(diagnosis);
+    // Test joining patient-practitioner
+    mockMvc.perform(post("/api/practitioner/patient")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"patientId\": \"" + patientId + "\", " +
+                "\"practitionerId\": \"" + id + "\"}"))
+        .andExpect(status().isOk());
 
     mockMvc.perform(delete("/api/practitioners")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
     assertFalse(patient.getPractitioners().contains(practitioner1));
     assertFalse(facility.getPractitioners().contains(practitioner1));
@@ -412,32 +512,32 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPatientsByPractitionerId() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Patient patient2 = new Patient("Flu", "Tree Nut", "None");
-    List<Patient> patients = new ArrayList<>();
-    patients.add(patient1);
-    patients.add(patient2);
-    UUID id = UUID.randomUUID();
-    when(practitionerRepository.existsById(id)).thenReturn(true);
-    when(patientRepository.findPatientsByPractitionersId(id)).thenReturn(patients);
+    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+    practitioner1.addPatient(patient1);
+    practitioner1.addPatient(patient2);
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test retrieving patients
     mockMvc.perform(get("/api/practitioner/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/practitioner/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/practitioner/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -445,39 +545,40 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/practitioner/patients")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAppointmentsByPractitionerId() throws Exception {
     Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     Date date2 = appointmentFormatter.parse("2023-10-21 2:30");
     Appointment appointment2 = new Appointment(date2, 200);
-    List<Appointment> appointments = new ArrayList<>();
-    appointments.add(appointment1);
-    appointments.add(appointment2);
-    UUID id = UUID.randomUUID();
-    when(practitionerRepository.existsById(id)).thenReturn(true);
-    when(appointmentRepository.findAppointmentsByPractitionerId(id)).thenReturn(appointments);
+    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+    practitioner1.addAppointment(appointment1);
+    practitioner1.addAppointment(appointment2);
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test retrieving appointments
     mockMvc.perform(get("/api/practitioner/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/practitioner/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/practitioner/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -485,37 +586,38 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/practitioner/appointments")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPrescriptionsByPractitionerId() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     Prescription prescription2 = new Prescription(2, 1, 50, "More test instructions");
-    List<Prescription> prescriptions = new ArrayList<>();
-    prescriptions.add(prescription1);
-    prescriptions.add(prescription2);
-    UUID id = UUID.randomUUID();
-    when(practitionerRepository.existsById(id)).thenReturn(true);
-    when(prescriptionRepository.findPrescriptionsByPractitionerId(id)).thenReturn(prescriptions);
+    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+    practitioner1.addPrescription(prescription1);
+    practitioner1.addPrescription(prescription2);
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test retrieving prescriptions
     mockMvc.perform(get("/api/practitioner/prescriptions")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/practitioner/prescriptions")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/practitioner/prescriptions")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -523,39 +625,40 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/practitioner/prescriptions")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetDiagnosesByPatientId() throws Exception {
     Date date1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
     Date date2 = diagnosisFormatter.parse("2023-10-21");
     Diagnosis diagnosis2 = new Diagnosis("COVID-19", "In-Patient Treatment", date2);
-    List<Diagnosis> diagnoses = new ArrayList<>();
-    diagnoses.add(diagnosis1);
-    diagnoses.add(diagnosis2);
-    UUID id = UUID.randomUUID();
-    when(practitionerRepository.existsById(id)).thenReturn(true);
-    when(diagnosisRepository.findDiagnosesByPractitionerId(id)).thenReturn(diagnoses);
+    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
+    practitioner1.addDiagnosis(diagnosis1);
+    practitioner1.addDiagnosis(diagnosis2);
+    UUID id = practitionerRepository.save(practitioner1).getId();
 
     // Test retrieving diagnoses
     mockMvc.perform(get("/api/practitioner/diagnoses")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/practitioner/diagnoses")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/practitioner/diagnoses")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -563,35 +666,36 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/practitioner/diagnoses")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionersByPatientId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Optometry", 100, 20);
-    List<MedicalPractitioner> practitioners = new ArrayList<>();
-    UUID id = UUID.randomUUID();
-    when(patientRepository.existsById(id)).thenReturn(true);
-    when(practitionerRepository.findMedicalPractitionerByPatientsId(id)).thenReturn(practitioners);
+    Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
+    UUID id = patientRepository.save(patient1).getId();
 
     // Test retrieving practitioners
     mockMvc.perform(get("/api/patient/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/patient/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/patient/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -599,33 +703,36 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/patient/practitioners")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionerByAppointmentId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID id = UUID.randomUUID();
-    when(appointmentRepository.existsById(id)).thenReturn(true);
-    when(practitionerRepository.findMedicalPractitionerByAppointmentsId(id)).thenReturn(practitioner1);
+    Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
+    Appointment appointment1 = new Appointment(date1, 100);
+    UUID id = appointmentRepository.save(appointment1).getId();
 
     // Test retrieving practitioner
     mockMvc.perform(get("/api/appointment/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/appointment/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/appointment/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -633,33 +740,35 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/appointment/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionerByPrescriptionId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID id = UUID.randomUUID();
-    when(prescriptionRepository.existsById(id)).thenReturn(true);
-    when(practitionerRepository.findMedicalPractitionerByPrescriptionsId(id)).thenReturn(practitioner1);
+    Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
+    UUID id = prescriptionRepository.save(prescription1).getId();
 
     // Test retrieving practitioner
     mockMvc.perform(get("/api/prescription/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/prescription/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/prescription/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -667,33 +776,36 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/prescription/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPractitionerByDiagnosisId() throws Exception {
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID id = UUID.randomUUID();
-    when(diagnosisRepository.existsById(id)).thenReturn(true);
-    when(practitionerRepository.findMedicalPractitionerByDiagnosesId(id)).thenReturn(practitioner1);
+    Date date1 = diagnosisFormatter.parse("2023-10-20");
+    Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
+    UUID id = diagnosisRepository.save(diagnosis1).getId();
 
     // Test retrieving practitioner
     mockMvc.perform(get("/api/diagnosis/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test missing ID
     mockMvc.perform(get("/api/diagnosis/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest());
 
     // Test invalid ID
     mockMvc.perform(get("/api/diagnosis/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\":  \"test\"}"))
         .andExpect(status().isBadRequest());
 
@@ -701,34 +813,22 @@ public class MedicalPractitionerControllerTest {
     UUID id2 = UUID.randomUUID();
     mockMvc.perform(get("/api/diagnosis/practitioner")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPatientPractitioner() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID patientId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient1));
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID patientId = patientRepository.save(patient1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test joining patient-practitioner
     mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"patientId\": \"" + patientId + "\", " +
-                "\"practitionerId\": \"" + practitionerId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old practitioner
-    List<MedicalPractitioner> practitioners = new ArrayList<>();
-    practitioners.add(practitioner1);
-    when(practitionerRepository.findMedicalPractitionerByPatientsId(patientId)).thenReturn(practitioners);
-    mockMvc.perform(post("/api/practitioner/patient")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isOk());
@@ -736,6 +836,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing patient or practitioner ID
     MvcResult result1 = mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -743,6 +844,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -751,6 +853,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -759,6 +862,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -769,6 +873,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -778,6 +883,7 @@ public class MedicalPractitionerControllerTest {
     UUID patientId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -786,28 +892,17 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinAppointmentPractitioner() throws Exception {
     Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID appointmentId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment1));
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID appointmentId = appointmentRepository.save(appointment1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test joining appointment-practitioner
     mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"appointmentId\": \"" + appointmentId + "\", " +
-                "\"practitionerId\": \"" + practitionerId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old practitioner
-    when(practitionerRepository.findMedicalPractitionerByAppointmentsId(appointmentId)).thenReturn(practitioner1);
-    mockMvc.perform(post("/api/practitioner/appointment")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isOk());
@@ -815,6 +910,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing appointment or practitioner ID
     MvcResult result1 = mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -822,6 +918,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -830,6 +927,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -838,6 +936,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -848,6 +947,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -857,6 +957,7 @@ public class MedicalPractitionerControllerTest {
     UUID appointmentId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -865,27 +966,16 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinPrescriptionPractitioner() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID prescriptionId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(prescriptionRepository.findById(prescriptionId)).thenReturn(Optional.of(prescription1));
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID prescriptionId = prescriptionRepository.save(prescription1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test joining prescription-practitioner
     mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
-                "\"practitionerId\": \"" + practitionerId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old practitioner
-    when(practitionerRepository.findMedicalPractitionerByPrescriptionsId(prescriptionId)).thenReturn(practitioner1);
-    mockMvc.perform(post("/api/practitioner/prescription")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isOk());
@@ -893,6 +983,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing prescription or practitioner ID
     MvcResult result1 = mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -900,6 +991,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -908,6 +1000,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -916,6 +1009,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -926,6 +1020,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -935,6 +1030,7 @@ public class MedicalPractitionerControllerTest {
     UUID prescriptionId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -943,28 +1039,17 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testAddJoinDiagnosisPractitioner() throws Exception {
     Date date1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID diagnosisId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(diagnosisRepository.findById(diagnosisId)).thenReturn(Optional.of(diagnosis1));
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID diagnosisId = diagnosisRepository.save(diagnosis1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test joining diagnosis-practitioner
     mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
-                "\"practitionerId\": \"" + practitionerId + "\"}"))
-        .andExpect(status().isOk());
-
-    // Test with valid old practitioner
-    when(practitionerRepository.findMedicalPractitionerByDiagnosesId(diagnosisId)).thenReturn(practitioner1);
-    mockMvc.perform(post("/api/practitioner/diagnosis")
-            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isOk());
@@ -972,6 +1057,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing diagnosis or practitioner ID
     MvcResult result1 = mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -979,6 +1065,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -987,6 +1074,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -995,6 +1083,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -1005,6 +1094,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -1014,6 +1104,7 @@ public class MedicalPractitionerControllerTest {
     UUID diagnosisId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(post("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -1022,19 +1113,16 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPatientPractitioner() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID patientId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(patientRepository.existsById(patientId)).thenReturn(true);
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID patientId = patientRepository.save(patient1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test removing patient-practitioner
     mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNoContent());
@@ -1042,6 +1130,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing patient or practitioner ID
     MvcResult result1 = mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1049,6 +1138,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1057,6 +1147,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -1065,6 +1156,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -1075,6 +1167,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -1084,6 +1177,7 @@ public class MedicalPractitionerControllerTest {
     UUID patientId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/practitioner/patient")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -1092,20 +1186,17 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinAppointmentPractitioner() throws Exception {
     Date date1 = appointmentFormatter.parse("2023-10-20 12:00");
     Appointment appointment1 = new Appointment(date1, 100);
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID appointmentId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(appointmentRepository.existsById(appointmentId)).thenReturn(true);
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID appointmentId = appointmentRepository.save(appointment1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test removing appointment-practitioner
     mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNoContent());
@@ -1113,6 +1204,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing appointment or practitioner ID
     MvcResult result1 = mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1120,6 +1212,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1128,6 +1221,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -1136,6 +1230,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -1146,6 +1241,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -1155,6 +1251,7 @@ public class MedicalPractitionerControllerTest {
     UUID appointmentId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/practitioner/appointment")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"appointmentId\": \"" + appointmentId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -1163,19 +1260,16 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinPrescriptionPractitioner() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID prescriptionId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(prescriptionRepository.existsById(prescriptionId)).thenReturn(true);
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID prescriptionId = prescriptionRepository.save(prescription1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test removing prescription-practitioner
     mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNoContent());
@@ -1183,6 +1277,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing prescription or patient ID
     MvcResult result1 = mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1190,6 +1285,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1198,6 +1294,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -1206,6 +1303,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -1216,6 +1314,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -1225,6 +1324,7 @@ public class MedicalPractitionerControllerTest {
     UUID prescriptionId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/practitioner/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"prescriptionId\": \"" + prescriptionId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
@@ -1233,20 +1333,17 @@ public class MedicalPractitionerControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testRemoveJoinDiagnosisPractitioner() throws Exception {
     Date date1 = diagnosisFormatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "Antiviral Medication", date1);
     MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    UUID diagnosisId = UUID.randomUUID();
-    UUID practitionerId = UUID.randomUUID();
-
-    when(diagnosisRepository.existsById(diagnosisId)).thenReturn(true);
-    when(practitionerRepository.findById(practitionerId)).thenReturn(Optional.of(practitioner1));
+    UUID diagnosisId = diagnosisRepository.save(diagnosis1).getId();
+    UUID practitionerId = practitionerRepository.save(practitioner1).getId();
 
     // Test removing diagnosis-practitioner
     mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNoContent());
@@ -1254,6 +1351,7 @@ public class MedicalPractitionerControllerTest {
     // Test missing diagnosis or practitioner ID
     MvcResult result1 = mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1261,6 +1359,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result2 = mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -1269,6 +1368,7 @@ public class MedicalPractitionerControllerTest {
     // Test invalid IDs
     MvcResult result3 = mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"2\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isBadRequest())
@@ -1277,6 +1377,7 @@ public class MedicalPractitionerControllerTest {
 
     MvcResult result4 = mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
                 "\"practitionerId\": \"2\"}"))
         .andExpect(status().isBadRequest())
@@ -1287,6 +1388,7 @@ public class MedicalPractitionerControllerTest {
     UUID practitionerId2 = UUID.randomUUID();
     MvcResult result5 = mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId + "\", " +
                 "\"practitionerId\": \"" + practitionerId2 + "\"}"))
         .andExpect(status().isNotFound())
@@ -1296,57 +1398,11 @@ public class MedicalPractitionerControllerTest {
     UUID diagnosisId2 = UUID.randomUUID();
     MvcResult result6 = mockMvc.perform(delete("/api/practitioner/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"diagnosisId\": \"" + diagnosisId2 + "\", " +
                 "\"practitionerId\": \"" + practitionerId + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No diagnosis found with id " + diagnosisId2, result6.getResponse().getContentAsString());
-  }
-
-  @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
-  public void testSearch() throws Exception {
-    MedicalPractitioner practitioner1 = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
-    MedicalPractitioner practitioner2 = new MedicalPractitioner(40.71, 74.01, "Surgery", 100, 20);
-    List<MedicalPractitioner> practitioners = new ArrayList<>();
-    when(medicalPractitionerService.search(40.7, 74.0, "Surgery", 100, 10)).thenReturn(practitioners);
-
-    // Test valid return
-    mockMvc.perform(get("/api/practitioners/search")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"latitude\": \"40.7\", " +
-                "\"longitude\": \"74.0\", " +
-                "\"specialization\": \"Surgery\", " +
-                "\"consultationCost\": \"100\", " +
-                "\"yearsExperience\": \"10\"}"))
-        .andExpect(status().isOk());
-
-    // Test valid return with nullable parameters
-    mockMvc.perform(get("/api/practitioners/search")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"latitude\": \"40.7\", " +
-                "\"longitude\": \"74.0\"}"))
-        .andExpect(status().isOk());
-
-    // Test missing latitude and longitude fields
-    MvcResult result1 = mockMvc.perform(get("/api/practitioners/search")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"longitude\": \"74.0\", " +
-                "\"specialization\": \"Surgery\", " +
-                "\"consultationCost\": \"100\", " +
-                "\"yearsExperience\": \"10\"}"))
-        .andExpect(status().isBadRequest())
-        .andReturn();
-    assertEquals("Missing 'latitude' field in request body", result1.getResponse().getContentAsString());
-
-    MvcResult result2 = mockMvc.perform(get("/api/practitioners/search")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"latitude\": \"40.7\", " +
-                "\"specialization\": \"Surgery\", " +
-                "\"consultationCost\": \"100\", " +
-                "\"yearsExperience\": \"10\"}"))
-        .andExpect(status().isBadRequest())
-        .andReturn();
-    assertEquals("Missing 'longitude' field in request body", result2.getResponse().getContentAsString());
   }
 }

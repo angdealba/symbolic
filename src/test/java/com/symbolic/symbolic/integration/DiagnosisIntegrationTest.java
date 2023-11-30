@@ -1,4 +1,4 @@
-package com.symbolic.symbolic.controller;
+package com.symbolic.symbolic.integration;
 
 import com.symbolic.symbolic.entity.Diagnosis;
 import com.symbolic.symbolic.entity.MedicalPractitioner;
@@ -8,116 +8,125 @@ import com.symbolic.symbolic.repository.DiagnosisRepository;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
 import com.symbolic.symbolic.repository.PrescriptionRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Provides internal integration testing between the DiagnosisController and 3 Repositories
+ * and Entity types along with the authentication code.
+ * Provides external integration testing between the Repositories and the database implementation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Tag("UnitTest")
-public class DiagnosisControllerTest {
+@Tag("IntegrationTest")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class DiagnosisIntegrationTest {
   @Autowired
   private MockMvc mockMvc;
-  @MockBean
+  @Autowired
+  private WebApplicationContext context;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
   DiagnosisRepository diagnosisRepository;
-  @MockBean
+  @Autowired
   PatientRepository patientRepository;
-  @MockBean
+  @Autowired
   MedicalPractitionerRepository practitionerRepository;
-  @InjectMocks
-  DiagnosisController diagnosisController;
-
-  AutoCloseable openMocks;
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-  @BeforeEach
-  public void setUp() {
-    openMocks = MockitoAnnotations.openMocks(this);
-  }
+  private String tokenString;
 
-  @AfterEach
-  public void tearDown() throws Exception {
-    openMocks.close();
+  @Test
+  @BeforeAll
+  public void setupAuthentication() throws Exception {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
+
+    MvcResult result = mockMvc.perform(post("/api/client/authenticate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\":  \"admin\", \"password\":  \"password\"}"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    System.out.println(result.getResponse().getContentAsString());
+    String responseValue = result.getResponse().getContentAsString();
+    tokenString = "Bearer " + responseValue.substring(10, responseValue.length() - 2);
   }
 
   @Test
-  public void testUUIDParser() {
-    // Test valid ID
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    assertEquals(id, DiagnosisController.parseUuidFromString(idString));
-
-    // Test invalid IDs
-    assertNull(DiagnosisController.parseUuidFromString("test"));
-    assertNull(DiagnosisController.parseUuidFromString("2"));
-  }
-
-  @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAllDiagnoses() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
     Date date2 = formatter.parse("2023-11-21");
     Diagnosis diagnosis2 = new Diagnosis("Influenza", "Antiviral Medication", date2);
-    List<Diagnosis> diagnoses = new ArrayList<>();
-    when(diagnosisRepository.findAll()).thenReturn(diagnoses);
 
     // Test when no diagnoses exist
     mockMvc.perform(get("/api/diagnoses")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
-
     // Test when diagnoses are returned
-    diagnoses.add(diagnosis1);
-    diagnoses.add(diagnosis2);
+    diagnosisRepository.save(diagnosis1);
+    diagnosisRepository.save(diagnosis2);
 
     mockMvc.perform(get("/api/diagnoses")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "VACCINATION_RECORD_APP")
   public void testGetDiagnosisById() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
-    UUID id = UUID.randomUUID();
-    diagnosis1.setId(id);
-    when(diagnosisRepository.findById(id)).thenReturn(Optional.of(diagnosis1));
+    UUID id = diagnosisRepository.save(diagnosis1).getId();
 
     // Test retrieving a diagnosis with a valid id
     mockMvc.perform(get("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test retrieving with no ID
     MvcResult result1 = mockMvc.perform(get("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -126,6 +135,7 @@ public class DiagnosisControllerTest {
     // Test retrieving with an invalid ID
     MvcResult result2 = mockMvc.perform(get("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -135,6 +145,7 @@ public class DiagnosisControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(get("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -142,11 +153,11 @@ public class DiagnosisControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreateDiagnosis() throws Exception {
     // Create valid diagnosis
     mockMvc.perform(post("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"date\": \"2023-10-20\", " +
                 "\"condition\": \"COVID-19\", " +
                 "\"treatmentInfo\": \"In-Patient Treatment\"}"))
@@ -155,6 +166,7 @@ public class DiagnosisControllerTest {
     // Creating diagnoses with missing fields
     MvcResult result1 = mockMvc.perform(post("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"condition\": \"COVID-19\", " +
                 "\"treatmentInfo\": \"In-Patient Treatment\"}"))
         .andExpect(status().isBadRequest())
@@ -163,6 +175,7 @@ public class DiagnosisControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"date\": \"2023-10-20\", " +
                 "\"treatmentInfo\": \"In-Patient Treatment\"}"))
         .andExpect(status().isBadRequest())
@@ -171,6 +184,7 @@ public class DiagnosisControllerTest {
 
     MvcResult result3 = mockMvc.perform(post("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"date\": \"2023-10-20\", " +
                 "\"condition\": \"COVID-19\"}"))
         .andExpect(status().isBadRequest())
@@ -180,6 +194,7 @@ public class DiagnosisControllerTest {
     // Test malformed date error case
     MvcResult result4 = mockMvc.perform(post("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"date\": \"2023-1a-21\", " +
                 "\"condition\": \"COVID-19\", " +
                 "\"treatmentInfo\": \"In-Patient Treatment\"}"))
@@ -189,17 +204,15 @@ public class DiagnosisControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdateDiagnosis() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
-    UUID id = UUID.randomUUID();
-    diagnosis1.setId(id);
-    when(diagnosisRepository.findById(id)).thenReturn(Optional.of(diagnosis1));
+    UUID id = diagnosisRepository.save(diagnosis1).getId();
 
     // Test updating a diagnosis with a valid id
     mockMvc.perform(put("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"date\": \"2023-11-21\", " +
                 "\"condition\": \"Influenza\", " +
@@ -209,12 +222,14 @@ public class DiagnosisControllerTest {
     // Test updating with no fields does not raise error
     mockMvc.perform(put("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test updating with no ID
     MvcResult result1 = mockMvc.perform(put("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -223,6 +238,7 @@ public class DiagnosisControllerTest {
     // Test updating with an invalid ID
     MvcResult result2 = mockMvc.perform(put("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -232,6 +248,7 @@ public class DiagnosisControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(put("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -240,6 +257,7 @@ public class DiagnosisControllerTest {
     // Test updating with a malformed date raises an error
     MvcResult result4 = mockMvc.perform(put("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"date\": \"2023-11a-21\", " +
                 "\"condition\": \"Influenza\", " +
@@ -250,23 +268,22 @@ public class DiagnosisControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteDiagnosis() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
-    UUID id = UUID.randomUUID();
-    diagnosis1.setId(id);
-    when(diagnosisRepository.findById(id)).thenReturn(Optional.of(diagnosis1));
+    UUID id = diagnosisRepository.save(diagnosis1).getId();
 
     // Test deleting a diagnosis with a valid id
     mockMvc.perform(delete("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
 
     // Test deleting with no ID
     MvcResult result1 = mockMvc.perform(delete("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -275,6 +292,7 @@ public class DiagnosisControllerTest {
     // Test deleting with an invalid ID
     MvcResult result2 = mockMvc.perform(delete("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -284,6 +302,7 @@ public class DiagnosisControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(delete("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -294,8 +313,13 @@ public class DiagnosisControllerTest {
     MedicalPractitioner practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     diagnosis1.setPatient(patient);
     diagnosis1.setPractitioner(practitioner);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    id = diagnosisRepository.save(diagnosis1).getId();
+
     mockMvc.perform(delete("/api/diagnosis")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
     assertFalse(patient.getDiagnoses().contains(diagnosis1));
@@ -303,20 +327,18 @@ public class DiagnosisControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllDiagnoses() throws Exception {
     Date date1 = formatter.parse("2023-10-20");
     Diagnosis diagnosis1 = new Diagnosis("COVID-19", "In-Patient Treatment", date1);
     Date date2 = formatter.parse("2023-11-21");
     Diagnosis diagnosis2 = new Diagnosis("Influenza", "Antiviral Medication", date2);
-    List<Diagnosis> diagnoses = new ArrayList<>();
-    diagnoses.add(diagnosis1);
-    diagnoses.add(diagnosis2);
-    when(diagnosisRepository.findAll()).thenReturn(diagnoses);
+    diagnosisRepository.save(diagnosis1);
+    diagnosisRepository.save(diagnosis2);
 
     // Test deleting all diagnoses
     mockMvc.perform(delete("/api/diagnoses")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test deleting patient and practitioner fields
@@ -324,9 +346,13 @@ public class DiagnosisControllerTest {
     MedicalPractitioner practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     diagnosis1.setPatient(patient);
     diagnosis1.setPractitioner(practitioner);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    diagnosisRepository.save(diagnosis1);
 
     mockMvc.perform(delete("/api/diagnoses")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
     assertFalse(patient.getDiagnoses().contains(diagnosis1));
     assertFalse(practitioner.getDiagnoses().contains(diagnosis1));
