@@ -35,8 +35,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Provides internal integration testing between the AppointmentController and 4 Repositories,
- * along with the authentication code.
+ * Provides internal integration testing between the AppointmentController and 4 Repositories
+ * and Entity types, along with the authentication code.
  * Provides external integration testing between the Repositories and the database implementation.
  */
 @SpringBootTest
