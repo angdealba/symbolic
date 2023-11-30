@@ -358,6 +358,10 @@ public class AppointmentIntegrationTest {
     appointment1.setPatient(patient);
     appointment1.setPractitioner(practitioner);
     appointment1.setFacility(facility);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    facilityRepository.save(facility);
+    appointmentRepository.save(appointment1);
 
     mockMvc.perform(delete("/api/appointments")
             .contentType(MediaType.APPLICATION_JSON)
