@@ -18,7 +18,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -50,6 +52,8 @@ public class DiagnosisIntegrationTest {
   @Autowired
   private WebApplicationContext context;
   @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
   DiagnosisRepository diagnosisRepository;
   @Autowired
   PatientRepository patientRepository;
@@ -64,6 +68,13 @@ public class DiagnosisIntegrationTest {
   @BeforeAll
   public void setupAuthentication() throws Exception {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
 
     MvcResult result = mockMvc.perform(post("/api/client/authenticate")
             .contentType(MediaType.APPLICATION_JSON)

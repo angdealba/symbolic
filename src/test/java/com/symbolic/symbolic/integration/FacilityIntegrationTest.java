@@ -66,6 +66,13 @@ public class FacilityIntegrationTest {
   public void setupAuthentication() throws Exception {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
+
     MvcResult result = mockMvc.perform(post("/api/client/authenticate")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"name\":  \"admin\", \"password\":  \"password\"}"))
@@ -78,7 +85,6 @@ public class FacilityIntegrationTest {
   }
 
   @AfterEach
-  @AfterAll
   public void tearDownDBs() {
     JdbcTestUtils.deleteFromTables(jdbcTemplate, "facility_appointments");
     JdbcTestUtils.deleteFromTables(jdbcTemplate, "facility_patients");
