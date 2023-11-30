@@ -1,15 +1,20 @@
 package com.symbolic.client;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.util.Properties;
+import java.util.UUID;
 import javafx.fxml.FXML;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -17,20 +22,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.time.Duration;
-import java.util.Properties;
-import java.util.UUID;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
-
+/**
+ * Controller class that defines all of the functionality of the client application's Java FX UI.
+ */
 @Component
 public class ClientController {
   @FXML
@@ -76,7 +72,7 @@ public class ClientController {
 
   /**
    * Custom request object used to represent requests to the /bgcheck service.
-   * */
+   */
   static class BackgroundCheckBody {
     private String id;
     private String vaccination;
@@ -93,7 +89,7 @@ public class ClientController {
 
   /**
    * Custom request object used to represent responses from the /bgcheck service.
-   * */
+   */
   static class BackgroundCheckResponse {
     private boolean vaccination;
     private boolean allergy;
@@ -215,7 +211,8 @@ public class ClientController {
 
       if (response.getStatusLine().getStatusCode() == 200) {
         String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
-        AuthenticationResponse authResponse = gson.fromJson(responseString, AuthenticationResponse.class);
+        AuthenticationResponse authResponse = gson.fromJson(responseString,
+            AuthenticationResponse.class);
         token = authResponse.getToken();
       } else {
         throw new IOException("There was an error authenticating the client " + name);
@@ -230,7 +227,7 @@ public class ClientController {
       try {
         handleAuthentication();
       } catch (IOException e) {
-        System.err.println("The client was unable to authenticate with the background check service.");
+        System.err.println("The client could not authenticate with the background check service.");
         return;
       }
     }
@@ -282,7 +279,8 @@ public class ClientController {
     String uri = "http://localhost:8080/api/bgcheck";
 
     // Perform the GET request to /api/bgcheck
-    BackgroundCheckBody requestBody = new BackgroundCheckBody(subjectId, vaccination, allergy, diagnosis);
+    BackgroundCheckBody requestBody
+        = new BackgroundCheckBody(subjectId, vaccination, allergy, diagnosis);
     Gson gson = new Gson();
     CloseableHttpClient client = HttpClientBuilder.create().build();
     StringEntity getBody = new StringEntity(gson.toJson(requestBody));
@@ -295,7 +293,8 @@ public class ClientController {
 
     if (response.getStatusLine().getStatusCode() == 200) {
       String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
-      BackgroundCheckResponse bgCheckResponse = gson.fromJson(responseString, BackgroundCheckResponse.class);
+      BackgroundCheckResponse bgCheckResponse = gson.fromJson(responseString,
+          BackgroundCheckResponse.class);
       return bgCheckResponse;
     } else {
       throw new IOException("There was an error performing the background check.");
