@@ -4,6 +4,7 @@ import com.symbolic.symbolic.entity.*;
 import com.symbolic.symbolic.repository.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Tag("UnitTest")
 public class FacilityControllerTest {
   @Autowired
   private MockMvc mockMvc;

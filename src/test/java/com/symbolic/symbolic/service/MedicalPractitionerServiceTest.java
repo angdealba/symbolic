@@ -3,6 +3,7 @@ package com.symbolic.symbolic.service;
 import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -14,6 +15,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+@Tag("UnitTest")
 public class MedicalPractitionerServiceTest {
 
     @InjectMocks

@@ -5,6 +5,7 @@ import com.symbolic.symbolic.repository.*;
 import com.symbolic.symbolic.service.MedicalPractitionerService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Tag("UnitTest")
 public class MedicalPractitionerControllerTest {
   @Autowired
   private MockMvc mockMvc;

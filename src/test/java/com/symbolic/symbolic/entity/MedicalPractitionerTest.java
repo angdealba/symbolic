@@ -1,6 +1,7 @@
 package com.symbolic.symbolic.entity;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;
 
@@ -10,6 +11,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("UnitTest")
 public class MedicalPractitionerTest {
     private MedicalPractitioner practitioner;
     private Facility facility;

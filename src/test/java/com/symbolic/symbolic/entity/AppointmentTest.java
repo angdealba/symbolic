@@ -2,6 +2,7 @@ package com.symbolic.symbolic.entity;
 
 import org.assertj.core.api.Fail;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
@@ -12,6 +13,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+@Tag("UnitTest")
 public class AppointmentTest {
     private Appointment appointment;
     private Patient patient;
