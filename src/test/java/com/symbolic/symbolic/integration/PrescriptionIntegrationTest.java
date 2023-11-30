@@ -35,6 +35,11 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Provides internal integration testing between the PrescriptionController and 3 Repositories,
+ * along with the authentication code.
+ * Provides external integration testing between the Repositories and the database implementation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Tag("IntegrationTest")
