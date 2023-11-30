@@ -12,7 +12,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -30,8 +33,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Provides internal integration testing between the InsurancePolicyController and 2 Repositories,
- * along with the authentication code and the join between Patient-Policy data.
+ * Provides internal integration testing between the InsurancePolicyController and 2 Repositories
+ * and Entity types, along with the authentication code and the join between Patient-Policy data.
  * Provides external integration testing between the Repositories and the database implementation.
  */
 @SpringBootTest
@@ -43,6 +46,8 @@ public class InsurancePolicyIntegrationTest {
   private MockMvc mockMvc;
   @Autowired
   private WebApplicationContext context;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
   @Autowired
   InsurancePolicyRepository insurancePolicyRepository;
   @Autowired
@@ -66,12 +71,21 @@ public class InsurancePolicyIntegrationTest {
     tokenString = "Bearer " + responseValue.substring(10, responseValue.length() - 2);
   }
 
+  @AfterEach
+  @AfterAll
+  public void tearDownDBs() {
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "policy_patients");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "patients");
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "insurance_policies");
+  }
+
   @Test
   public void testGetAllPolicies() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     InsurancePolicy policy2 = new InsurancePolicy(50);
 
     // Test when no policies exist
+    JdbcTestUtils.deleteFromTables(jdbcTemplate, "insurance_policies");
     mockMvc.perform(get("/api/policies")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString))
@@ -277,7 +291,6 @@ public class InsurancePolicyIntegrationTest {
   }
 
   @Test
-  @AfterAll
   public void testDeleteAllPolicies() throws Exception {
     InsurancePolicy policy1 = new InsurancePolicy(100);
     InsurancePolicy policy2 = new InsurancePolicy(50);
@@ -315,16 +328,16 @@ public class InsurancePolicyIntegrationTest {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
     Patient patient2 = new Patient("Flu", "Tree Nut", "None");
     InsurancePolicy policy1 = new InsurancePolicy(100);
+    policy1.addPatient(patient1);
+    policy1.addPatient(patient2);
     UUID policyId = insurancePolicyRepository.save(policy1).getId();
-    UUID patient1Id = patientRepository.save(patient1).getId();
-    UUID patient2Id = patientRepository.save(patient2).getId();
 
     // Test retrieving patients
-    mockMvc.perform(get("/api/policy/patients")
+    MvcResult result = mockMvc.perform(get("/api/policy/patients")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"policyId\": \"" + policyId + "\"}"))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk()).andReturn();
 
     // Test missing ID
     mockMvc.perform(get("/api/policy/patients")
@@ -352,15 +365,16 @@ public class InsurancePolicyIntegrationTest {
   @Test
   public void testGetPolicyByPatientId() throws Exception {
     Patient patient1 = new Patient("COVID-19", "Dairy", "Wheelchair Access");
-    InsurancePolicy policy1 = new InsurancePolicy(40);
+    InsurancePolicy policy1 = new InsurancePolicy(100);
     UUID patientId = patientRepository.save(patient1).getId();
 
     // Test retrieving policy
-    mockMvc.perform(get("/api/patient/policy")
+    MvcResult result = mockMvc.perform(get("/api/patient/policy")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\"}"))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andReturn();
 
     // Test missing ID
     mockMvc.perform(get("/api/patient/policy")
@@ -456,14 +470,6 @@ public class InsurancePolicyIntegrationTest {
         .andExpect(status().isNotFound())
         .andReturn();
     assertEquals("No patient found with id " + patientId2, result6.getResponse().getContentAsString());
-
-    // Test removing patient-policy
-    mockMvc.perform(delete("/api/policy/patient")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, tokenString)
-            .content("{\"patientId\": \"" + patientId + "\", " +
-                "\"policyId\": \"" + policyId + "\"}"))
-        .andExpect(status().isNoContent());
   }
 
   @Test
@@ -473,61 +479,77 @@ public class InsurancePolicyIntegrationTest {
     UUID patientId = patientRepository.save(patient1).getId();
     UUID policyId = insurancePolicyRepository.save(policy1).getId();
 
+    // Test joining patient-policy
+    mockMvc.perform(post("/api/policy/patient")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"patientId\": \"" + patientId + "\", " +
+                "\"policyId\": \"" + policyId + "\"}"))
+        .andExpect(status().isOk());
+
+    // Test removing patient-policy
+    mockMvc.perform(delete("/api/policy/patient")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
+            .content("{\"patientId\": \"" + patientId + "\", " +
+                "\"policyId\": \"" + policyId + "\"}"))
+        .andExpect(status().isNoContent());
+
     // Test missing patient or policy ID
-    MvcResult result7 = mockMvc.perform(delete("/api/policy/patient")
+    MvcResult result1 = mockMvc.perform(delete("/api/policy/patient")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
-    assertEquals("Missing 'policyId' field in request body", result7.getResponse().getContentAsString());
+    assertEquals("Missing 'policyId' field in request body", result1.getResponse().getContentAsString());
 
-    MvcResult result8 = mockMvc.perform(delete("/api/policy/patient")
+    MvcResult result2 = mockMvc.perform(delete("/api/policy/patient")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"policyId\": \"" + policyId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
-    assertEquals("Missing 'patientId' field in request body", result8.getResponse().getContentAsString());
+    assertEquals("Missing 'patientId' field in request body", result2.getResponse().getContentAsString());
 
     // Test invalid IDs
-    MvcResult result9 = mockMvc.perform(delete("/api/policy/patient")
+    MvcResult result3 = mockMvc.perform(delete("/api/policy/patient")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"2\", " +
                 "\"policyId\": \"" + policyId + "\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
-    assertEquals("'patientId' field must contain a valid UUID value", result9.getResponse().getContentAsString());
+    assertEquals("'patientId' field must contain a valid UUID value", result3.getResponse().getContentAsString());
 
-    MvcResult result10 = mockMvc.perform(delete("/api/policy/patient")
+    MvcResult result4 = mockMvc.perform(delete("/api/policy/patient")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"policyId\": \"2\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
-    assertEquals("'policyId' field must contain a valid UUID value", result10.getResponse().getContentAsString());
+    assertEquals("'policyId' field must contain a valid UUID value", result4.getResponse().getContentAsString());
 
     // Test IDs not in the database
     UUID policyId2 = UUID.randomUUID();
-    MvcResult result11 = mockMvc.perform(delete("/api/policy/patient")
+    MvcResult result5 = mockMvc.perform(delete("/api/policy/patient")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId + "\", " +
                 "\"policyId\": \"" + policyId2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
-    assertEquals("No insurance policy found with id " + policyId2, result11.getResponse().getContentAsString());
+    assertEquals("No insurance policy found with id " + policyId2, result5.getResponse().getContentAsString());
 
     UUID patientId2 = UUID.randomUUID();
-    MvcResult result12 = mockMvc.perform(delete("/api/policy/patient")
+    MvcResult result6 = mockMvc.perform(delete("/api/policy/patient")
             .contentType(MediaType.APPLICATION_JSON)
             .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"patientId\": \"" + patientId2 + "\", " +
                 "\"policyId\": \"" + policyId + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
-    assertEquals("No patient found with id " + patientId2, result12.getResponse().getContentAsString());
+    assertEquals("No patient found with id " + patientId2, result6.getResponse().getContentAsString());
   }
 }
