@@ -47,8 +47,12 @@ jobs:
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "DROP DATABASE IF EXISTS medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE DATABASE medical_db;"
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
-    - name: Build and Test with Maven
-      run: mvn -B package --file pom.xml spotbugs:spotbugs checkstyle:checkstyle -Dstart-class=com.symbolic.symbolic.SymbolicApplication
+    - name: Build and run Unit Tests with Maven
+      run: mvn -B package --file pom.xml spotbugs:spotbugs checkstyle:checkstyle -Dstart-class=com.symbolic.symbolic.SymbolicApplication -Dgroups="UnitTest"
+
+    - name: Build and run Integration Tests with Maven
+      run: mvn -B package --file pom.xml spotbugs:spotbugs checkstyle:checkstyle -Dstart-class=com.symbolic.symbolic.SymbolicApplication -Dgroups="IntegrationTest"
+
     - name: jacoco-reporter
       # You may pin to the exact commit or the version.
       # uses: PavanMudigonda/jacoco-reporter@76044ebc031589dcbce0bb1048ffee1072a43f97
