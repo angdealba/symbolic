@@ -1,17 +1,28 @@
 package com.symbolic.client;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.Label;
+import javafx.stage.Stage;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.http.client.methods.HttpUriRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +45,7 @@ class ClientControllerTest {
 
     @BeforeEach
     void setUp() {
+        clientController = new ClientController();
         openMocks = MockitoAnnotations.openMocks(this);
         httpClient = mock(CloseableHttpClient.class);
         httpResponse = mock(CloseableHttpResponse.class);
@@ -66,17 +78,20 @@ class ClientControllerTest {
     }
     @Test
     void submitButtonPressedTest() throws URISyntaxException, IOException, InterruptedException {
+        clientController.token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTcwMTM4OTgwNCwiZXhwIjoxNzAxNjA1ODA0fQ.giOL6EXw2T0Huq0la-6iVbwrME7KHYghHZj60Ne-OnM";
 
         ClientController.BackgroundCheckResponse response = new ClientController.BackgroundCheckResponse();
         response.setVaccination(true);
         response.setAllergy(false);
         response.setDiagnosis(true);
-        when(clientController.submitRequest(any(), any(), any(), any())).thenReturn(response);
 
-        clientController.submitButtonPressed();
-        assertEquals("[ POSITIVE ]", clientController.vaccinationResultLabel.getText());
-        assertEquals("[ NEGATIVE ]", clientController.allergyResultLabel.getText());
-        assertEquals("[ POSITIVE ]", clientController.diagnosisResultLabel.getText());
+        ClientController controllerSpy = Mockito.spy(clientController);
+        doReturn(response).when(controllerSpy).submitRequest("", "", "", "");
+
+        String[] output = controllerSpy.submitButtonPressed();
+        assertEquals("[ POSITIVE ]", output[0]);
+        assertEquals("[ NEGATIVE ]", output[1]);
+        assertEquals("[ POSITIVE ]", output[2]);
     }
 
 
