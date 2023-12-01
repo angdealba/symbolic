@@ -587,6 +587,12 @@ Postman offers an export tool that exports all of the call settings and metadata
 
 A total of 176 API system tests are included across the two files in the **postman/** folder.  The **Base Requests.postman_collection.json** .json file should be run first in Postman and enumerates all the CRUD API endpoints for each of the data types in the service, while the **Join Requests.postman_collection.json** file should be run second and provides system tests for the join table functionality of linking tables, searching according to the links, and deleting links.
 
+### Multiple Simultaneous Client Test
+To simulate a real-world scenario of multiple service instances, three client instances were initiated, each automatically selecting an available port. These ports were then assigned to the Postman environment variables port1, port2, and port3, enabling dynamic referencing in Postman's test scripts for requests to different service instances.
+
+Using Postman's 'run manually with 0 delay' feature, tests were executed with zero milliseconds delay, simulating a high-concurrency scenario and testing the service's capability to handle concurrent requests. The 'simultaneous test' suite included a variety of add, modify, and delete operations targeted at different ports, ensuring coverage of various operational scenarios for each service instance.
+
+The successful completion of all test scenarios demonstrated the stability and reliability of the service, both on individual instances and in parallel operation. This robust testing approach was essential to confirm the service's ability to handle concurrent requests in production environments, providing key insights for future development and optimization.
     
 ## Style Checker
 The style checking for the project was done inside IntelliJ Idea using the Checkstyle-IDEA plugin, which allows for Checkstyle to be run as an embedded feature within the API.  For the project we chose to use the Google Checks checkstyle guide for the style of all of our code.  Before submitting the project, Checkstyle-IDEA was run on the entire **src/main/java** sources root directory and Checkstyle found no problems in any of the files contained in the subdirectories.  Although Checkstyle-IDEA does not produce a file output, a screenshot of this Checkstyle result is located at CheckstyleConfirmation.png in the root folder of this repository.
