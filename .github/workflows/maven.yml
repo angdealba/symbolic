@@ -152,7 +152,10 @@ jobs:
     - name: Configure DB Test User
       run: |
         mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "USE medical_db; INSERT INTO user \n values (1, NULL, 'admin', '\$2a\$10\$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO', 'ADMIN');"
-    
+        
+    - name: Build and run Client Tests with Maven
+      run: mvn -B package --file pom.xml -Dstart-class=com.symbolic.symbolic.ClientApplication -Dgroups="ClientTest"
+
     - name: Postman API Tests with Newman
       # You may pin to the exact commit or the version.
       # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
