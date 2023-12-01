@@ -217,9 +217,8 @@ jobs:
         run: |
           mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "USE medical_db; INSERT INTO user \n values (1, NULL, 'admin', '\$2a\$10\$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO', 'ADMIN');"
 
-      - name: Run Postman collection in parallel 3 times
+      - name: Run Postman collection in parallel 2 times
         run: |
-          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
           newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
           newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json
 

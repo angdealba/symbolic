@@ -173,8 +173,8 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - GET
         - Description: receives a single Patient object from the database
         - Returns a single Patient object and a 200 OK on success, and a 404 Not Found if the Patient with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
-        - Fields: a single integer param "id" specifying the id number of the Patient to remove
-        - Sample params: ?id=4
+        - Fields: a single integer param "id" specifying the UUID number of the Patient to remove
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single Patient object to the database
         - Returns the newly created Patient object and a 201 CREATED on success.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
@@ -195,7 +195,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single Patient object from the database
         - Returns a 204 No Content if the Patient was successfully removed, and a 404 Not Found if the Patient with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the Patient to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/patients
     - GET
         - Description: receives the list of all Patient objects in the database
@@ -212,13 +212,13 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves all Appointment objects scheduled for the Patient matching the specified id
         - Returns a list of Appointment objects and a 200 OK on success, and a 404 Not Found if the Patient with the specified id is not found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: a single integer param "patientId" specifying the id number of the Patient to search
-        - Sample params: ?patientId=6
+        - Sample body: {"patientId": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/appointment/patient
     - GET
         - Description: retrieves the Patient for whom the Appointment with the specified id was scheduled
         - Returns a single Patient object and a 200 OK on success, and a 404 Not Found if the Appointment with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
         - Fields: a single integer param "patientId" specifying the id number of the Patient to search
-        - Sample params: ?patientId=6
+        - Sample body: {"patientId": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/patient/appointment
     - POST
         - Description: links a Patient object to an Appointment object in the database to indicate that the appointment was scheduled for the patient
@@ -237,7 +237,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: receives a single MedicalPractitioner object from the database
         - Returns a single MedicalPractitioner object and a 200 OK on success, and a 404 Not Found if the MedicalPractitioner with the specified id is not found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: a single integer param "id" specifying the id number of the MedicalPractitioner to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single MedicalPractitioner object to the database
         - Returns the newly created MedicalPractitioner object and a 201 CREATED on success.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
@@ -262,7 +262,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single MedicalPractitioner object from the database
         - Returns a 204 No Content if the MedicalPractitioner was successfully removed, and a 404 Not Found if the MedicalPractitioner with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the MedicalPractitioner to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/practitioners
     - GET
         - Description: receives the list of all MedicalPractitioner objects in the database
@@ -285,7 +285,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves all MedicalPractitioner objects visited by the Patient with the specified id
         - Returns a list of MedicalPractitioner object and a 200 OK on success, and a 404 Not Found if the Patient with the specified id is not found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: a single integer param "patientId" specifying the id number of the Patient to search
-        - Sample params: ?patientId=6
+        - Sample body: {"patientId": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/practitioner/patient
     - POST
         - Description: links a MedicalPractitioner object to a Patient object in the database to indicate that the patient is seeing the practitioner
@@ -373,7 +373,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: receives a single Facility object from the database
         - Returns a single Facility object and a 200 OK on success, and a 404 Not Found if the Facility with the specified id is not found in the database.  Facility objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the facility, and a string value "specialization" describing the type of medical services that the facility offers.
         - Fields: a single integer param "id" specifying the id number of the Facility to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single Facility object to the database
         - Returns the newly created Facility object and a 201 CREATED on success.  Facility objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the facility, and a string value "specialization" describing the type of medical services that the facility offers.
@@ -394,7 +394,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single Facility object from the database
         - Returns a 204 No Content if the Facility was successfully removed, and a 404 Not Found if the Facility with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the Facility to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/facilities
     - GET
         - Description: receives the list of all Facility objects in the database
@@ -417,7 +417,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves all Facility objects visited by the Patient with the specified id
         - Returns a list of Facility object and a 200 OK on success, and a 404 Not Found if the Patient with the specified id is not found in the database.  Facility objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the facility, and a string value "specialization" describing the type of medical services that the facility offers.
         - Fields: a single integer param "patientId" specifying the id number of the Patient to search
-        - Sample params: ?patientId=6
+        - Sample body: {"patientId": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/facility/patient
     - POST
         - Description: links a Facility object to a Patient object in the database to indicate that the patient is visiting the facility
@@ -482,7 +482,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: receives a single InsurancePolicy object from the database
         - Returns a single InsurancePolicy object and a 200 OK on success, and a 404 Not Found if the InsurancePolicy with the specified id is not found in the database.  InsurancePolicy objects contain an integer identifier "id" and an integer "premiumCost" describing the cost of the insurance policy.
         - Fields: a single integer param "id" specifying the id number of the InsurancePolicy to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single InsurancePolicy object to the database
         - Returns the newly created InsurancePolicy object and a 201 CREATED on success.  InsurancePolicy objects contain an integer identifier "id" and an integer "premiumCost" describing the cost of the insurance policy.
@@ -499,7 +499,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single InsurancePolicy object from the database
         - Returns a 204 No Content if the InsurancePolicy was successfully removed, and a 404 Not Found if the InsurancePolicy with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the InsurancePolicy to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/policies
     - GET
         - Description: receives the list of all InsurancePolicy objects in the database
@@ -522,7 +522,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves the InsurancePolicy associated with the Patient with the specified id
         - Returns a single InsurancePolicy object and a 200 OK on success, and a 404 Not Found if the Patient with the specified id is not found in the database.  InsurancePolicy objects contain an integer identifier "id" and an integer "premiumCost" describing the cost of the insurance policy.
         - Fields: a single integer param "patientId" specifying the id number of the Patient to search
-        - Sample params: ?patientId=6
+        - Sample body: {"patientId": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/policy/patient
     - POST
         - Description: links an InsurancePolicy object to a Patient object in the database to indicate that the patient is covered by the policy
@@ -541,7 +541,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: receives a single Appointment object from the database
         - Returns a single Appointment object and a 200 OK on success, and a 404 Not Found if the Appointment with the specified id is not found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: a single integer param "id" specifying the id number of the Appointment to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single Appointment object to the database
         - Returns the newly created Appointment object and a 201 CREATED on success.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
@@ -560,7 +560,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single Appointment object from the database
         - Returns a 204 No Content if the Appointment was successfully removed, and a 404 Not Found if the Appointment with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the Appointment to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/appointments
     - GET
         - Description: receives the list of all Appointment objects in the database
@@ -579,7 +579,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: receives a single Prescription object from the database
         - Returns a single Prescription object and a 200 OK on success, and a 404 Not Found if the Prescription with the specified id is not found in the database.  Prescription objects contain an integer identifier "id", an integer "dosage" representing the number of pills taken at a time, an integer identifier "dailyUses" representing the number of times the medication should be taken daily, an integer "cost" describing the price of the prescription, and a string "instructions" providing any additional info on taking the medication.
         - Fields: a single integer param "id" specifying the id number of the Prescription to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single Prescription object to the database
         - Returns the newly created Prescription object and a 201 CREATED on success.  Prescription objects contain an integer identifier "id", an integer "dosage" representing the number of pills taken at a time, an integer identifier "dailyUses" representing the number of times the medication should be taken daily, an integer "cost" describing the price of the prescription, and a string "instructions" providing any additional info on taking the medication.
@@ -602,7 +602,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single Prescription object from the database
         - Returns a 204 No Content if the Prescription was successfully removed, and a 404 Not Found if the Prescription with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the Prescription to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/prescriptions
     - GET
         - Description: receives the list of all Prescription objects in the database
@@ -622,7 +622,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: receives a single Diagnosis object from the database
         - Returns a single Diagnosis object and a 200 OK on success, and a 404 Not Found if the Diagnosis with the specified id is not found in the database.  Diagnosis objects contain an integer identifier "id", a string "condition" specifying the diagnosed condition, a string "treatmentInfo" describing a treatment plan, and a date value "date" denoting when the diagnosis was performed.
         - Fields: a single integer param "id" specifying the id number of the Diagnosis to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single Diagnosis object to the database
         - Returns the newly created Diagnosis object and a 201 CREATED on success.  Diagnosis objects contain an integer identifier "id", a string "condition" specifying the diagnosed condition, a string "treatmentInfo" describing a treatment plan, and a date value "date" denoting when the diagnosis was performed.
@@ -643,7 +643,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: removes a single Diagnosis object from the database
         - Returns a 204 No Content if the Diagnosis was successfully removed, and a 404 Not Found if the Diagnosis with the specified id is not in the database.
         - Fields: a single integer param "id" specifying the id number of the Diagnosis to remove
-        - Sample params: ?id=4
+        - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
 - /api/diagnoses
     - GET
         - Description: receives the list of all Diagnosis objects in the database
