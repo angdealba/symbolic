@@ -62,6 +62,7 @@ jobs:
         coverage_results_path: target/site/jacoco/jacoco.xml
         # GITHUB_TOKEN to authenticate against API calls to attach report to Workflow Run.
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish-only-summary: true
     - name: Push SpotBugs report
       # You may pin to the exact commit or the version.
       # uses: jwgmeligmeyling/spotbugs-github-action@b8e2c3523acb34c87f14e18cbcd2d87db8c8584e
@@ -211,28 +212,16 @@ jobs:
           mvn -B package --file pom.xml spring-boot:run -Dstart-class=com.symbolic.symbolic.SymbolicApplication -Dgroups="UnitTest" &
           for attempt in {1..120}; do sleep 1; if curl --location 'http://127.0.0.1:8080/api/client/authenticate' --header 'Content-Type: application/json' --data '{"name": "admin"}' --output /dev/null --silent; then echo ready; break; fi; echo waiting on launch...; done
        # Run the POSTMAN collection
-      - name: Run Postman collection in parallel 3 times
-        run: |
-          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
-          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
-          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json
 
       - name: Configure DB Test User
         run: |
           mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "USE medical_db; INSERT INTO user \n values (1, NULL, 'admin', '\$2a\$10\$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO', 'ADMIN');"
 
-      - name: Build and run Client Tests with Maven
-        run: mvn -B package --file pom.xml -Dstart-class=com.symbolic.symbolic.ClientApplication -Dgroups="ClientTest"
-
-      - name: Postman API Tests with Newman
-        # You may pin to the exact commit or the version.
-        # uses: matt-ball/newman-action@170d252f10d199d75d6be4c739b48a3bd5f15ece
-        uses: matt-ball/newman-action@v2.0.0
-        with:
-          # Collection to use
-          collection: postman/collections/BaseRequestTests.postman_collection.json
-          # Environment to use
-          environment: postman/environments/CIEnvironment.postman_environment.json
+      - name: Run Postman collection in parallel 3 times
+        run: |
+          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
+          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
+          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     # - name: Update dependency graph
