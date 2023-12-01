@@ -56,9 +56,17 @@ public class BackgroundCheckService {
     if (requestedVaccination != null) {
       String vaccinations = patient.getVaccinations();
 
-      if (vaccinations != null
-          && vaccinations.toLowerCase().contains(requestedVaccination.toLowerCase())) {
-        validVaccine = true;
+      if (vaccinations != null) {
+        // Split vaccination string along delimiter ","
+        // Note: Delimiter is guaranteed to be ","
+        String[] vaccinationStrings =  vaccinations.split(",");
+
+        for (String vaccination : vaccinationStrings) {
+          if (requestedVaccination.trim().equalsIgnoreCase(vaccination.trim())) {
+            validVaccine = true;
+            break;
+          }
+        }
       }
     }
 
@@ -66,10 +74,17 @@ public class BackgroundCheckService {
     if (requestedAllergy != null) {
       String allergies = patient.getAllergies();
 
-      // Get and check records
-      if (allergies != null
-          && allergies.toLowerCase().contains(requestedAllergy.toLowerCase())) {
-        validAllergy = true;
+      if (allergies != null) {
+        // Split allergy string along delimiter ","
+        // Note: Delimiter is guaranteed to be ","
+        String[] allergyStrings =  allergies.split(",");
+
+        for (String allergy: allergyStrings) {
+          if (requestedAllergy.trim().equalsIgnoreCase(allergy.trim())) {
+            validAllergy = true;
+            break;
+          }
+        }
       }
     }
 
@@ -78,7 +93,7 @@ public class BackgroundCheckService {
       List<Diagnosis> diagnoses = diagnosisRepository.findDiagnosesByPatientId(id);
 
       for (Diagnosis diagnosis : diagnoses) {
-        if (diagnosis.getCondition().equalsIgnoreCase(requestedDiagnosis)) {
+        if (diagnosis.getCondition().equalsIgnoreCase(requestedDiagnosis.trim())) {
           validDiagnosis = true;
           break;
         }

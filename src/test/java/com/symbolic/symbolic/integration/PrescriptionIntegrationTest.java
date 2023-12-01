@@ -1,4 +1,4 @@
-package com.symbolic.symbolic.controller;
+package com.symbolic.symbolic.integration;
 
 import com.symbolic.symbolic.entity.MedicalPractitioner;
 import com.symbolic.symbolic.entity.Patient;
@@ -6,22 +6,24 @@ import com.symbolic.symbolic.entity.Prescription;
 import com.symbolic.symbolic.repository.MedicalPractitionerRepository;
 import com.symbolic.symbolic.repository.PatientRepository;
 import com.symbolic.symbolic.repository.PrescriptionRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,89 +32,97 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Provides internal integration testing between the PrescriptionController and 3 Repositories
+ * and Entity types along with the authentication code.
+ * Provides external integration testing between the Repositories and the database implementation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Tag("UnitTest")
-public class PrescriptionControllerTest {
+@Tag("IntegrationTest")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class PrescriptionIntegrationTest {
   @Autowired
   private MockMvc mockMvc;
-  @MockBean
+  @Autowired
+  private WebApplicationContext context;
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  @Autowired
   PrescriptionRepository prescriptionRepository;
-  @MockBean
+  @Autowired
   PatientRepository patientRepository;
-  @MockBean
+  @Autowired
   MedicalPractitionerRepository practitionerRepository;
-  @InjectMocks
-  PrescriptionController prescriptionController;
 
-  AutoCloseable openMocks;
+  private String tokenString;
 
-  @BeforeEach
-  public void setUp() {
-    openMocks = MockitoAnnotations.openMocks(this);
-  }
+  @Test
+  @BeforeAll
+  public void setupAuthentication() throws Exception {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
-  @AfterEach
-  public void tearDown() throws Exception {
-    openMocks.close();
+    if (JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "user", "name = 'admin'") == 0) {
+      jdbcTemplate.update(
+          "INSERT INTO user values (?, ?, ?, ?, ?)",
+          1, null, "admin", "$2a$10$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO", "ADMIN"
+      );
+    }
+
+    MvcResult result = mockMvc.perform(post("/api/client/authenticate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\":  \"admin\", \"password\":  \"password\"}"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    System.out.println(result.getResponse().getContentAsString());
+    String responseValue = result.getResponse().getContentAsString();
+    tokenString = "Bearer " + responseValue.substring(10, responseValue.length() - 2);
   }
 
   @Test
-  public void testUUIDParser() {
-    // Test valid ID
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    assertEquals(id, PrescriptionController.parseUuidFromString(idString));
-
-    // Test invalid IDs
-    assertNull(PrescriptionController.parseUuidFromString("test"));
-    assertNull(PrescriptionController.parseUuidFromString("2"));
-  }
-
-  @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetAllPrescriptions() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     Prescription prescription2 = new Prescription(2, 3, 50, "Different instructions");
-    List<Prescription> prescriptions = new ArrayList<>();
-    when(prescriptionRepository.findAll()).thenReturn(prescriptions);
 
     // Test when no prescriptions exist
     mockMvc.perform(get("/api/prescriptions")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
 
     // Test when prescriptions are returned
-    prescriptions.add(prescription1);
-    prescriptions.add(prescription2);
+    prescriptionRepository.save(prescription1);
+    prescriptionRepository.save(prescription2);
 
     mockMvc.perform(get("/api/prescriptions")
-        .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isOk());
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testGetPrescriptionById() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
-    UUID id = UUID.randomUUID();
-    prescription1.setId(id);
-    when(prescriptionRepository.findById(id)).thenReturn(Optional.of(prescription1));
+    UUID id = prescriptionRepository.save(prescription1).getId();
 
     // Test retrieving a prescription with a valid id
     mockMvc.perform(get("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test retrieving with no ID
     MvcResult result1 = mockMvc.perform(get("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -121,6 +131,7 @@ public class PrescriptionControllerTest {
     // Test retrieving with an invalid ID
     MvcResult result2 = mockMvc.perform(get("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -130,6 +141,7 @@ public class PrescriptionControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(get("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -137,11 +149,11 @@ public class PrescriptionControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testCreatePrescription() throws Exception {
     // Create valid prescription
     mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dosage\": \"1\", " +
                 "\"dailyUses\": \"2\", " +
                 "\"cost\": \"100\", " +
@@ -151,6 +163,7 @@ public class PrescriptionControllerTest {
     // Creating prescriptions with missing fields
     MvcResult result1 = mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dailyUses\": \"2\", " +
                 "\"cost\": \"100\", " +
                 "\"instructions\": \"Test instructions\"}"))
@@ -160,6 +173,7 @@ public class PrescriptionControllerTest {
 
     MvcResult result2 = mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dosage\": \"1\", " +
                 "\"cost\": \"100\", " +
                 "\"instructions\": \"Test instructions\"}"))
@@ -169,6 +183,7 @@ public class PrescriptionControllerTest {
 
     MvcResult result3 = mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dosage\": \"1\", " +
                 "\"dailyUses\": \"2\", " +
                 "\"instructions\": \"Test instructions\"}"))
@@ -179,6 +194,7 @@ public class PrescriptionControllerTest {
     // Test negative inputs
     MvcResult result5 = mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dosage\": \"2\", " +
                 "\"dailyUses\": \"3\", " +
                 "\"cost\": \"-1\", " +
@@ -189,6 +205,7 @@ public class PrescriptionControllerTest {
 
     MvcResult result6 = mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dosage\": \"-1\", " +
                 "\"dailyUses\": \"3\", " +
                 "\"cost\": \"10\", " +
@@ -199,6 +216,7 @@ public class PrescriptionControllerTest {
 
     MvcResult result7 = mockMvc.perform(post("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"dosage\": \"2\", " +
                 "\"dailyUses\": \"-1\", " +
                 "\"cost\": \"10\", " +
@@ -209,16 +227,14 @@ public class PrescriptionControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testUpdatePrescription() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
-    UUID id = UUID.randomUUID();
-    prescription1.setId(id);
-    when(prescriptionRepository.findById(id)).thenReturn(Optional.of(prescription1));
+    UUID id = prescriptionRepository.save(prescription1).getId();
 
     // Test updating a prescription with a valid id
     mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dosage\": \"2\", " +
                 "\"dailyUses\": \"3\", " +
@@ -229,12 +245,14 @@ public class PrescriptionControllerTest {
     // Test updating with no fields does not raise error
     mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isOk());
 
     // Test updating with no ID
     MvcResult result1 = mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -243,6 +261,7 @@ public class PrescriptionControllerTest {
     // Test updating with an invalid ID
     MvcResult result2 = mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -252,6 +271,7 @@ public class PrescriptionControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -260,6 +280,7 @@ public class PrescriptionControllerTest {
     // Test negative inputs
     MvcResult result5 = mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dosage\": \"2\", " +
                 "\"dailyUses\": \"3\", " +
@@ -271,6 +292,7 @@ public class PrescriptionControllerTest {
 
     MvcResult result6 = mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dosage\": \"-1\", " +
                 "\"dailyUses\": \"3\", " +
@@ -282,6 +304,7 @@ public class PrescriptionControllerTest {
 
     MvcResult result7 = mockMvc.perform(put("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\", " +
                 "\"dosage\": \"2\", " +
                 "\"dailyUses\": \"-1\", " +
@@ -293,22 +316,21 @@ public class PrescriptionControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeletePrescription() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
-    UUID id = UUID.randomUUID();
-    prescription1.setId(id);
-    when(prescriptionRepository.findById(id)).thenReturn(Optional.of(prescription1));
+    UUID id = prescriptionRepository.save(prescription1).getId();
 
     // Test deleting a prescription with a valid id
     mockMvc.perform(delete("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
 
     // Test deleting with no ID
     MvcResult result1 = mockMvc.perform(delete("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -317,6 +339,7 @@ public class PrescriptionControllerTest {
     // Test deleting with an invalid ID
     MvcResult result2 = mockMvc.perform(delete("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\":  \"test\"}"))
         .andExpect(status().isBadRequest())
         .andReturn();
@@ -326,6 +349,7 @@ public class PrescriptionControllerTest {
     UUID id2 = UUID.randomUUID();
     MvcResult result3 = mockMvc.perform(delete("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id2 + "\"}"))
         .andExpect(status().isNotFound())
         .andReturn();
@@ -336,8 +360,13 @@ public class PrescriptionControllerTest {
     MedicalPractitioner practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     prescription1.setPatient(patient);
     prescription1.setPractitioner(practitioner);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    id = prescriptionRepository.save(prescription1).getId();
+
     mockMvc.perform(delete("/api/prescription")
             .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString)
             .content("{\"id\": \"" + id + "\"}"))
         .andExpect(status().isNoContent());
     assertFalse(patient.getPrescriptions().contains(prescription1));
@@ -345,18 +374,16 @@ public class PrescriptionControllerTest {
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "pwd", roles = "ADMIN")
   public void testDeleteAllPrescriptions() throws Exception {
     Prescription prescription1 = new Prescription(1, 2, 100, "Test instructions");
     Prescription prescription2 = new Prescription(2, 3, 50, "Different instructions");
-    List<Prescription> prescriptions = new ArrayList<>();
-    prescriptions.add(prescription1);
-    prescriptions.add(prescription2);
-    when(prescriptionRepository.findAll()).thenReturn(prescriptions);
+    prescriptionRepository.save(prescription1);
+    prescriptionRepository.save(prescription2);
 
     // Test deleting all prescriptions
     mockMvc.perform(delete("/api/prescriptions")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
 
     // Test deleting patient and practitioner fields
@@ -364,9 +391,13 @@ public class PrescriptionControllerTest {
     MedicalPractitioner practitioner = new MedicalPractitioner(40.7, 74.0, "Surgery", 50, 10);
     prescription1.setPatient(patient);
     prescription1.setPractitioner(practitioner);
+    patientRepository.save(patient);
+    practitionerRepository.save(practitioner);
+    prescriptionRepository.save(prescription1);
 
     mockMvc.perform(delete("/api/prescriptions")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, tokenString))
         .andExpect(status().isNoContent());
     assertFalse(patient.getPrescriptions().contains(prescription1));
     assertFalse(practitioner.getPrescriptions().contains(prescription1));
