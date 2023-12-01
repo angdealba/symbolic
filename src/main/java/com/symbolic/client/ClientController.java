@@ -49,9 +49,25 @@ public class ClientController {
   /**
    * Custom User authentication request consisting of a username and password.
    */
-  static class AuthenticationRequest {
+  public static class AuthenticationRequest {
     private String name;
     private String password;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getPassword() {
+      return password;
+    }
+
+    public void setPassword(String password) {
+      this.password = password;
+    }
 
     public AuthenticationRequest(String name, String password) {
       this.name = name;
@@ -62,8 +78,12 @@ public class ClientController {
   /**
    * Custom response from User authentication requests consisting of a JSON web token string.
    */
-  static class AuthenticationResponse {
+  public static class AuthenticationResponse {
     private String token;
+
+    public void setToken(String token) {
+      this.token = token;
+    }
 
     public String getToken() {
       return token;
@@ -73,11 +93,43 @@ public class ClientController {
   /**
    * Custom request object used to represent requests to the /bgcheck service.
    */
-  static class BackgroundCheckBody {
+  public static class BackgroundCheckBody {
     private String id;
     private String vaccination;
     private String allergy;
     private String diagnosis;
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public String getVaccination() {
+      return vaccination;
+    }
+
+    public void setVaccination(String vaccination) {
+      this.vaccination = vaccination;
+    }
+
+    public String getAllergy() {
+      return allergy;
+    }
+
+    public void setAllergy(String allergy) {
+      this.allergy = allergy;
+    }
+
+    public String getDiagnosis() {
+      return diagnosis;
+    }
+
+    public void setDiagnosis(String diagnosis) {
+      this.diagnosis = diagnosis;
+    }
 
     public BackgroundCheckBody(String id, String vaccination, String allergy, String diagnosis) {
       this.id = id;
@@ -90,10 +142,34 @@ public class ClientController {
   /**
    * Custom request object used to represent responses from the /bgcheck service.
    */
-  static class BackgroundCheckResponse {
+  public static class BackgroundCheckResponse {
     private boolean vaccination;
     private boolean allergy;
     private boolean diagnosis;
+
+    public boolean isVaccination() {
+      return vaccination;
+    }
+
+    public void setVaccination(boolean vaccination) {
+      this.vaccination = vaccination;
+    }
+
+    public boolean isAllergy() {
+      return allergy;
+    }
+
+    public void setAllergy(boolean allergy) {
+      this.allergy = allergy;
+    }
+
+    public boolean isDiagnosis() {
+      return diagnosis;
+    }
+
+    public void setDiagnosis(boolean diagnosis) {
+      this.diagnosis = diagnosis;
+    }
 
     public boolean matchesVaccination() {
       return vaccination;
@@ -109,10 +185,10 @@ public class ClientController {
   }
 
 
-  private String token = null;
+  public String token = null;
 
-  private Properties clientProps;
-  private String configPath;
+  public Properties clientProps;
+  public String configPath;
 
   /**
    * Initializes the property reader for the client authentication details.
@@ -164,7 +240,7 @@ public class ClientController {
   /**
    * Handles client registration if it has not been registered yet.
    */
-  private void handleRegistration() throws IOException {
+  public void handleRegistration() throws IOException {
     // Check if the client has been registered
     if (clientProps.getProperty("hasRegistered") == null) {
       String uri = "http://localhost:8080/api/client/register";
@@ -191,7 +267,7 @@ public class ClientController {
     }
   }
 
-  private void handleAuthentication() throws IOException {
+  public void handleAuthentication() throws IOException {
     // Check if the token has been loaded from the service
     if (token == null) {
       String uri = "http://localhost:8080/api/client/authenticate";
@@ -221,14 +297,15 @@ public class ClientController {
   }
 
   @FXML
-  protected void submitButtonPressed() {
+  public String[] submitButtonPressed() {
+    String[] output = new String[3];
     // Check if the authentication token is null
     if (token == null) {
       try {
         handleAuthentication();
       } catch (IOException e) {
         System.err.println("The client could not authenticate with the background check service.");
-        return;
+        return output;
       }
     }
 
@@ -236,43 +313,57 @@ public class ClientController {
 
     try {
       // Get information to populate label fields
-      results = submitRequest(subjectId.getText(), vaccinationBox.getValue(), allergyBox.getValue(),
-          diagnosisBox.getValue());
+      String patientId = subjectId == null ? "" : subjectId.getText();
+      String vaccination = vaccinationBox == null ? "" : vaccinationBox.getValue();
+      String allergy = allergyBox == null ? "" : allergyBox.getValue();
+      String diagnosis = diagnosisBox == null ? "" : diagnosisBox.getValue();
+
+      results = submitRequest(patientId, vaccination, allergy, diagnosis);
     } catch (URISyntaxException e) {
       System.err.println("Bad URI trying to fetch data.");
-      return;
+      return output;
     } catch (IOException e) {
       System.err.println("Error with HTTP client.");
-      return;
+      return output;
     } catch (InterruptedException e) {
       System.err.println("HTTP client interrupted.");
-      return;
+      return output;
     }
 
     // Update fields
     if (results.matchesVaccination()) {
-      vaccinationResultLabel.setText("[ POSITIVE ]");
+      output[0] = "[ POSITIVE ]";
     } else {
-      vaccinationResultLabel.setText("[ NEGATIVE ]");
+      output[0] = "[ NEGATIVE ]";
     }
 
     if (results.matchesAllergy()) {
-      allergyResultLabel.setText("[ POSITIVE ]");
+      output[1] = "[ POSITIVE ]";
     } else {
-      allergyResultLabel.setText("[ NEGATIVE ]");
+      output[1] = "[ NEGATIVE ]";
     }
 
     if (results.matchesDiagnosis()) {
-      diagnosisResultLabel.setText("[ POSITIVE ]");
+      output[2] = "[ POSITIVE ]";
     } else {
-      diagnosisResultLabel.setText("[ NEGATIVE ]");
+      output[2] = "[ NEGATIVE ]";
     }
+
+    if (vaccinationResultLabel != null) {
+      vaccinationResultLabel.setText(output[0]);
+    }
+    if (allergyResultLabel != null) {
+      allergyResultLabel.setText(output[1]);
+    }
+    if (diagnosisResultLabel != null) {
+      diagnosisResultLabel.setText(output[2]);
+    }
+
+    return output;
   }
 
-  private final HttpClient httpClient = HttpClient.newBuilder().build();
-
-  private BackgroundCheckResponse submitRequest(String subjectId, String vaccination,
-                                                String allergy, String diagnosis)
+  public BackgroundCheckResponse submitRequest(String subjectId, String vaccination,
+                                               String allergy, String diagnosis)
       throws URISyntaxException, IOException, InterruptedException {
 
     // URI/URL for the service bgcheck API endpoint
