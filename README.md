@@ -173,12 +173,12 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - GET
         - Description: receives a single Patient object from the database
         - Returns a single Patient object and a 200 OK on success, and a 404 Not Found if the Patient with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
-        - Fields: a single integer param "id" specifying the UUID number of the Patient to remove
+        - Body fields: a single integer param "id" specifying the UUID number of the Patient to remove
         - Sample body: {"id": "3bec32c8-0e1f-490d-9092-3c7871f4f2e0"}
     - POST
         - Description: adds an entry for a single Patient object to the database
         - Returns the newly created Patient object and a 201 CREATED on success.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
-        - Fields: a JSON object containing the following values
+        - Body fields: a JSON object containing the following values
             - vaccinations (type: String)
             - allergies (type: String)
             - accommodations (type: String)
@@ -186,7 +186,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - PUT
         - Description: updates an entry for a single Patient object in the database
         - Returns the newly updated Patient object and a 200 OK on success, and a 404 Not Found on error if the Patient with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
-        - Fields: an integer param "id" specifying the id number of the Patient to update and a JSON object containing the following values
+        - Body fields: an integer param "id" specifying the id number of the Patient to update and a JSON object containing the following values
             - vaccinations (type: String)
             - allergies (type: String)
             - accommodations (type: String)
@@ -224,12 +224,10 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: links a Patient object to an Appointment object in the database to indicate that the appointment was scheduled for the patient
         - Returns a single Appointment object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: an integer param "patientId" specifying the id of the Patient and an integer param "appointmentId" specifying the id of the Appointment
-        - Sample params: ?patientId=2&appointmentId=3
     - DELETE
         - Description: removes a database link between a Patient object and an Appointment object to indicate that the patient cancelled the appointment
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
-        - Fields: an integer param "patientId" specifying the id of the Patient and an integer param "appointmentId" specifying the id of the Appointment
-        - Sample params: ?patientId=2&appointmentId=3
+        - Body fields: an integer param "patientId" specifying the id of the Patient and an integer param "appointmentId" specifying the id of the Appointment
 
 #### Practitioner Data Endpoints
 - /api/practitioner
@@ -278,8 +276,7 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - GET
         - Description: retrieves all Patient objects that are patients of the MedicalPractitioner matching the specified id
         - Returns a list of Patient objects and a 200 OK on success, and a 404 Not Found if the MedicalPractitioner with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
-        - Fields: a single integer param "practitionerId" specifying the id number of the MedicalPractitioner to search
-        - Sample params: ?practitionerId=6
+        - Body fields: a single integer param "practitionerId" specifying the id number of the MedicalPractitioner to search
 - /api/patient/practitioners
     - GET
         - Description: retrieves all MedicalPractitioner objects visited by the Patient with the specified id
@@ -290,19 +287,16 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
     - POST
         - Description: links a MedicalPractitioner object to a Patient object in the database to indicate that the patient is seeing the practitioner
         - Returns a single Patient object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
-        - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "patientId" specifying the id of the Patient
-        - Sample params: ?practitionerId=2&patientId=3
+        - Body fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "patientId" specifying the id of the Patient
     - DELETE
         - Description: removes a database link between a MedicalPractitioner object and a Patient object to indicate that the patient is no longer seeing the practitioner
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
-        - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "patientId" specifying the id of the Patient
-        - Sample params: ?practitionerId=2&patientId=3
+        - Body fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "patientId" specifying the id of the Patient
 - /api/practitioner/appointments
     - GET
         - Description: retrieves all Appointment objects scheduled by the MedicalPractitioner matching the specified id
         - Returns a list of Appointment objects and a 200 OK on success, and a 404 Not Found if the MedicalPractitioner with the specified id is not found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: a single integer param "practitionerId" specifying the id number of the MedicalPractitioner to search
-        - Sample params: ?practitionerId=6
 - /api/appointment/practitioner
     - GET
         - Description: retrieves the MedicalPractitioner who scheduled the Appointment with the specified id
