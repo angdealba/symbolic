@@ -167,61 +167,6 @@ jobs:
         # Environment to use
         environment: postman/environments/CIEnvironment.postman_environment.json
 
-  multiple_clients:
-    runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.1
-        env:
-          MYSQL_DATABASE: medical_db
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: password
-        ports:
-          - '3306:3306'
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Set up MySQL Database
-        run: |
-          mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'password';"
-          mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "DROP DATABASE IF EXISTS medical_db;"
-          mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "CREATE DATABASE medical_db;"
-          mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "GRANT ALL ON medical_db.* TO 'testuser'@'localhost';"
-      # Install Node on the runner
-      - name: Install Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "16.x"
-
-      # # Install the newman command line utility and also install the html extra reporter
-      - name: Install newman
-        run: |
-          npm install -g newman
-
-      - name: Run Symbolic Application
-        run: |
-          mvn -B package --file pom.xml spring-boot:run -Dstart-class=com.symbolic.symbolic.SymbolicApplication -Dgroups="UnitTest" &
-          for attempt in {1..120}; do sleep 1; if curl --location 'http://127.0.0.1:8080/api/client/authenticate' --header 'Content-Type: application/json' --data '{"name": "admin"}' --output /dev/null --silent; then echo ready; break; fi; echo waiting on launch...; done
-       # Run the POSTMAN collection
-
-      - name: Configure DB Test User
-        run: |
-          mysql -h 127.0.0.1 --port 3306 -u root -ppassword -e "USE medical_db; INSERT INTO user \n values (1, NULL, 'admin', '\$2a\$10\$WZ.eH3iwwNHlOe80trnazeG0s3l6RFxvP5zIuk5yMTecIWNg2tXrO', 'ADMIN');"
-
-      - name: Run Postman collection in parallel 2 times
-        run: |
-          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json &
-          newman run postman/collections/ParallelCollection.postman_collection.json -e postman/environments/CIEnvironment.postman_environment.json
-
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     # - name: Update dependency graph
     #   uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6

@@ -32,8 +32,6 @@ Due to our usage of the Spring Boot library, our service was already designed to
 Using Postman's 'run manually with 0 delay' feature, tests were executed with zero milliseconds delay, simulating a high-concurrency scenario and testing the service's capability to handle concurrent requests. The 'simultaneous test' suite included a variety of add, modify, and delete operations targeted at different ports, ensuring coverage of various operational scenarios for each service instance.
 The successful completion of all test scenarios demonstrated the stability and reliability of the service, both on individual instances and in parallel operation. This robust testing approach was essential to confirm the service's ability to handle concurrent requests in production environments, providing key insights for future development and optimization.
 
-In order to ensure that the multiple service functionality works on every commit to the repository, we also created a system test suite that runs automatically within the CI workflow that instantiates three distinct client instances using the Newman command line interface and sends a full collection of Postman requests from each of the three clients to the server in parallel.  The results from these runs can be viewed in the **multiple_clients** Job on each of the CI action runs.
-
 
 ### End-to-End Testing
 For our end-to-end testing process we opted to go with a manual testing approach centered on exercising all of the possible combinations of inputs that we could make to the client.  Our client was designed to fail gracefully so that invalid inputs would not crash or cause the connection to the service to be reset, and we enumerated a variety of different scenarios to create an end-to-end testing checklist for ensuring that our client and service are communicating correctly and are returning the correct results.  All of these end-to-end tests require the use of Postman along with manually entering values into the Client GUI and sending requests to the service, with Postman being used to generate new Patient and Diagnosis data objects and provide the Patient ID values that can be passed into the client.  A checklist of tests that we performed is included below, with each numbered step in the list representing a single test flow:
@@ -108,7 +106,7 @@ The unit tests are all run automatically in the CI workflow and their output can
 ### System Tests Corresponding to API
 Postman offers an export tool that exports all of the call settings and metadata needed to reproduce a set of calls, and we took advantage of this to produce a complete set of requests for each of our 7 data types, along with all of the joint endpoints that control the creation and deletion of join table entries connecting elements in the database.  The .json file outputs from each of these collections are stored in the **postman/** folder, and each of these .json files can be imported into an instance of Postman on the same machine as the service and run to replicate our test functionality.  Our CI workflow automatically runs all of the tests stored in the **postman/collections/** folder, using the environment variables defined in **postman/environments/**, while the **postman/manual-collections** folder contains an additional set of tests that are set up to run manually by importing the **postman_collection.json** file in Postman.  The results of these runs can be viewed in the **run_live_tests** Job in any workflow action and are located under the **Postman API Tests with Newman** step.
 
-As described [above](#multiple-simultaneous-client-instances) we used Postman as our primary test suite for performing the tests to verify the multiple client instances aspect of our service.  This was done both manually and automatically within our CI pipeline using the Newman command line interface to simultaneously run multiple instances of the Postman client connecting to the service.
+As described [above](#multiple-simultaneous-client-instances) we used Postman as our primary test suite for performing the tests to verify the multiple client instances aspect of our service.  This was done manually using the Newman command line interface to simultaneously run multiple instances of the Postman client connecting to the service.
 
 We also used Postman system tests to manually exercise the persistent data aspects of the service by running a selection of CREATE and PUT requests to populate the database with values, shutting down the service by terminating the Maven run with ^C, and then restarting the service with a new Maven run and performing all of the GET requests to ensure that the data still exists and is unmodified since the shutdown.  We were unable to simulate this process of repeatedly starting and stopping the service between Postman calls within our CI pipeline, and as a result chose to just run it as manual tests.
 
@@ -302,64 +300,53 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves the MedicalPractitioner who scheduled the Appointment with the specified id
         - Returns a single MedicalPractitioner object and a 200 OK on success, and a 404 Not Found if the Appointment with the specified id is not found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: a single integer param "appointmentId" specifying the id number of the Appointment to search
-        - Sample params: ?appointmentId=6
 - /api/practitioner/appointment
     - POST
         - Description: links a MedicalPractitioner object to an Appointment object in the database to indicate that the practitioner scheduled the appointment
         - Returns a single Appointment object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "appointmentId" specifying the id of the Appointment
-        - Sample params: ?practitionerId=2&appointmentId=3
     - DELETE
         - Description: removes a database link between a MedicalPractitioner object and an Appointment object to indicate that the practitioner cancelled the appointment
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "appointmentId" specifying the id of the Appointment
-        - Sample params: ?practitionerId=2&appointmentId=3
 - /api/practitioner/prescriptions
     - GET
         - Description: retrieves all Prescription objects prescribed by the MedicalPractitioner matching the specified id
         - Returns a list of Prescription objects and a 200 OK on success, and a 404 Not Found if the MedicalPractitioner with the specified id is not found in the database.  Prescription objects contain an integer identifier "id", an integer "dosage" representing the number of pills taken at a time, an integer identifier "dailyUses" representing the number of times the medication should be taken daily, an integer "cost" describing the price of the prescription, and a string "instructions" providing any additional info on taking the medication.
         - Fields: a single integer param "practitionerId" specifying the id number of the MedicalPractitioner to search
-        - Sample params: ?practitionerId=6
 - /api/prescription/practitioner
     - GET
         - Description: retrieves the MedicalPractitioner who prescribed the Prescription with the specified id
         - Returns a single MedicalPractitioner object and a 200 OK on success, and a 404 Not Found if the Prescription with the specified id is not found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: a single integer param "prescriptionId" specifying the id number of the Prescription to search
-        - Sample params: ?prescriptionId=6
 - /api/practitioner/prescription
     - POST
         - Description: links a MedicalPractitioner object to a Prescription object in the database to indicate that the practitioner prescribed the prescription
         - Returns a single Prescription object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Prescription objects contain an integer identifier "id", an integer "dosage" representing the number of pills taken at a time, an integer identifier "dailyUses" representing the number of times the medication should be taken daily, an integer "cost" describing the price of the prescription, and a string "instructions" providing any additional info on taking the medication.
         - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "prescriptionId" specifying the id of the Prescription
-        - Sample params: ?practitionerId=2&prescriptionId=3
     - DELETE
         - Description: removes a database link between a MedicalPractitioner object and a Prescription object to indicate that the practitioner cancelled the prescription
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "prescriptionId" specifying the id of the Prescription
-        - Sample params: ?practitionerId=2&prescriptionId=3
 - /api/practitioner/diagnoses
     - GET
         - Description: retrieves all Diagnosis objects written by the MedicalPractitioner matching the specified id
         - Returns a list of Diagnosis objects and a 200 OK on success, and a 404 Not Found if the MedicalPractitioner with the specified id is not found in the database.  Diagnosis objects contain an integer identifier "id", a string "condition" specifying the diagnosed condition, a string "treatmentInfo" describing a treatment plan, and a date value "date" denoting when the diagnosis was performed.
         - Fields: a single integer param "practitionerId" specifying the id number of the MedicalPractitioner to search
-        - Sample params: ?practitionerId=6
 - /api/diagnosis/practitioner
     - GET
         - Description: retrieves the MedicalPractitioner who wrote the Diagnosis with the specified id
         - Returns a single MedicalPractitioner object and a 200 OK on success, and a 404 Not Found if the Diagnosis with the specified id is not found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: a single integer param "diagnosisId" specifying the id number of the Diagnosis to search
-        - Sample params: ?diagnosisId=6
 - /api/practitioner/diagnosis
     - POST
         - Description: links a MedicalPractitioner object to a Diagnosis object in the database to indicate that the practitioner wrote the diagnosis
         - Returns a single Diagnosis object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Diagnosis objects contain an integer identifier "id", a string "condition" specifying the diagnosed condition, a string "treatmentInfo" describing a treatment plan, and a date value "date" denoting when the diagnosis was performed.
         - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "diagnosisId" specifying the id of the Diagnosis
-        - Sample params: ?practitionerId=2&diagnosisId=3
     - DELETE
         - Description: removes a database link between a MedicalPractitioner object and a Diagnosis object to indicate that the practitioner removed the diagnosis
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "practitionerId" specifying the id of the MedicalPractitioner and an integer param "diagnosisId" specifying the id of the Diagnosis
-        - Sample params: ?practitionerId=2&diagnosisId=3
 
 #### Facility Data Endpoints
 - /api/facility
@@ -405,7 +392,6 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves all Patient objects that have attended a Facility matching the specified id
         - Returns a list of Patient objects and a 200 OK on success, and a 404 Not Found if the Facility with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
         - Fields: a single integer param "facilityId" specifying the id number of the Facility to search
-        - Sample params: ?facilityId=6
 - /api/patient/facilities
     - GET
         - Description: retrieves all Facility objects visited by the Patient with the specified id
@@ -417,41 +403,34 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: links a Facility object to a Patient object in the database to indicate that the patient is visiting the facility
         - Returns a single Patient object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
         - Fields: an integer param "facilityId" specifying the id of the Facility and an integer param "patientId" specifying the id of the Patient
-        - Sample params: ?facilityId=2&patientId=3
     - DELETE
         - Description: removes a database link between a Facility object and a Patient object to indicate that the patient is no longer visiting the facility
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "facilityId" specifying the id of the Facility and an integer param "patientId" specifying the id of the Patient
-        - Sample params: ?facilityId=2&patientId=3
 - /api/facility/practitioners
     - GET
         - Description: retrieves all MedicalPractitioner objects that work at a Facility matching the specified id
         - Returns a list of MedicalPractitioner objects and a 200 OK on success, and a 404 Not Found if the Facility with the specified id is not found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: a single integer param "facilityId" specifying the id number of the Facility to search
-        - Sample params: ?facilityId=6
 - /api/practitioner/facility
     - GET
         - Description: retrieves the Facility that the MedicalPractitioner with the specified id works at
         - Returns a single Facility object and a 200 OK on success, and a 404 Not Found if the MedicalPractitioner with the specified id is not found in the database.  Facility objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the facility, and a string value "specialization" describing the type of medical services that the facility offers.
         - Fields: a single integer param "practitionerId" specifying the id number of the MedicalPractitioner to search
-        - Sample params: ?practitionerId=6
 - /api/facility/practitioner
     - POST
         - Description: links a Facility object to a MedicalPractitioner object in the database to indicate that the practitioner works at the facility
         - Returns a single MedicalPractitioner object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  MedicalPractitioner objects contain an integer identifier "id", double values "latitude" and "longitude" representing the geolocation of the practitioner, a string value "specialization" describing the practitioner's field of specialization, an integer value "consultationCost" for the cost of a consultation appointment with the practitioner, and an integer value "yearsExperience" denoting their number of years working in the field.
         - Fields: an integer param "facilityId" specifying the id of the Facility and an integer param "practitionerId" specifying the id of the MedicalPractitioner
-        - Sample params: ?facilityId=2&practitionerId=3
     - DELETE
         - Description: removes a database link between a Facility object and a MedicalPractitioner object to indicate that the practitioner no longer works at the facility
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "facilityId" specifying the id of the Facility and an integer param "practitionerId" specifying the id of the MedicalPractitioner
-        - Sample params: ?facilityId=2&practitionerId=3
 - /api/facility/appointments
     - GET
         - Description: retrieves all Appointment objects scheduled at a Facility matching the specified id
         - Returns a list of Appointment objects and a 200 OK on success, and a 404 Not Found if the Facility with the specified id is not found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: a single integer param "facilityId" specifying the id number of the Facility to search
-        - Sample params: ?facilityId=6
 - /api/appointment/facility
     - GET
         - Description: retrieves the Facility where the Appointment with the specified id was scheduled
@@ -463,12 +442,10 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: links a Facility object to an Appointment object in the database to indicate that the appointment will take place at the facility
         - Returns a single Appointment object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Appointment objects contain an integer identifier "id", a date value "dateTime" specifying when the appointment will take place, and an integer value "cost" representing the cost of the appointment.
         - Fields: an integer param "facilityId" specifying the id of the Facility and an integer param "appointmentId" specifying the id of the Appointment
-        - Sample params: ?facilityId=2&appointmentId=3
     - DELETE
         - Description: removes a database link between a Facility object and an Appointment object to indicate that the appointment was cancelled at the facility
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "facilityId" specifying the id of the Facility and an integer param "appointmentId" specifying the id of the Appointment
-        - Sample params: ?facilityId=2&appointmentId=3
 
 #### Insurance Data Endpoints
 - /api/policy
@@ -510,7 +487,6 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: retrieves all Patient objects that have an InsurancePolicy matching the specified id
         - Returns a list of Patient objects and a 200 OK on success, and a 404 Not Found if the InsurancePolicy with the specified id is not found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
         - Fields: a single integer param "policyId" specifying the id number of the InsurancePolicy to search
-        - Sample params: ?policyId=6
 - /api/patient/policy
     - GET
         - Description: retrieves the InsurancePolicy associated with the Patient with the specified id
@@ -522,12 +498,10 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: links an InsurancePolicy object to a Patient object in the database to indicate that the patient is covered by the policy
         - Returns a single Patient object and a 200 OK on success, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.  Patient objects contain an integer identifier "id", a string value "vaccinations" listing any vaccinations the patient has received, a string value "allergies" listing any allergies for which the patient has been diagnosed, and a string value "accommodations" representing any accommodations the patient has been approved for.
         - Fields: an integer param "policyId" specifying the id of the InsurancePolicy and an integer param "patientId" specifying the id of the Patient
-        - Sample params: ?policyId=2&patientId=3
     - DELETE
         - Description: removes a database link between an InsurancePolicy object and a Patient object to indicate that the patient is no longer covered by the policy
         - Returns a 204 No Content if the link was successfully removed, and a 404 Not Found if there was an error or either of the specified objects cannot be found in the database.
         - Fields: an integer param "policyId" specifying the id of the InsurancePolicy and an integer param "patientId" specifying the id of the Patient
-        - Sample params: ?policyId=2&patientId=3
 
 #### Appointment Data Endpoints
 - /api/appointment
@@ -656,32 +630,32 @@ PUT, DELETE) and the inputs and outputs for each endpoint.
         - Description: Retrieves a list of Diagnoses that meet the specified search criteria.
         - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
         - Fields: “condition” specifies the medical condition to search for, “start” specifies the start of the time range in which to search for, “end” specifies the end of the time range in which to search for and the optional parameter “location” specifies the geographic region in which to search for.
-        - Sample Params: ?condition=COVID&start=2023-10-01&end=2023-10-26&location=40.8075, 73.9626
+        - Sample Body: {condition="COVID", start="2023-10-01", end="2023-10-26", location="40.8075, 73.9626"}
 
 - api/history/week
     - GET
         - Description: Retrieves a list of Diagnoses that meet the specified search criteria within the past week
         - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
         - Fields: “condition” specifies the medical condition to search for and the optional parameter “location” specifies the geographic region in which to search for.
-        - Sample Params: ?condition=COVID&location=40.8075, 73.9626
+        - Sample Params: {"condition": "COVID", "location": "40.8075, 73.9626"}
 - api/history/month
     - GET
         - Description: Retrieves a list of Diagnoses that meet the specified search criteria within the past month
         - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
         - Fields: “condition” specifies the medical condition to search for and the optional parameter “location” specifies the geographic region in which to search for.
-        - Sample Params: ?condition=COVID&location=40.8075, 73.9626
+        - Sample Params: {"condition": "COVID", "location": "40.8075, 73.9626"}
 - api/history/year
     - GET
         - Description: Retrieves a list of Diagnoses that meet the specified search criteria within the past year
         - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
         - Fields: “condition” specifies the medical condition to search for and the optional parameter “location” specifies the geographic region in which to search for.
-        - Sample Params: ?condition=COVID&location=40.8075, 73.9626
+        - Sample Params: {"condition": "COVID", "location": "40.8075, 73.9626"}
 - api/history/top-conditions
     - GET
         - Description: Retrieves the most prevalent conditions within the specified search criteria
         - Returns a list of Diagnoses and 200 OK on success and a 404 Not Found if there are no conditions found by the specified search criteria.
         - Fields: “location” specifies the geographic region in which to search for, , “start” specifies the start of the time range in which to search for, “end” specifies the end of the time range in which to search for, and the optional parameter “N” specifies how many conditions to search for
-        - Sample Params: ? location=40.8075, 73.9626&start=2023-10-01&end=2023-10-26&N=3
+          - Sample Params: {"condition": "COVID", "location": "40.8075, 73.9626"}
 
 
 #### Background Check Endpoints
