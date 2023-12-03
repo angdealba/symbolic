@@ -46,7 +46,7 @@ For our end-to-end testing process we opted to go with a manual testing approach
    2. Verify that the values in the Background Check Results section are Vaccination: NEGATIVE, Allergy: NEGATIVE, Diagnosis: POSITIVE
 4. 1. Update the Client GUI inputs to Required Vaccination: "Covid-19", Potential Allergy: "Tree Nuts", and Potential Diagnoses of Concern: "Measles".
    2. Verify that the values in the Background Check Results section are Vaccination: NEGATIVE, Allergy: NEGATIVE, Diagnosis: POSITIVE
-5. 1. Update the Client GUI inputs to Required Vaccination: "Hepatitis B", Potential Allergy: "Dairy", and Potential Diagnoses of Concern: "Measles".
+5. 1. Update the Client GUI inputs to Required Vaccination: "Hepatitis B", Potential Allergy: "Pollen", and Potential Diagnoses of Concern: "Measles".
    2. Verify that the values in the Background Check Results section are Vaccination: NEGATIVE, Allergy: POSITIVE, Diagnosis: POSITIVE
 6. 1. Generate a new patient in Postman with a POST request to {{baseUrl}}/api/patient and the JSON body {"vaccinations": "Covid-19", "allergies": "Sunlight", "accommodations": ""}.  Denote the ID of this Patient as **patientID2**.
    2. Generate a new diagnosis in Postman with a POST request to {{baseUrl}}/api/diagnosis and the JSON body {"condition": "Influenza", "treatmentInfo": "In-patient Treatment", "date": "2023-11-12"}.  Denote the ID of this Diagnosis as **diagnosisID2**.
