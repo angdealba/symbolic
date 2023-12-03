@@ -60,7 +60,7 @@ For our end-to-end testing process we opted to go with a manual testing approach
 9. 1. Update the Client GUI inputs to Required Vaccination: "Rotavirus", Potential Allergy: "Sunlight", and Potential Diagnoses of Concern: "Influenza".
    2. Verify that the values in the Background Check Results section are Vaccination: NEGATIVE, Allergy: POSITIVE, Diagnosis: POSITIVE
 10. 1. Update the Client GUI inputs to enter {{patientID1}} as the Subject ID again, then pass in Required Vaccination: "HPV", Potential Allergy: "Pollen", and Potential Diagnoses of Concern: "Measles".
-   2. Verify that the values in the Background Check Results section are Vaccination: POSITIVE, Allergy: POSITIVE, Diagnosis: POSITIVE
+    2. Verify that the values in the Background Check Results section are Vaccination: POSITIVE, Allergy: POSITIVE, Diagnosis: POSITIVE
 
 We also used our end-to-end testing setup to perform a set of multi-client testing operations to complement our API tests discussed [above](#multiple-simultaneous-client-instances).  We did this by launching two instances of the client in separate terminal windows and inputting separate queries into each before submitting and ensuring that each received the correct results.  This helped to ensure that our service did in fact support multiple instances of our full client implementation running concurrently.  Assume for the purposes of the checklist below that the patient1/patient2 and diagnosis1/diagnosis2 objects created in the above checklist are still present in the database, and let the clients be denoted Client A and Client B.
 
