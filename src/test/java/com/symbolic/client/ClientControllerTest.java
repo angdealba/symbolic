@@ -93,9 +93,9 @@ class ClientControllerTest {
     doReturn(response).when(controllerSpy).submitRequest("", "", "", "");
 
     String[] output = controllerSpy.submitButtonPressed();
-    assertEquals("[ POSITIVE ]", output[0]);
-    assertEquals("[ NEGATIVE ]", output[1]);
-    assertEquals("[ POSITIVE ]", output[2]);
+    assertEquals("[ ? ]", output[0]);
+    assertEquals("[ ? ]", output[1]);
+    assertEquals("[ ? ]", output[2]);
   }
 
 

@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 import javafx.fxml.FXML;
@@ -35,6 +36,8 @@ public class ClientController {
   private Label allergyResultLabel;
   @FXML
   private Label diagnosisResultLabel;
+  @FXML
+  private Label errorTextLabel;
 
   @FXML
   private TextField subjectId;
@@ -220,6 +223,10 @@ public class ClientController {
       }
     } catch (IOException e) {
       System.err.println("Reached a critical error initializing the ClientController");
+      errorTextLabel.setText("Reached a critical error initializing the ClientController");
+      vaccinationResultLabel.setText("[ ? ]");
+      allergyResultLabel.setText("[ ? ]");
+      diagnosisResultLabel.setText("[ ? ]");
       throw new RuntimeException(e);
     }
   }
@@ -233,6 +240,10 @@ public class ClientController {
       handleRegistration();
     } catch (Exception e) {
       System.err.println("There was an error registering the user.");
+      errorTextLabel.setText("There was an error registering the client with the Symbolic service.");
+      vaccinationResultLabel.setText("[ ? ]");
+      allergyResultLabel.setText("[ ? ]");
+      diagnosisResultLabel.setText("[ ? ]");
       throw new RuntimeException(e);
     }
   }
@@ -243,7 +254,7 @@ public class ClientController {
   public void handleRegistration() throws IOException {
     // Check if the client has been registered
     if (clientProps.getProperty("hasRegistered") == null) {
-      String uri = "http://localhost:8080/api/client/register";
+      String uri = "http://34.121.8.54:8080/api/client/register";
 
       String name = clientProps.getProperty("clientName");
       String password = clientProps.getProperty("clientPassword");
@@ -270,7 +281,7 @@ public class ClientController {
   public void handleAuthentication() throws IOException {
     // Check if the token has been loaded from the service
     if (token == null) {
-      String uri = "http://localhost:8080/api/client/authenticate";
+      String uri = "http://34.121.8.54:8080/api/client/authenticate";
 
       String name = clientProps.getProperty("clientName");
       String password = clientProps.getProperty("clientPassword");
@@ -305,50 +316,92 @@ public class ClientController {
         handleAuthentication();
       } catch (IOException e) {
         System.err.println("The client could not authenticate with the background check service.");
+        errorTextLabel.setText("The client could not authenticate with the background check service.");
+        vaccinationResultLabel.setText("[ ? ]");
+        allergyResultLabel.setText("[ ? ]");
+        diagnosisResultLabel.setText("[ ? ]");
         return output;
       }
     }
 
     BackgroundCheckResponse results;
 
-    try {
-      // Get information to populate label fields
-      String patientId = subjectId == null ? "" : subjectId.getText();
-      String vaccination = vaccinationBox == null ? "" : vaccinationBox.getValue();
-      String allergy = allergyBox == null ? "" : allergyBox.getValue();
-      String diagnosis = diagnosisBox == null ? "" : diagnosisBox.getValue();
+    // Get information to populate label fields
+    String patientId = subjectId == null ? "" : subjectId.getText();
+    String vaccination = vaccinationBox == null ? "" : vaccinationBox.getValue();
+    String allergy = allergyBox == null ? "" : allergyBox.getValue();
+    String diagnosis = diagnosisBox == null ? "" : diagnosisBox.getValue();
 
+    if (patientId.isEmpty()) {
+      if (errorTextLabel != null) {
+        errorTextLabel.setText("No Subject ID was specified.");
+      }
+      output[0] = "[ ? ]";
+      output[1] = "[ ? ]";
+      output[2] = "[ ? ]";
+      if (vaccinationResultLabel != null) {
+        vaccinationResultLabel.setText("[ ? ]");
+      }
+      if (allergyResultLabel != null) {
+        allergyResultLabel.setText("[ ? ]");
+      }
+      if (diagnosisResultLabel != null) {
+        diagnosisResultLabel.setText("[ ? ]");
+      }
+      return output;
+    }
+
+    try {
       results = submitRequest(patientId, vaccination, allergy, diagnosis);
     } catch (URISyntaxException e) {
       System.err.println("Bad URI trying to fetch data.");
+      errorTextLabel.setText("Bad URL trying to fetch data.");
+      vaccinationResultLabel.setText("[ ? ]");
+      allergyResultLabel.setText("[ ? ]");
+      diagnosisResultLabel.setText("[ ? ]");
       return output;
     } catch (IOException e) {
       System.err.println("Error with HTTP client.");
+      errorTextLabel.setText("There was an error with the Subject ID input for this background check request.");
+      vaccinationResultLabel.setText("[ ? ]");
+      allergyResultLabel.setText("[ ? ]");
+      diagnosisResultLabel.setText("[ ? ]");
       return output;
     } catch (InterruptedException e) {
       System.err.println("HTTP client interrupted.");
+      errorTextLabel.setText("The HTTP connection to the Symbolic service was interrupted.");
+      vaccinationResultLabel.setText("[ ? ]");
+      allergyResultLabel.setText("[ ? ]");
+      diagnosisResultLabel.setText("[ ? ]");
       return output;
     }
 
     // Update fields
     if (results.matchesVaccination()) {
       output[0] = "[ POSITIVE ]";
+    } else if (vaccination.isEmpty() || vaccination.equals("No Entry")) {
+      output[0] = "[ N/A ]";
     } else {
       output[0] = "[ NEGATIVE ]";
     }
 
     if (results.matchesAllergy()) {
       output[1] = "[ POSITIVE ]";
+    } else if (allergy.isEmpty() || allergy.equals("No Entry")) {
+      output[1] = "[ N/A ]";
     } else {
       output[1] = "[ NEGATIVE ]";
     }
 
     if (results.matchesDiagnosis()) {
       output[2] = "[ POSITIVE ]";
+    } else if (diagnosis.isEmpty() || diagnosis.equals("No Entry")) {
+      output[2] = "[ N/A ]";
     } else {
       output[2] = "[ NEGATIVE ]";
     }
 
+    errorTextLabel.setText("");
     if (vaccinationResultLabel != null) {
       vaccinationResultLabel.setText(output[0]);
     }
@@ -367,7 +420,7 @@ public class ClientController {
       throws URISyntaxException, IOException, InterruptedException {
 
     // URI/URL for the service bgcheck API endpoint
-    String uri = "http://localhost:8080/api/bgcheck";
+    String uri = "http://34.121.8.54:8080/api/bgcheck";
 
     // Perform the GET request to /api/bgcheck
     BackgroundCheckBody requestBody
@@ -388,6 +441,8 @@ public class ClientController {
           BackgroundCheckResponse.class);
       return bgCheckResponse;
     } else {
+      String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+      System.err.println(responseString);
       throw new IOException("There was an error performing the background check.");
     }
   }
